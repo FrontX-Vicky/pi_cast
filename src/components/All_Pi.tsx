@@ -7,12 +7,10 @@ import axios from 'axios';
 
 export default function All_Pi() {
 
-    // const[CopyActivePis , CopyAddPis] = useState([]);
     const [activePis, addPis] = useState([]);
     let CopyAddPis = {};
     let CopyAddPisRec = {};
     const [styleLoader, hideLoader] = useState('block');
-    // const[CopyActivePisRec , CopyAddPisRec] = useState([]);
     const [activePisRec, addPisRec] = useState([]);
 
     const piId = useParams();
@@ -84,12 +82,10 @@ export default function All_Pi() {
 
                 if (res && res['serial_no']) {
                     // Use filter to remove the pi_id from availablePi
-                    const updatedPisRec = [...activePisRec];
-    
-                    // Set the array at the specified index to an empty array
-                    updatedPisRec[pi_id] = [];
-
-                    addPisRec(updatedPisRec)
+                    const updatedPis = activePis.filter((item) => item.pi_id !== pi_id);
+                    
+                    // Update the state with the filtered array
+                    addPis(updatedPis);
                     console.log('Successfully Start');
                 } else {
                     console.log('Something went wrong in the API response');
@@ -113,12 +109,13 @@ export default function All_Pi() {
             try {
                 if (response) {
                     console.log('Successfully stopped');
-                    const updatedPisRec = [...activePisRec];
-    
-                    // Set the array at the specified index to an empty array
-                    updatedPisRec[pi_id] = [];
-
-                    addPisRec(updatedPisRec)
+                    const updatedPisRec = activePisRec.map((pis) => {
+                        // Filter out items in each sub-array (`pis`) that match the pi_id
+                        return pis.filter((data) => data.pi_id !== pi_id);
+                    });
+                    
+                    // Update the state with the modified array
+                    addPisRec(updatedPisRec);
                 } else {
                     console.log('Something went wrong is Api response');
                 }
@@ -129,7 +126,7 @@ export default function All_Pi() {
         });
     };
 
-    const clearRecords = (pi_id)=>{
+    const clearRecords = (pi_id) => {
         var payload = {
             "type": "clear_recordings",
             "id": pi_id
@@ -137,12 +134,17 @@ export default function All_Pi() {
         axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
             try {
                 if (response) {
-                    const updatedPisRec = [...activePisRec];
-    
-                    // Set the array at the specified index to an empty array
-                    updatedPisRec[pi_id] = [];
 
-                    addPisRec(updatedPisRec)
+                    const updatedPisRec = activePisRec
+                    .map((pis) => {
+                        // Filter out items in each sub-array (`pis`) that match the pi_id
+                        return pis.filter((data) => data.pi_id !== pi_id);
+                    })
+                    // Filter out any sub-arrays that are now empty
+                    .filter((pis) => pis.length > 0);
+                
+                // Update the state with the modified array
+                addPisRec(updatedPisRec);
                     console.log('Successfully Clear');
                 } else {
                     console.log('Something went wrong is Api response');
@@ -185,7 +187,7 @@ export default function All_Pi() {
                         </thead>
                         <tbody>
                             {activePis.map((element) => (
-                                <tr key={element.id}>
+                                <tr key={element.pi_id}>
                                     <td className="border-b border-[#eee] py-5 dark:border-strokedark">
                                         <div className="relative h-14 w-38 rounded-full flex items-center justify-center dark:text-white text-sm">
                                             <img src={rpi} alt="User" style={{ height: '48px', width: '40px' }} />
@@ -276,7 +278,7 @@ export default function All_Pi() {
                         <tbody>
                             {activePisRec.map((element) => (
                                 element.map((data) => (
-                                    <tr key={element.id}>
+                                    <tr key={data['pi_id']}>
                                         <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                                             <h5 className="font-medium text-black dark:text-white">
                                             </h5>
