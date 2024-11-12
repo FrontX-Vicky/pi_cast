@@ -84,7 +84,12 @@ export default function All_Pi() {
 
                 if (res && res['serial_no']) {
                     // Use filter to remove the pi_id from availablePi
-                    activePis[pi_id] = [];
+                    const updatedPisRec = [...activePisRec];
+    
+                    // Set the array at the specified index to an empty array
+                    updatedPisRec[pi_id] = [];
+
+                    addPisRec(updatedPisRec)
                     console.log('Successfully Start');
                 } else {
                     console.log('Something went wrong in the API response');
@@ -108,7 +113,12 @@ export default function All_Pi() {
             try {
                 if (response) {
                     console.log('Successfully stopped');
-                    activePisRec[pi_id] = [];
+                    const updatedPisRec = [...activePisRec];
+    
+                    // Set the array at the specified index to an empty array
+                    updatedPisRec[pi_id] = [];
+
+                    addPisRec(updatedPisRec)
                 } else {
                     console.log('Something went wrong is Api response');
                 }
@@ -118,6 +128,31 @@ export default function All_Pi() {
 
         });
     };
+
+    const clearRecords = (pi_id)=>{
+        var payload = {
+            "type": "clear_recordings",
+            "id": pi_id
+        }
+        axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
+            try {
+                if (response) {
+                    const updatedPisRec = [...activePisRec];
+    
+                    // Set the array at the specified index to an empty array
+                    updatedPisRec[pi_id] = [];
+
+                    addPisRec(updatedPisRec)
+                    console.log('Successfully Clear');
+                } else {
+                    console.log('Something went wrong is Api response');
+                }
+            } catch (err) {
+                console.log('Error Occurred while making an API request');
+            }
+
+        });
+    }
     return (
         <>
             <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
@@ -182,7 +217,7 @@ export default function All_Pi() {
                                     <td colSpan={5} className="border-b border-[#eee] text-center py-5 px-4 dark:border-strokedark">
                                         <button
                                             type="button"
-                                            className="text-sm bg-bodydark text-center dark:text-white font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
+                                            className="text-sm bg-secondary border-s-meta-1 rounded-xl text-center dark:text-white font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
                                             onClick={() => startRecord(element['pi_id'])}
                                         >
                                             start
@@ -238,54 +273,17 @@ export default function All_Pi() {
                                 </th>
                             </tr>
                         </thead>
-                        {/* <tbody>
-                            {activePis.map((element) => (
-                                <tr key={element.id}>
-                                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                        <h5 className="font-medium text-black dark:text-white">
-                                        </h5>
-                                        <p className="text-sm"> {element['pi_id']}</p>
-                                    </td>
-                                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11" colSpan={5}>
-                                        <h5 className="font-medium text-black dark:text-white">
-                                            recording is off
-                                        </h5>
-                                    </td>
-                                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11" colSpan={2}>
-                                        <h5 className="font-medium text-black dark:text-white">
-                                            {element['devices']['camera']}
-                                        </h5>
-                                    </td>
-                                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11" colSpan={2}>
-                                        <h5 className="font-medium text-black dark:text-white">
-                                            {element['devices']['mic']}
-                                        </h5>
-                                    </td>
-                                    <td colSpan={5} className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                        <button
-                                            type="button"
-                                            className="text-sm font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
-                                            onClick={() => startRecord(availPi)}
-                                        >
-                                            start
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody> */}
                         <tbody>
                             {activePisRec.map((element) => (
                                 element.map((data) => (
                                     <tr key={element.id}>
                                         <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                                             <h5 className="font-medium text-black dark:text-white">
-                                                {/* {element['batch_id']} */}
                                             </h5>
                                             <p className="text-sm"> {data['pi_id']}</p>
                                         </td>
                                         <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                                             <h5 className="font-medium text-black dark:text-white">
-                                                {/* {element['batch_id']} */}
                                             </h5>
                                             <p className="text-sm"> {data['batch_id']}</p>
                                         </td>
@@ -345,21 +343,24 @@ export default function All_Pi() {
                                         </td>
                                         <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                                             <h5 className="font-medium text-black dark:text-white">
-                                                {/* {data['status'] == 0 ?
-                                     <button className="text-sm bg-red-500 text-white">Test Button</button>
-                                     : ''} */}
-
                                                 {data['status'] == 0 ?
                                                     <button
                                                         type="button"
-                                                        className="text-sm font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
+                                                        className="text-sm bg-danger font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
                                                         onClick={() => stopRecord(data['pi_id'], data['batch_id'])}
                                                     >
                                                         Stop
                                                     </button> : ''}
+                                                {data['audio_size'] == 0 ?
+                                                    <button
+                                                        type="button"
+                                                        className="text-sm bg-warning font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
+                                                        onClick={() => clearRecords(data['pi_id'])}
+                                                    >
+                                                        Clear
+                                                    </button> : ''}
 
                                             </h5>
-                                            {/* <p className="text-sm"> {element['audio_size']}</p> */}
                                         </td>
                                     </tr>
                                 ))
