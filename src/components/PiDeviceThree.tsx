@@ -68,7 +68,7 @@ const TableThree = () => {
         const res = response.data;
 
         if (res && res['serial_no']) {
-
+          recStartAction(false);
           console.log('Successfully Start');
         } else {
           console.log('Something went wrong in the API response');
