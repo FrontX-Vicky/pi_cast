@@ -5,6 +5,8 @@ import Loader from '../common/Loader';
 import axios from 'axios';
 const TableThree = () => {
   const [datas, recordingData] = useState([]);
+  const [allPiDatas, piData] = useState([]);
+  const [startAction, recStartAction] = useState(false);
   const [styleLoader, hideLoader] = useState('none');
   const piId = useParams();
   useEffect(() => {
@@ -15,28 +17,71 @@ const TableThree = () => {
       wssPort: 443,
       enabledTransports: ['ws', 'wss'],
       forceTLS: true,
+      authEndpoint: 'https://api.tickleright.in/api/broadcasting/auth',
+      auth: {
+        "headers": { "Authorization": 'Bearer 4|itKZrhvOFxpBMbP2wSJF8VvTTwMHh4BmtSo4hAMP137f2928' }
+      }
     });
     // debugger;
     // Subscribe to a channel and log incoming events
-    var channel = pusher.subscribe('pi_connect');
+    var channel = pusher.subscribe('private-app_connect.4');
     // Log all events to the console
-    channel.bind_global(function (eventName, data) {
+    channel.bind_global(function (eventName = 'AppConnect', data) {
       console.log('Full event data:', data);
-      if (data.message.pi_id != '' && data.message.pi_id != null && data) {
-        const filterData = data.message.pi_id == piId['id'] ? data.message : '';
-        console.log(filterData);
-        if (filterData && filterData.recordings) {
-          hideLoader('none');
-          recordingData(filterData.recordings);
+      if (data != undefined && data.message) {
+
+
+        if (data && data.message.pi_id != '' && data.message.pi_id != null) {
+          const filterData = data.message.pi_id == piId['id'] ? data.message : '';
+          console.log(filterData);
+          if (filterData && filterData.recordings) {
+            hideLoader('none');
+            recordingData(filterData.recordings);
+            if (Array.isArray(filterData.recordings) && filterData.recordings.some((recStatus) => recStatus.status != 0)) {
+              recStartAction(true);
+              console.log('recStartAction set to true');
+          } else {
+              console.log('No recordings with status != 0');
+          }
+          } else {
+            piData(filterData);
+            // hideLoader('block');
+            console.log('Recording data is missing or undefined');
+          }
         } else {
           // hideLoader('block');
-          console.log('Recording data is missing or undefined');
         }
-      } else {
-        // hideLoader('block');
+
       }
     });
   }, []);
+
+  const startRecord = () => {
+    var payload = {
+      "type": "rec_start",
+      "id": piId,
+      "batch_id": '1234'
+    }
+    axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
+      try {
+        // Access the response data directly, no need for JSON.parse()
+        const res = response.data;
+
+        if (res && res['serial_no']) {
+
+          console.log('Successfully Start');
+        } else {
+          console.log('Something went wrong in the API response');
+        }
+      } catch (err) {
+        console.log('Error occurred while processing the response:', err);
+      }
+    }).catch((error) => {
+      console.log('Error occurred while making the API request:', error);
+    });
+
+  };
+
   const stopRecord = (batch_id) => {
     var payload = {
       "type": "rec_stop",
@@ -70,21 +115,8 @@ const TableThree = () => {
               <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
                 Batch Id
               </th>
-
               <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                 Date
-              </th>
-              <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                Duration
-              </th>
-              <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                FileName
-              </th>
-              <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                Video Size
-              </th>
-              <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                Recording
               </th>
               <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                 Status
@@ -95,9 +127,6 @@ const TableThree = () => {
               <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                 Upload Percentage
               </th>
-              <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                Audio Size
-              </th>
               <th className="py-4 px-4 font-medium text-black dark:text-white">
                 Actions
               </th>
@@ -105,7 +134,6 @@ const TableThree = () => {
           </thead>
           <tbody>
             {datas.map((element) => (
-
               <tr key={element.id}>
                 <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                   <h5 className="font-medium text-black dark:text-white">
@@ -115,64 +143,26 @@ const TableThree = () => {
                 </td>
                 <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                   <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['date']} */}
                   </h5>
                   <p className="text-sm"> {element['date']}</p>
                 </td>
                 <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                   <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['duration']} */}
-                  </h5>
-                  <p className="text-sm"> {element['duration']}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['filename']} */}
-                  </h5>
-                  <p className="text-sm"> {element['filename']}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['video_size']} */}
-                  </h5>
-                  <p className="text-sm"> {element['video_size']}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['recording']} */}
-                  </h5>
-                  <p className="text-sm">  {element['recording'] === 0 ? 'No' : 'Yes'}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['upload']} */}
                   </h5>
                   <p className="text-sm"> {element['status'] == 1 ? 'Merging' : element['status'] == 2 ? 'Uploading' : element['status'] == 0 ? 'Recording' : 'Completed'}</p>
                 </td>
                 <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                   <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['upload']} */}
                   </h5>
                   <p className="text-sm"> {element['upload']}</p>
                 </td>
                 <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                   <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['upload_percentage']} */}
                   </h5>
                   <p className="text-sm"> {element['upload_percentage']}</p>
                 </td>
                 <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                   <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['audio_size']} */}
-                  </h5>
-                  <p className="text-sm"> {element['audio_size']}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['status'] == 0 ?
-                     <button className="text-sm bg-red-500 text-white">Test Button</button>
-                     : ''} */}
-
                     {element['status'] == 0 ?
                       <button
                         type="button"
@@ -183,14 +173,34 @@ const TableThree = () => {
                       </button> : ''}
 
                   </h5>
-                  {/* <p className="text-sm"> {element['audio_size']}</p> */}
                 </td>
               </tr>
             ))}
+            {startAction && (
+              <tr  className="w-full bg-gray">
+                <td colSpan={5} className='text-center text-success'>
+                  Start New Rec
+                </td>
+                <td>
+                  <h5 className="font-medium text-black dark:text-white">
+
+                    <button
+                      type="button"
+                      className="text-sm bg-bodydark text-center dark:text-white font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
+                      onClick={() => startRecord()}
+                    >
+                      Start
+                    </button>
+
+                  </h5>
+                </td>
+              </tr>
+            )}
+
           </tbody>
         </table>
       </div>
-    </div>
+    </div >
   );
 };
 
