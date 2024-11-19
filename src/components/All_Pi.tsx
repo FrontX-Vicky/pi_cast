@@ -1,5 +1,5 @@
 import Pusher from 'pusher-js';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef, useReducer } from 'react'
 import { useParams } from 'react-router-dom';
 import Loader from '../common/Loader';
 import rpi from '../images/logo/raspberry-pi-icon-transparent.png';
@@ -8,11 +8,20 @@ import axios from 'axios';
 export default function All_Pi() {
 
     const [activePis, addPis] = useState([]);
-    let CopyAddPis = {};
-    let CopyAddPisRec = {};
+    const [piTable, addPiTable] = useState([]);
+    const timerRef = useRef(null);
+
+    let prevTimeouts = {};
+
+    let piTableArray = [];
+    let piArrayTemp = [];
+    let piArray = [];
     const [styleLoader, hideLoader] = useState('block');
     const [activePisRec, addPisRec] = useState([]);
+    const [tableData, addTableData] = useState([]);
+    const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
 
+    // const [timeouts, setTimeouts] = useState({}); // State to store timeout IDs
     const piId = useParams();
     useEffect(() => {
         var pusher = new Pusher('i0fxppvqjbvvfcrxzwhz', {
@@ -29,44 +38,152 @@ export default function All_Pi() {
         var channel = pusher.subscribe('pi_connect');
         channel.bind_global(function (eventName, data) {
             if (data.message) {
-                console.log(CopyAddPis);
-                // if (CopyAddPis.length <= 0) {
-                if (data.message.recordings.length > 0) {
-                    if (CopyAddPisRec.length > 0) {
-                        CopyAddPisRec[data.message.pi_id] = data.message.recordings;
-                    } else {
-                        CopyAddPisRec[data.message.pi_id] = data.message.recordings;
-                    }
-                    addPisRec(Object.values(CopyAddPisRec));
-                    console.log(CopyAddPisRec);
-                } else {
-                    if (Object.keys(CopyAddPis).length === 0) {
-                        CopyAddPis[data.message.pi_id] = data.message;
-                    } else {
-                        // if (Array.isArray(CopyAddPis[data.message.pi_id])) {
-                        if (CopyAddPis[data.message.pi_id]) {
-                            CopyAddPis[data.message.pi_id] = data.message;
-                        } else {
-                            CopyAddPis[data.message.pi_id] = data.message;
-                        }
-                    }
-
-                    addPis(Object.values(CopyAddPis));
-                }
-
-                if (Object.keys(CopyAddPis).length < 3) {
-                    // debugger;
-                    console.log("CopyAddPis has less than 3 items.");
-                } else {
-                    console.log("CopyAddPis has 3 or more items.");
-                }
-                // console.log(activePis);
-
+                processData(data.message);
+              
             } else {
                 console.log("no active PIs");
             }
         });
     }, []);
+
+    // useEffect(() => {
+    //     addTableData(piTableArray);
+    // }, []);
+
+    // useEffect(() => {
+    //     if (piTableArrayTemp.length > 0) {
+    //         addTableData(piTableArrayTemp);
+    //     }
+    // }, [piTableArrayTemp]);
+    
+    const createTimeout = (id, delay, callback) => {
+            // Clear the existing timeout if it exists in the previous state
+            var newTimeoutId = 0; 
+            console.log(prevTimeouts);
+            if (prevTimeouts[id]) {
+                clearTimeout(prevTimeouts[id]);
+                console.log(`Timeout with ID ${id} reset.`);
+            }
+
+            // Create a new timeout and store it
+            if(id != undefined) {
+                newTimeoutId = setTimeout(() => {
+                    console.log(`Timeout with ID ${id} Removed.`);
+                    callback(id); // Trigger the callback when timeout ends
+                    prevTimeouts = removeTimeout(id); // Clean up the timeout
+                    processData({});
+                    console.log(prevTimeouts);
+                }, delay);
+            }
+
+            prevTimeouts = {
+                ...prevTimeouts,
+                [id]: newTimeoutId, // Add or update the timeout ID
+            };
+    };
+
+    // Function to remove a timeout by ID
+    const removeTimeout = (id) => {
+            const { [id]: removed, ...rest } = prevTimeouts; // Remove the specific timeout ID
+            return rest;
+    };
+
+    // Function to create a timeout
+    // const createTimeout = (id, delay, callback) => {
+    //     // Clear existing timeout if it exists
+        
+    //     console.log(timeouts);
+    //     if (timeouts[id]) {
+    //         clearTimeout(timeouts[id]);
+    //         console.log(`Timeout with ID ${id} removed.`);
+    //     }
+
+    //     // Create a new timeout and store it in state
+    //     const newTimeoutId = setTimeout(() => {
+    //         console.log(`Timeout with ID ${id} started.`);
+    //         callback(id); // Pass the ID to the callback
+    //         removeTimeout(id); // Clean up the timeout
+    //     }, delay);
+
+    //     setTimeouts((prevTimeouts) => ({
+    //         ...prevTimeouts,
+    //         [id]: newTimeoutId,
+    //     }));
+    // };
+
+    // // Function to remove a timeout by ID
+    // const removeTimeout = (id) => {
+    //     setTimeouts((prevTimeouts) => {
+    //     const { [id]: removed, ...rest } = prevTimeouts;
+    //     return rest;
+    //     });
+    // };
+
+    // Example function to reset a timeout
+
+    const processData = (data) => {
+        piArray = [];
+        piTableArray = [];
+        if(Object.keys(data).length !== 0 ) {
+            piArrayTemp[data.pi_id] = data;
+            piArrayTemp.map((pi, key) => {
+                if (pi['recordings'].length > 0) {
+                    let recTemp = [];
+                    pi['recordings'].map((recording) => {
+                        recording.camera = pi['devices'].camera;
+                        recording.mic = pi['devices'].mic;
+                        recTemp.push(recording);
+                    });
+    
+                    piArray[key] = recTemp;
+                }
+                else {
+                    let recTemp = [{
+                        "id": 0,
+                        "pi_id": pi['pi_id'],
+                        "camera": pi['devices'].camera,
+                        "mic": pi['devices'].mic,
+                        "batch_id": 0,
+                        "date": "",
+                        "filename": "",
+                        "video_size": "",
+                        "audio_size": "",
+                        "duration": "",
+                        "file_id": null,
+                        "recording": 0,
+                        "merge": 0,
+                        "merge_percentage": 0,
+                        "upload": 0,
+                        "upload_percentage": 0,
+                        "status": 0,
+                        "sync": 0,
+                        "created_at": "",
+                        "modified_at": "",
+                    }];
+    
+                    piArray[key] = recTemp;
+                }
+            });
+    
+            piArray.map((pi) => {
+                pi.map(recording => {
+                    piTableArray.push(recording);
+                });
+            })
+        }
+ 
+  
+        createTimeout(data.pi_id, 15000, (id) =>{
+            // piTableArray = piTableArray.filter(obj => obj.pi_id !== id);
+            piArrayTemp = piArrayTemp.filter(obj => obj.pi_id !== id);
+        });
+        // signalTimerReset(data.pi_id);
+      
+       
+        // addTableData([]);
+        addTableData(piTableArray);
+        // forceUpdate();
+    }
 
 
     const startRecord = (pi_id) => {
@@ -82,10 +199,7 @@ export default function All_Pi() {
 
                 if (res && res['serial_no']) {
                     // Use filter to remove the pi_id from availablePi
-                    const updatedPis = activePis.filter((item) => item.pi_id !== pi_id);
-                    
-                    // Update the state with the filtered array
-                    addPis(updatedPis);
+
                     console.log('Successfully Start');
                 } else {
                     console.log('Something went wrong in the API response');
@@ -109,13 +223,7 @@ export default function All_Pi() {
             try {
                 if (response) {
                     console.log('Successfully stopped');
-                    const updatedPisRec = activePisRec.map((pis) => {
-                        // Filter out items in each sub-array (`pis`) that match the pi_id
-                        return pis.filter((data) => data.pi_id !== pi_id);
-                    });
-                    
-                    // Update the state with the modified array
-                    addPisRec(updatedPisRec);
+
                 } else {
                     console.log('Something went wrong is Api response');
                 }
@@ -134,17 +242,6 @@ export default function All_Pi() {
         axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
             try {
                 if (response) {
-
-                    const updatedPisRec = activePisRec
-                    .map((pis) => {
-                        // Filter out items in each sub-array (`pis`) that match the pi_id
-                        return pis.filter((data) => data.pi_id !== pi_id);
-                    })
-                    // Filter out any sub-arrays that are now empty
-                    .filter((pis) => pis.length > 0);
-                
-                // Update the state with the modified array
-                addPisRec(updatedPisRec);
                     console.log('Successfully Clear');
                 } else {
                     console.log('Something went wrong is Api response');
@@ -165,208 +262,113 @@ export default function All_Pi() {
                     <table className="w-full table-auto">
                         <thead>
                             <tr className="bg-gray-2 text-center dark:bg-meta-4">
-                                <th className="min-w-[150px] py-4 px-2 font-medium text-black dark:text-white">
+                                <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
                                     Status
                                 </th>
-                                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
+                                <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
                                     Pi Id
                                 </th>
-                                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
-                                    Status
-                                </th>
-                                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
+                                <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
                                     Camera
                                 </th>
-                                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
+                                <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
                                     Mic
                                 </th>
-                                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
-                                    Action
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {activePis.map((element) => (
-                                <tr key={element.pi_id}>
-                                    <td className="border-b border-[#eee] py-5 dark:border-strokedark">
-                                        <div className="relative h-14 w-38 rounded-full flex items-center justify-center dark:text-white text-sm">
-                                            <img src={rpi} alt="User" style={{ height: '48px', width: '40px' }} />
-                                            <span className={`absolute right-25 bottom-2 h-3.5 w-3.5 rounded-full border-2 border-white ${element['devices']['camera'] == 1 && element['devices']['mic'] == 1 ? 'bg-meta-3' : 'bg-meta-7'}`} />
-                                        </div>
-                                    </td>
-                                    <td className="border-b border-[#eee] py-5 dark:border-strokedark">
-                                        <h5 className="font-medium text-black dark:text-white">
-                                        </h5>
-                                        <p className="text-sm text-center"> {element['pi_id']}</p>
-                                    </td>
-                                    <td className="border-b border-[#eee] py-5 dark:border-strokedark">
-                                        <h5 className="font-medium text-black dark:text-white">
-
-                                            <p className="text-sm text-center">recording is off</p>
-                                        </h5>
-                                    </td>
-                                    <td className="border-b border-[#eee] py-5 dark:border-strokedark">
-                                        <h5 className="font-medium text-black dark:text-white">
-                                            <p className="text-sm text-center"> {element['devices']['camera'] == 0 ? 'Off' : 'On'}</p>
-                                        </h5>
-                                    </td>
-                                    <td className="border-b border-[#eee] py-5 dark:border-strokedark">
-                                        <h5 className="font-medium text-black dark:text-white">
-                                            <p className="text-sm text-center"> {element['devices']['mic'] == 0 ? 'Off' : 'On'}</p>
-
-                                        </h5>
-                                    </td>
-                                    <td colSpan={5} className="border-b border-[#eee] text-center py-5 px-4 dark:border-strokedark">
-                                        <button
-                                            type="button"
-                                            className="text-sm bg-secondary border-s-meta-1 rounded-xl text-center dark:text-white font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
-                                            onClick={() => startRecord(element['pi_id'])}
-                                        >
-                                            start
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                            <tr className="w-full bg-success">
-                                <td colSpan={6}></td>
-                            </tr>
-
-                        </tbody>
-                    </table>
-                    <table className="w-full table-auto">
-                        <thead>
-                            <tr className="bg-gray-2 text-center dark:bg-meta-4">
-                                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
-                                    Pi Id
-                                </th>
-                                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
+                                <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
                                     Batch Id
                                 </th>
 
-                                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                                <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
                                     Date
                                 </th>
-                                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                                    Duration
-                                </th>
-                                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                                <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
                                     FileName
                                 </th>
-                                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                                <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
                                     Video Size
                                 </th>
-                                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                                    Recording
-                                </th>
-                                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                                    Status
-                                </th>
-                                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                                    Upload
-                                </th>
-                                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                                    Upload Percentage
-                                </th>
-                                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                                <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
                                     Audio Size
                                 </th>
-                                <th className="py-4 px-4 font-medium text-black dark:text-white">
+                                <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
+                                    Recording Status
+                                </th>
+                                <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
+                                    Merge %
+                                </th>
+                                <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
+                                    Upload %
+                                </th>
+                                <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
+                                    Duration
+                                </th>
+                                <th className="py-4 px-1 font-medium text-black dark:text-white">
                                     Actions
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
-                            {activePisRec.map((element) => (
-                                element.map((data) => (
-                                    <tr key={data['pi_id']}>
-                                        <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                            <h5 className="font-medium text-black dark:text-white">
-                                            </h5>
-                                            <p className="text-sm"> {data['pi_id']}</p>
-                                        </td>
-                                        <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                            <h5 className="font-medium text-black dark:text-white">
-                                            </h5>
-                                            <p className="text-sm"> {data['batch_id']}</p>
-                                        </td>
-                                        <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                            <h5 className="font-medium text-black dark:text-white">
-                                                {/* {data['date']} */}
-                                            </h5>
-                                            <p className="text-sm"> {data['date']}</p>
-                                        </td>
-                                        <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                            <h5 className="font-medium text-black dark:text-white">
-                                                {/* {data['duration']} */}
-                                            </h5>
-                                            <p className="text-sm"> {data['duration']}</p>
-                                        </td>
-                                        <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                            <h5 className="font-medium text-black dark:text-white">
-                                                {/* {data['filename']} */}
-                                            </h5>
-                                            <p className="text-sm"> {data['filename']}</p>
-                                        </td>
-                                        <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                            <h5 className="font-medium text-black dark:text-white">
-                                                {/* {data['video_size']} */}
-                                            </h5>
-                                            <p className="text-sm"> {data['video_size']}</p>
-                                        </td>
-                                        <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                            <h5 className="font-medium text-black dark:text-white">
-                                                {/* {data['recording']} */}
-                                            </h5>
-                                            <p className="text-sm">  {data['recording'] === 0 ? 'No' : 'Yes'}</p>
-                                        </td>
-                                        <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                            <h5 className="font-medium text-black dark:text-white">
-                                                {/* {data['upload']} */}
-                                            </h5>
-                                            <p className="text-sm"> {data['status'] == 1 ? 'Merging' : data['status'] == 2 ? 'Uploading' : data['status'] == 0 ? 'Recording' : 'Completed'}</p>
-                                        </td>
-                                        <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                            <h5 className="font-medium text-black dark:text-white">
-                                                {/* {data['upload']} */}
-                                            </h5>
-                                            <p className="text-sm"> {data['upload']}</p>
-                                        </td>
-                                        <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                            <h5 className="font-medium text-black dark:text-white">
-                                                {/* {data['upload_percentage']} */}
-                                            </h5>
-                                            <p className="text-sm"> {data['upload_percentage']}</p>
-                                        </td>
-                                        <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                            <h5 className="font-medium text-black dark:text-white">
-                                                {/* {data['audio_size']} */}
-                                            </h5>
-                                            <p className="text-sm"> {data['audio_size']}</p>
-                                        </td>
-                                        <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                            <h5 className="font-medium text-black dark:text-white">
-                                                {data['status'] == 0 ?
-                                                    <button
-                                                        type="button"
-                                                        className="text-sm bg-danger font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
-                                                        onClick={() => stopRecord(data['pi_id'], data['batch_id'])}
-                                                    >
-                                                        Stop
-                                                    </button> : ''}
-                                                {data['audio_size'] == 0 ?
-                                                    <button
-                                                        type="button"
-                                                        className="text-sm bg-warning font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
-                                                        onClick={() => clearRecords(data['pi_id'])}
-                                                    >
-                                                        Clear
-                                                    </button> : ''}
+                            {tableData && tableData.map((item, key) => (
+                                <tr className="bg-gray-2 text-center dark:bg-meta-4" key={key}>
+                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                                        {item.id}
+                                    </td>
+                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                                        {item.pi_id}
+                                    </td>
+                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                                        {item.camera}
+                                    </td>
+                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                                        {item.mic}
+                                    </td>
+                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                                        {item.batch_id}
+                                    </td>
 
-                                            </h5>
-                                        </td>
-                                    </tr>
-                                ))
-
+                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                                        {item.date}
+                                    </td>
+                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                                        {item.filename}
+                                    </td>
+                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                                        {item.video_size}
+                                    </td>
+                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                                        {item.audio_size}
+                                    </td>
+                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                                        {item.status}
+                                    </td>
+                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                                        {item.merge_percentage}
+                                    </td>
+                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                                        {item.upload_percentage}
+                                    </td>
+                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                                        {item.duration}
+                                    </td>
+                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                                        {item.id != 0 && item.status == 0 ?
+                                            <button
+                                                type="button"
+                                                className="text-sm bg-bodydark text-center dark:text-white font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
+                                                onClick={() => stopRecord(item.pi_id, item.batch_id)}
+                                            >
+                                                Stop
+                                            </button> : ''}
+                                        {item.id == 0?
+                                            <button
+                                                type="button"
+                                                className="text-sm bg-bodydark text-center dark:text-white font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
+                                                onClick={() => startRecord(item.pi_id)}
+                                            >
+                                                Start
+                                            </button> : ''}
+                                    </td>
+                                </tr>
                             ))}
                         </tbody>
                     </table>
@@ -374,4 +376,5 @@ export default function All_Pi() {
             </div>
         </>
     )
+
 }
