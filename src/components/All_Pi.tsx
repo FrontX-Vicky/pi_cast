@@ -4,7 +4,10 @@ import { useParams } from 'react-router-dom';
 import Loader from '../common/Loader';
 import rpi from '../images/logo/raspberry-pi-icon-transparent.png';
 import axios from 'axios';
-
+import { HiVideoCamera } from "react-icons/hi2";
+import { HiVideoCameraSlash } from "react-icons/hi2";
+import { IoIosMic } from "react-icons/io";
+import { IoIosMicOff } from "react-icons/io";
 export default function All_Pi() {
 
     const [activePis, addPis] = useState([]);
@@ -39,7 +42,7 @@ export default function All_Pi() {
         channel.bind_global(function (eventName, data) {
             if (data.message) {
                 processData(data.message);
-              
+
             } else {
                 console.log("no active PIs");
             }
@@ -55,43 +58,43 @@ export default function All_Pi() {
     //         addTableData(piTableArrayTemp);
     //     }
     // }, [piTableArrayTemp]);
-    
+
     const createTimeout = (id, delay, callback) => {
-            // Clear the existing timeout if it exists in the previous state
-            var newTimeoutId = 0; 
-            console.log(prevTimeouts);
-            if (prevTimeouts[id]) {
-                clearTimeout(prevTimeouts[id]);
-                console.log(`Timeout with ID ${id} reset.`);
-            }
+        // Clear the existing timeout if it exists in the previous state
+        var newTimeoutId = 0;
+        console.log(prevTimeouts);
+        if (prevTimeouts[id]) {
+            clearTimeout(prevTimeouts[id]);
+            console.log(`Timeout with ID ${id} reset.`);
+        }
 
-            // Create a new timeout and store it
-            if(id != undefined) {
-                newTimeoutId = setTimeout(() => {
-                    console.log(`Timeout with ID ${id} Removed.`);
-                    callback(id); // Trigger the callback when timeout ends
-                    prevTimeouts = removeTimeout(id); // Clean up the timeout
-                    processData({});
-                    console.log(prevTimeouts);
-                }, delay);
-            }
+        // Create a new timeout and store it
+        if (id != undefined) {
+            newTimeoutId = setTimeout(() => {
+                console.log(`Timeout with ID ${id} Removed.`);
+                callback(id); // Trigger the callback when timeout ends
+                prevTimeouts = removeTimeout(id); // Clean up the timeout
+                processData({});
+                console.log(prevTimeouts);
+            }, delay);
+        }
 
-            prevTimeouts = {
-                ...prevTimeouts,
-                [id]: newTimeoutId, // Add or update the timeout ID
-            };
+        prevTimeouts = {
+            ...prevTimeouts,
+            [id]: newTimeoutId, // Add or update the timeout ID
+        };
     };
 
     // Function to remove a timeout by ID
     const removeTimeout = (id) => {
-            const { [id]: removed, ...rest } = prevTimeouts; // Remove the specific timeout ID
-            return rest;
+        const { [id]: removed, ...rest } = prevTimeouts; // Remove the specific timeout ID
+        return rest;
     };
 
     // Function to create a timeout
     // const createTimeout = (id, delay, callback) => {
     //     // Clear existing timeout if it exists
-        
+
     //     console.log(timeouts);
     //     if (timeouts[id]) {
     //         clearTimeout(timeouts[id]);
@@ -124,7 +127,12 @@ export default function All_Pi() {
     const processData = (data) => {
         piArray = [];
         piTableArray = [];
-        if(Object.keys(data).length !== 0 ) {
+
+        createTimeout(data.pi_id, 15000, (id) => {
+            // piTableArray = piTableArray.filter(obj => obj.pi_id !== id);
+            piArrayTemp = piArrayTemp.filter(obj => obj.pi_id !== id);
+        });
+        if (Object.keys(data).length !== 0) {
             piArrayTemp[data.pi_id] = data;
             piArrayTemp.map((pi, key) => {
                 if (pi['recordings'].length > 0) {
@@ -134,7 +142,7 @@ export default function All_Pi() {
                         recording.mic = pi['devices'].mic;
                         recTemp.push(recording);
                     });
-    
+
                     piArray[key] = recTemp;
                 }
                 else {
@@ -160,26 +168,26 @@ export default function All_Pi() {
                         "created_at": "",
                         "modified_at": "",
                     }];
-    
+
                     piArray[key] = recTemp;
                 }
             });
-    
+
             piArray.map((pi) => {
                 pi.map(recording => {
                     piTableArray.push(recording);
                 });
             })
         }
- 
-  
-        createTimeout(data.pi_id, 15000, (id) =>{
-            // piTableArray = piTableArray.filter(obj => obj.pi_id !== id);
-            piArrayTemp = piArrayTemp.filter(obj => obj.pi_id !== id);
-        });
+
+
+        // createTimeout(data.pi_id, 15000, (id) => {
+        //     // piTableArray = piTableArray.filter(obj => obj.pi_id !== id);
+        //     piArrayTemp = piArrayTemp.filter(obj => obj.pi_id !== id);
+        // });
         // signalTimerReset(data.pi_id);
-      
-       
+
+
         // addTableData([]);
         addTableData(piTableArray);
         // forceUpdate();
@@ -311,16 +319,29 @@ export default function All_Pi() {
                             {tableData && tableData.map((item, key) => (
                                 <tr className="bg-gray-2 text-center dark:bg-meta-4" key={key}>
                                     <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
-                                        {item.id}
+                                        <td className="relative h-14 w-26 rounded-full flex items-center justify-center dark:text-white text-sm">
+                                            <img src={rpi} alt="User" style={{ height: '48px', width: '40px' }} />
+                                            <span className={`absolute right-2 bottom-3 h-3.5 w-3.5 rounded-full border-2 border-white ${item.status == 0 && item.id!= 0? 'bg-meta-3' : 'bg-meta-7'}`} />
+                                        </td>
                                     </td>
-                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                                    <td className="text-sm text-center align-middle border-b border-[#eee] py-5 dark:border-strokedark">
                                         {item.pi_id}
                                     </td>
-                                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
-                                        {item.camera}
+                                    <td className="text-sm text-center align-middle border-b border-[#eee] py-5 dark:border-strokedark">
+                                        {/* {item.camera == 1 ? <HiVideoCamera /> : <HiVideoCameraSlash />} */}
+                                        {item.camera == 1 ? (
+                                            <HiVideoCamera style={{ width: '20px', height: '24px', display: 'block', margin: '0 auto' }} />
+                                        ) : (
+                                            <HiVideoCameraSlash style={{ width: '20px', height: '24px', display: 'block', margin: '0 auto' }} />
+                                        )}
                                     </td>
                                     <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
-                                        {item.mic}
+                                        {/* {item.mic} */}
+                                        {item.mic == 1 ? (
+                                            <IoIosMic style={{ width: '22px', height: '24px', display: 'block', margin: '0 auto' }} />
+                                        ) : (
+                                            <IoIosMicOff style={{ width: '22px', height: '24px', display: 'block', margin: '0 auto' }} />
+                                        )}
                                     </td>
                                     <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
                                         {item.batch_id}
@@ -359,7 +380,7 @@ export default function All_Pi() {
                                             >
                                                 Stop
                                             </button> : ''}
-                                        {item.id == 0?
+                                        {item.id == 0 ?
                                             <button
                                                 type="button"
                                                 className="text-sm bg-bodydark text-center dark:text-white font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
