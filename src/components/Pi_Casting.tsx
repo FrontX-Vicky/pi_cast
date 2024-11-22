@@ -7,9 +7,12 @@ import { HiVideoCamera } from "react-icons/hi2";
 import { HiVideoCameraSlash } from "react-icons/hi2";
 import { IoIosMic } from "react-icons/io";
 import { IoIosMicOff } from "react-icons/io";
+import { DateTime } from 'luxon';
 const Pi_Casting = () => {
   var arrayOfRecording = [];
   var allRecording = [];
+  // const moment = require('moment');
+
   const [availablePi, setavailablePi] = useState<string[]>([]);
   const timerRefs = useRef({});
   // const [availablePi, setavailablePi] = useState([]);
@@ -86,8 +89,33 @@ const Pi_Casting = () => {
           data.message.recordings = recordings;
           allPis[data.message.pi_id] = data.message;
         } else {
+          const noStatusZero = data.message.recordings.every(recording => recording.status !== 0);
+          if (noStatusZero) {
+            // Add default recording
+            data.message.recordings.push({
+              "id": 0,
+              "pi_id": data.message.pi_id,
+              "camera": data.message.devices.camera,
+              "mic": data.message.devices.mic,
+              "batch_id": 0,
+              "date": "",
+              "filename": "",
+              "video_size": "",
+              "audio_size": "",
+              "duration": "",
+              "file_id": null,
+              "recording": 0,
+              "merge": 0,
+              "merge_percentage": 0,
+              "upload": 0,
+              "upload_percentage": 0,
+              "sync": 0,
+              "created_at": "",
+              "modified_at": "",
+            });
+          }
           allPis[data.message.pi_id] = data.message;
-          
+
         }
       }
       // console.log(allPis);
@@ -210,85 +238,85 @@ const Pi_Casting = () => {
             {datas && datas.length > 0 && datas.map((element, index) => (
               element.recordings.map((record, index) => (
                 <tr key={record.id}>
-                  <td className="border-b relative rounded-full border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                    {/* <td className="relative h-14 w-26 rounded-full flex items-center justify-center dark:text-white text-sm"> */}
+                  <td className="border-b relative rounded-full border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                     <img src={rpi} alt="User" style={{ height: '48px', width: '40px' }} />
-                    <span className={`absolute right-9 bottom-4 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0 ? 'bg-meta-3' : record.status == 1 ? 'bg-primary' : record.status == 2 ? 'bg-meta-6': 'bg-meta-7'}`} />
+                    <span className={`absolute right-9 bottom-4 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0 ? 'bg-meta-3' : record.status == 1 ? 'bg-primary' : record.status == 2 ? 'bg-meta-6' : 'bg-meta-7'}`} />
                   </td>
-                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                  <td className="border-b border-[#eee] py-5 dark:border-strokedark ">
                     <h5 className="font-medium text-black dark:text-white">
                     </h5>
-                    <p className="text-sm"> {record.pi_id}</p>
+                    <p className="text-sm text-center"> {record.pi_id}</p>
                   </td>
                   <td className="text-sm text-center align-middle border-b border-[#eee] py-5 dark:border-strokedark">
                     {element['devices'].camera == 1 ? (
-                      <HiVideoCamera style={{ width: '20px', height: '24px', display: 'block', margin: '0 auto' }} />
+                      <HiVideoCamera style={{ width: '20px', height: '24px', display: 'block', margin: '0 auto', color: '#34e37d' }} />
                     ) : (
-                      <HiVideoCameraSlash style={{ width: '20px', height: '24px', display: 'block', margin: '0 auto' }} />
+                      <HiVideoCameraSlash style={{ width: '20px', height: '24px', display: 'block', margin: '0 auto', color: '#d63c49' }} />
                     )}
                   </td>
                   <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
                     {element['devices'].mic == 1 ? (
-                      <IoIosMic style={{ width: '22px', height: '24px', display: 'block', margin: '0 auto' }} />
+                      <IoIosMic style={{ width: '22px', height: '24px', display: 'block', margin: '0 auto', color: '#34e37d' }} />
                     ) : (
-                      <IoIosMicOff style={{ width: '22px', height: '24px', display: 'block', margin: '0 auto' }} />
+                      <IoIosMicOff style={{ width: '22px', height: '24px', display: 'block', margin: '0 auto', color: '#d63c49' }} />
                     )}
                   </td>
-                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                     <h5 className="font-medium text-black dark:text-white">
                     </h5>
-                    <p className="text-sm"> {record.batch_id}</p>
+                    <p className="text-sm text-center"> {record.batch_id}</p>
                   </td>
-                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                     <h5 className="font-medium text-black dark:text-white">
                     </h5>
-                    <p className="text-sm"> {record.date}</p>
+                    <p className="text-sm text-center">
+                      {record.date && DateTime.fromFormat(record.date, 'yyyy-MM-dd HH:mm:ss').toFormat('dd-MM-yyyy HH:mm:ss a')}
+                    </p>
+
                   </td>
-                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                     <h5 className="font-medium text-black dark:text-white">
                     </h5>
-                    <p className="text-sm"> {record.audio_size}</p>
+                    <p className="text-sm text-center"> {record.audio_size}</p>
                   </td>
-                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                     <h5 className="font-medium text-black dark:text-white">
                     </h5>
-                    <p className="text-sm"> {record.video_size}</p>
+                    <p className="text-sm text-center"> {record.video_size}</p>
                   </td>
-                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                     <h5 className="font-medium text-black dark:text-white">
                     </h5>
-                    <p className="text-sm"> {record.duration}</p>
+                    <p className="text-sm text-center"> {record.duration}</p>
                   </td>
 
-                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                     <h5 className="font-medium text-black dark:text-white">
                     </h5>
-                    <p className="text-sm"> {record.id == 0 ? '' : record.status == 1 ? 'Merging' : record.status == 2 ? 'Uploading' : record.status == 0 ? 'Recording' : 'Completed'}</p>
+                    <p className="text-sm text-center"> {record.id == 0 ? '' : record.status == 1 ? 'Merging' : record.status == 2 ? 'Uploading' : record.status == 0 ? 'Recording' : 'Completed'}</p>
                   </td>
-                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                     <h5 className="font-medium text-black dark:text-white">
                     </h5>
-                    <p className="text-sm"> {record.merge_percentage}</p>
+                    <p className="text-sm text-center"> {record.merge_percentage}</p>
                   </td>
-                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                     <h5 className="font-medium text-black dark:text-white">
                     </h5>
-                    <p className="text-sm"> {record.upload_percentage}</p>
+                    <p className="text-sm text-center"> {record.upload_percentage}</p>
                   </td>
-                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                     <h5 className="font-medium text-black dark:text-white">
-
-
                       {record.status == 0 ?
                         <button
                           type="button"
-                          className="text-sm bg-bodydark text-center dark:text-white font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
+                          className="text-sm bg-orange-300 border-b-2 border-orange-800 text-center dark:text-white font-medium rounded-lg px-4 py-2 me-2 mb-2"
                           onClick={() => stopRecord(record.pi_id, record.batch_id)}
                         >
                           Stop
                         </button> : record.id == 0 ? <button
                           type="button"
-                          className="text-sm bg-bodydark text-center dark:text-white font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
+                          className="text-sm bg-green-400 border-green-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2"
                           onClick={() => startRecord(record.pi_id)}
                         >
                           Start
