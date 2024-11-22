@@ -1,14 +1,20 @@
 import axios from 'axios';
 import Pusher from 'pusher-js';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Loader from '../common/Loader';
+import rpi from '../images/logo/raspberry-pi-icon-transparent.png';
+import { HiVideoCamera } from "react-icons/hi2";
+import { HiVideoCameraSlash } from "react-icons/hi2";
+import { IoIosMic } from "react-icons/io";
+import { IoIosMicOff } from "react-icons/io";
 const Pi_Casting = () => {
   var arrayOfRecording = [];
   var allRecording = [];
   const [availablePi, setavailablePi] = useState<string[]>([]);
-
+  const timerRefs = useRef({});
   // const [availablePi, setavailablePi] = useState([]);
-  const [datas, setDatas] = useState<{ [key: string]: any }[]>([]);
+  let allPis = {};
+  const [datas, setDatas] = useState([]);
   const [recordings, setRecordings] = useState<{ [key: string]: any }>({});
   const [styleLoader, hideLoader] = useState('block');
   useEffect(() => {
@@ -25,62 +31,75 @@ const Pi_Casting = () => {
     // Log all events to the console
     channel.bind_global(function (eventName, data) {
       if (data.message) {
-        // debugger;
-        if (data.message && data.message.recordings && Object.keys(data.message.recordings).length > 0) {
-          var pi_id = data.message.pi_id;
-          arrayOfRecording = Object.entries(data.message.recordings);
-          // console.log(arrayOfRecording);
-          // debugger;
-          // Correctly update state with a new array
-          setRecordings((prevRecordings) => {
-            const updatedRecordings = { ...prevRecordings };
-            arrayOfRecording.forEach(([key, value]) => {
-              updatedRecordings[value.pi_id] = value;
-            });
-            return updatedRecordings;
-          });
-        } else {
-          var pi_id = data.message.pi_id;
 
-          setavailablePi((prevAvailablePi) => {
-            const updatedPiArray = [...prevAvailablePi, pi_id];
+        // if (timerRefs.current[data.message.pi_id]) {
+        //   clearTimeout(timerRefs.current[data.message.pi_id]);
+        //   console.log('clear timeout of message ' + data.message.pi_id);
+        // }
 
-            // Use Set to remove duplicates and ensure the array contains only unique values
-            const uniquePiArray = [...new Set(updatedPiArray)];
+        // timerRefs.current[data.message.pi_id] = setTimeout(() => {
+        //   setDatas(prevDatas => {
+        //     const newDatas = { ...prevDatas };
+        //     delete newDatas[data.message.pi_id];
+        //     return newDatas;
+        //   });
+        //   delete timerRefs.current[data.message.pi_id];
+        // }, 15000);
 
-            return uniquePiArray;
-          });
+        if (timerRefs.current[data.message.pi_id]) {
+          clearTimeout(timerRefs.current[data.message.pi_id]);
+          console.log('Cleared timeout for data.message.pi_id: ' + data.message.pi_id);
         }
-        if (recordings && Object.keys(recordings).length > 0) {
-          allRecording = [];
-          Object.entries(recordings).forEach(([key, record]) => {
-            const pi_id = record.pi_id;  // Extract pi_id
-            const existing = allRecording.find(item => item[pi_id]);  // Check if pi_id already exists
 
-            if (!existing) {
-              // Add new entry with pi_id as key
-              allRecording.push({ [pi_id]: [record] });
-            } else {
-              // Append to the existing record
-              existing[pi_id].push(record);
-            }
-          });
+        // Set a new timeout to delete the data.message.pi_id after 15 seconds
+        timerRefs.current[data.message.pi_id] = setTimeout(() => {
+          delete allPis[data.message.pi_id];
+          delete timerRefs.current[data.message.pi_id];
+          // Update the state after deletion
+          setDatas(Object.values(allPis));
+          console.log('Deleted data.message.pi_id after 15 seconds: ' + data.message.pi_id);
+        }, 15000);
+
+
+        if (data.message.recordings.length == 0) {
+          let recordings = [{
+            "id": 0,
+            "pi_id": data.message.pi_id,
+            "camera": data.message.devices.camera,
+            "mic": data.message.devices.mic,
+            "batch_id": 0,
+            "date": "",
+            "filename": "",
+            "video_size": "",
+            "audio_size": "",
+            "duration": "",
+            "file_id": null,
+            "recording": 0,
+            "merge": 0,
+            "merge_percentage": 0,
+            "upload": 0,
+            "upload_percentage": 0,
+            "sync": 0,
+            "created_at": "",
+            "modified_at": "",
+          }];
+          data.message.recordings = recordings;
+          allPis[data.message.pi_id] = data.message;
         } else {
-          // console.log("No recordings available");
+          allPis[data.message.pi_id] = data.message;
+          
         }
-        // Clear previous `allRecording`
-        var arrayOfValues = Object.values(recordings);
-        requiredObject = [];
-        var requiredObject = Object.keys(recordings).reduce((obj, key) => {
-          obj[key] = recordings[key];
-          return obj;
-        }, {});
-
-        setDatas(recordings);
-        // console.log(recordings);
-        // console.log("Full eventss data: "+recordings);
       }
+      // console.log(allPis);
+      setDatas(Object.values(allPis));
     });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      Object.values(timerRefs.current).forEach(clearTimeout);
+      timerRefs.current = {};
+    };
   }, []);
 
   const stopRecord = (pi_id, batch_id) => {
@@ -145,39 +164,41 @@ const Pi_Casting = () => {
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-gray-2 text-center dark:bg-meta-4">
-              <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
+              <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                Rec Status
+              </th>
+              <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                 Pi Id
               </th>
-              <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
+              <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
+                Camera
+              </th>
+              <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
+                Mic
+              </th>
+              <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                 Batch Id
               </th>
-
               <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                 Date
               </th>
               <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                Duration
-              </th>
-              <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                FileName
+                Audio Size
               </th>
               <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                 Video Size
               </th>
               <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                Recording
+                Duration
               </th>
               <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                 Status
               </th>
               <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                Upload
+                Merge Percentage
               </th>
               <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                 Upload Percentage
-              </th>
-              <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                Audio Size
               </th>
               <th className="py-4 px-4 font-medium text-black dark:text-white">
                 Actions
@@ -185,117 +206,98 @@ const Pi_Casting = () => {
             </tr>
           </thead>
           <tbody>
-            {availablePi && availablePi.length > 0 && availablePi.map((availPi, index) => (
-              <tr>
-                <td colSpan={5} className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['batch_id']} */}
-                  </h5>
-                  <p className="text-sm">{availPi}</p>
-                </td>
-                <td colSpan={5} className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <p className="text-meta-3">Pi Is On But Recording Is Off</p>
-                </td>
-                <td colSpan={5} className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <button
-                    type="button"
-                    className="text-sm bg-bodydark text-center dark:text-white font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
-                    onClick={() => startRecord(availPi)}
-                  >
-                    start
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {/* {datas && Object.keys(datas).length > 0 && Object.values(datas).map((element, index) => ( */}
+            {datas && datas.length > 0 && datas.map((element, index) => (
+              element.recordings.map((record, index) => (
+                <tr key={record.id}>
+                  <td className="border-b relative rounded-full border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                    {/* <td className="relative h-14 w-26 rounded-full flex items-center justify-center dark:text-white text-sm"> */}
+                    <img src={rpi} alt="User" style={{ height: '48px', width: '40px' }} />
+                    <span className={`absolute right-9 bottom-4 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0 ? 'bg-meta-3' : record.status == 1 ? 'bg-primary' : record.status == 2 ? 'bg-meta-6': 'bg-meta-7'}`} />
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                    <h5 className="font-medium text-black dark:text-white">
+                    </h5>
+                    <p className="text-sm"> {record.pi_id}</p>
+                  </td>
+                  <td className="text-sm text-center align-middle border-b border-[#eee] py-5 dark:border-strokedark">
+                    {element['devices'].camera == 1 ? (
+                      <HiVideoCamera style={{ width: '20px', height: '24px', display: 'block', margin: '0 auto' }} />
+                    ) : (
+                      <HiVideoCameraSlash style={{ width: '20px', height: '24px', display: 'block', margin: '0 auto' }} />
+                    )}
+                  </td>
+                  <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                    {element['devices'].mic == 1 ? (
+                      <IoIosMic style={{ width: '22px', height: '24px', display: 'block', margin: '0 auto' }} />
+                    ) : (
+                      <IoIosMicOff style={{ width: '22px', height: '24px', display: 'block', margin: '0 auto' }} />
+                    )}
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                    <h5 className="font-medium text-black dark:text-white">
+                    </h5>
+                    <p className="text-sm"> {record.batch_id}</p>
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                    <h5 className="font-medium text-black dark:text-white">
+                    </h5>
+                    <p className="text-sm"> {record.date}</p>
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                    <h5 className="font-medium text-black dark:text-white">
+                    </h5>
+                    <p className="text-sm"> {record.audio_size}</p>
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                    <h5 className="font-medium text-black dark:text-white">
+                    </h5>
+                    <p className="text-sm"> {record.video_size}</p>
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                    <h5 className="font-medium text-black dark:text-white">
+                    </h5>
+                    <p className="text-sm"> {record.duration}</p>
+                  </td>
 
-            {/* {datas && datas.length > 0 && datas.map((element, index) => ( */}
-            {datas && Object.keys(datas).length > 0 && Object.values(datas).map((element, index) => (
-              <tr key={element.id}>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['batch_id']} */}
-                  </h5>
-                  <p className="text-sm"> {element['pi_id']}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['batch_id']} */}
-                  </h5>
-                  <p className="text-sm"> {element['batch_id']}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['date']} */}
-                  </h5>
-                  <p className="text-sm"> {element['date']}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['duration']} */}
-                  </h5>
-                  <p className="text-sm"> {element['duration']}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['filename']} */}
-                  </h5>
-                  <p className="text-sm"> {element['filename']}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['video_size']} */}
-                  </h5>
-                  <p className="text-sm"> {element['video_size']}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['recording']} */}
-                  </h5>
-                  <p className="text-sm">  {element['recording'] === 0 ? 'No' : 'Yes'}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['upload']} */}
-                  </h5>
-                  <p className="text-sm"> {element['status'] == 1 ? 'Merging' : element['status'] == 2 ? 'Uploading' : element['status'] == 0 ? 'Recording' : 'Completed'}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['upload']} */}
-                  </h5>
-                  <p className="text-sm"> {element['upload']}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['upload_percentage']} */}
-                  </h5>
-                  <p className="text-sm"> {element['upload_percentage']}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['audio_size']} */}
-                  </h5>
-                  <p className="text-sm"> {element['audio_size']}</p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  <h5 className="font-medium text-black dark:text-white">
-                    {/* {element['status'] == 0 ?
-                     <button className="text-sm bg-red-500 text-white">Test Button</button>
-                     : ''} */}
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                    <h5 className="font-medium text-black dark:text-white">
+                    </h5>
+                    <p className="text-sm"> {record.id == 0 ? '' : record.status == 1 ? 'Merging' : record.status == 2 ? 'Uploading' : record.status == 0 ? 'Recording' : 'Completed'}</p>
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                    <h5 className="font-medium text-black dark:text-white">
+                    </h5>
+                    <p className="text-sm"> {record.merge_percentage}</p>
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                    <h5 className="font-medium text-black dark:text-white">
+                    </h5>
+                    <p className="text-sm"> {record.upload_percentage}</p>
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                    <h5 className="font-medium text-black dark:text-white">
 
-                    {element['status'] == 0 ?
-                      <button
-                        type="button" 
-                        className="text-sm bg-bodydark text-center dark:text-white font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
-                        onClick={() => stopRecord(element['pi_id'], element['batch_id'])}
-                      >
-                        Stop
-                      </button> : ''}
 
-                  </h5>
-                  {/* <p className="text-sm"> {element['audio_size']}</p> */}
-                </td>
-              </tr>
+                      {record.status == 0 ?
+                        <button
+                          type="button"
+                          className="text-sm bg-bodydark text-center dark:text-white font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
+                          onClick={() => stopRecord(record.pi_id, record.batch_id)}
+                        >
+                          Stop
+                        </button> : record.id == 0 ? <button
+                          type="button"
+                          className="text-sm bg-bodydark text-center dark:text-white font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
+                          onClick={() => startRecord(record.pi_id)}
+                        >
+                          Start
+                        </button> : ''}
+
+                    </h5>
+                  </td>
+                </tr>
+              ))
             ))}
           </tbody>
         </table>

@@ -6,7 +6,7 @@ import axios from 'axios';
 const TableThree = () => {
   const [datas, recordingData] = useState([]);
   const [allPiDatas, piData] = useState([]);
-  const [startAction, recStartAction] = useState(false);
+  const [startAction, recStartAction] = useState(true);
   const [styleLoader, hideLoader] = useState('none');
   const piId = useParams();
   useEffect(() => {
@@ -37,12 +37,20 @@ const TableThree = () => {
           if (filterData && filterData.recordings) {
             hideLoader('none');
             recordingData(filterData.recordings);
-            if (Array.isArray(filterData.recordings) && filterData.recordings.some((recStatus) => recStatus.status != 0)) {
-              recStartAction(true);
-              console.log('recStartAction set to true');
-          } else {
-              console.log('No recordings with status != 0');
-          }
+            console.log(filterData.recordings);
+            // if (Array.isArray(filterData.recordings) && filterData.recordings.some((recStatus) => recStatus.status != 0)) {
+            //   recStartAction(true);
+            //   console.log('recStartAction set to true');
+            // } else {
+            //   console.log('No recordings with status != 0');
+            // }
+            var stas= 0;
+            filterData.recordings.map((record)=>{
+              if(record['status'] ==0){
+                // stas+=1;
+                recStartAction(false);
+              }
+            })
           } else {
             piData(filterData);
             // hideLoader('block');
@@ -59,7 +67,7 @@ const TableThree = () => {
   const startRecord = () => {
     var payload = {
       "type": "rec_start",
-      "id": piId,
+      "id": piId['id'],
       "batch_id": '1234'
     }
     axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
@@ -166,7 +174,7 @@ const TableThree = () => {
                     {element['status'] == 0 ?
                       <button
                         type="button"
-                        className="text-sm bg-bodydark text-center dark:text-white font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
+                        className="text-sm bg-bodydark dark:text-white font-medium rounded-lg px-5 py-2.5 text-center me-2 mb-2"
                         onClick={() => stopRecord(element['batch_id'])}
                       >
                         Stop
@@ -177,7 +185,7 @@ const TableThree = () => {
               </tr>
             ))}
             {startAction && (
-              <tr  className="w-full bg-gray">
+              <tr className="w-full bg-gray">
                 <td colSpan={5} className='text-center text-success'>
                   Start New Rec
                 </td>
