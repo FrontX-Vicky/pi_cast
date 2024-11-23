@@ -14,7 +14,10 @@
     "url": "https://tailadmin.com"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.5",
+    "@emotion/styled": "^11.13.5",
     "@lordicon/react": "^1.10.1",
+    "@mui/material": "^6.1.8",
     "@react-icons/all-files": "^4.1.0",
     "apexcharts": "^3.41.0",
     "axios": "^1.7.7",
@@ -26,6 +29,7 @@
     "moment": "^2.30.1",
     "pusher-js": "^8.4.0-rc2",
     "react": "^18.2.0",
+    "react-analytics-charts": "^1.2.14",
     "react-apexcharts": "^1.4.1",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1",
