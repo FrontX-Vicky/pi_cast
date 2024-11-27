@@ -11,6 +11,7 @@ const DevicesPi = lazy(() => import('../pages/DevicesPi'));
 const Alerts = lazy(() => import('../pages/UiElements/Alerts'));
 const pi_cast = lazy(() => import('../pages/Pi_Cast'));
 const all_pi = lazy(() => import('../pages/AllPis'));
+const timer = lazy(() => import('../pages/TimerFnc'));
 const Buttons = lazy(() => import('../pages/UiElements/Buttons'));
 
 const coreRoutes = [
@@ -73,6 +74,11 @@ const coreRoutes = [
     path: '/All-Pis',
     title: 'All-pi',
     component: all_pi,
+  },
+  {
+    path: '/timer',
+    title: 'All-timer',
+    component: timer,
   },
 ];
 

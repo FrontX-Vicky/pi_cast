@@ -11,6 +11,11 @@ import { FaRegPlayCircle } from "react-icons/fa";
 import { RiDeleteBin6Fill } from "react-icons/ri";
 import { TbArrowMerge } from "react-icons/tb";
 import { FaRegCircleStop } from "react-icons/fa6";
+import { RiShutDownLine } from "react-icons/ri";
+import { BsBootstrapReboot } from "react-icons/bs";
+import { GrPowerReset } from "react-icons/gr";
+
+import { MdCleaningServices } from "react-icons/md";
 import { DateTime } from 'luxon';
 
 import LinearProgress from '@mui/material/LinearProgress';
@@ -26,8 +31,10 @@ const Pi_Casting = () => {
   // const [availablePi, setavailablePi] = useState([]);
   let allPis = {};
   const [datas, setDatas] = useState([]);
+
   const [recordings, setRecordings] = useState<{ [key: string]: any }>({});
   const [styleLoader, hideLoader] = useState('block');
+  const [isLoading, setLoading] = useState(false);
   useEffect(() => {
     var pusher = new Pusher('i0fxppvqjbvvfcrxzwhz', {
       cluster: 'mt1',
@@ -38,7 +45,7 @@ const Pi_Casting = () => {
       forceTLS: true
     });
     // Subscribe to a channel and log incoming events
-    var channel = pusher.subscribe('pi_connect');
+    var channel = pusher.subscribe('pi_cast');
     // Log all events to the console
     channel.bind_global(function (eventName, data) {
       if (data.message) {
@@ -117,6 +124,27 @@ const Pi_Casting = () => {
     });
   }, []);
 
+  const loaderIcon = <svg
+  className="animate-spin h-5 w-5 text-white"
+  xmlns="http://www.w3.org/2000/svg"
+  fill="none"
+  viewBox="0 0 24 24"
+>
+  <circle
+    className="opacity-25"
+    cx="12"
+    cy="12"
+    r="10"
+    stroke="currentColor"
+    strokeWidth="4"
+  ></circle>
+  <path
+    className="opacity-75"
+    fill="currentColor"
+    d="M4 12a8 8 0 018-8v8H4z"
+  ></path>
+</svg>
+
   useEffect(() => {
     return () => {
       Object.values(timerRefs.current).forEach(clearTimeout);
@@ -125,6 +153,7 @@ const Pi_Casting = () => {
   }, []);
 
   const stopRecord = (pi_id, batch_id) => {
+    setLoading(true);
     var payload = {
       "type": "rec_stop",
       "id": pi_id,
@@ -133,6 +162,7 @@ const Pi_Casting = () => {
     axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
       try {
         if (response) {
+          setLoading(false);
           console.log('Successfully stopped');
         } else {
           console.log('Something went wrong is Api response');
@@ -145,6 +175,7 @@ const Pi_Casting = () => {
   };
 
   const startRecord = (pi_id) => {
+    setLoading(true);
     var payload = {
       "type": "rec_start",
       "id": pi_id,
@@ -154,7 +185,7 @@ const Pi_Casting = () => {
       try {
         // Access the response data directly, no need for JSON.parse()
         const res = response.data;
-
+        setLoading(false);
         if (res && res['serial_no']) {
           // Use filter to remove the pi_id from availablePi
           setavailablePi((prevAvailablePi) => {
@@ -176,6 +207,25 @@ const Pi_Casting = () => {
 
   };
 
+  const clearRecord = (pi_id) => {
+    var payload = {
+      "type": "clear_recordings",
+      "id": pi_id
+    }
+    axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
+      try {
+        if (response) {
+          console.log('Successfully Clear');
+        } else {
+          console.log('Something went wrong is Api response');
+        }
+      } catch (err) {
+        console.log('Error Occurred while making an API request');
+      }
+
+    });
+  }
+
   const startMerging = (pi_id, filename) => {
     var payload = {
       "type": "merge",
@@ -186,6 +236,63 @@ const Pi_Casting = () => {
       try {
         if (response) {
           console.log('Successfully Merging Start');
+        } else {
+          console.log('Something went wrong is Api response');
+        }
+      } catch (err) {
+        console.log('Error Occured while making an API request');
+      }
+
+    });
+  }
+
+  const reboot = (pi_id) => {
+    var payload = {
+      "type": "reboot",
+      "id": pi_id
+    }
+    axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
+      try {
+        if (response) {
+          console.log('Successfully Reboot');
+        } else {
+          console.log('Something went wrong is Api response');
+        }
+      } catch (err) {
+        console.log('Error Occured while making an API request');
+      }
+
+    });
+  }
+
+  const shutDown = (pi_id) => {
+    var payload = {
+      "type": "shutdown",
+      "id": pi_id
+    }
+    axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
+      try {
+        if (response) {
+          console.log('Successfully ShutDown');
+        } else {
+          console.log('Something went wrong is Api response');
+        }
+      } catch (err) {
+        console.log('Error Occured while making an API request');
+      }
+
+    });
+  }
+
+  const reFresh = (pi_id)=>{
+    var payload = {
+      "type": "refresh",
+      "id": pi_id
+    }
+    axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
+      try {
+        if (response) {
+          console.log('Successfully Pi refresh');
         } else {
           console.log('Something went wrong is Api response');
         }
@@ -216,6 +323,21 @@ const Pi_Casting = () => {
     });
   }
   // console.log(datas);
+
+  const globalFunc = (payload)=>{
+    axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
+      try {
+        if (response) {
+          console.log('Successfully Going To '+  payload.action.toupperCase()); 
+        } else {
+          console.log('Something went wrong is Api response');
+        }
+      } catch (err) {
+        console.log('Error Occured while making an API request');
+      }
+    });
+  }
+
   return (
 
     <>
@@ -246,10 +368,10 @@ const Pi_Casting = () => {
                   Date
                 </th>
                 <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                  Audio Size
+                  Video Size
                 </th>
                 <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                  Video Size
+                  Audio Size
                 </th>
                 <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                   Duration
@@ -263,7 +385,7 @@ const Pi_Casting = () => {
                 <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                   Upload Percentage
                 </th>
-                <th className="min-w-[160px] py-4 px-4 font-medium text-black dark:text-white">
+                <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white">
                   Actions
                 </th>
               </tr>
@@ -281,8 +403,6 @@ const Pi_Casting = () => {
                       </div>
                     </td>
                     <td className="border-b border-[#eee] py-5 dark:border-strokedark ">
-                      <h5 className="font-medium text-black dark:text-white">
-                      </h5>
                       <p className="text-sm text-center"> {record.pi_id}</p>
                     </td>
                     <td className="text-sm text-center align-middle border-b border-[#eee] py-5 dark:border-strokedark">
@@ -300,42 +420,28 @@ const Pi_Casting = () => {
                       )}
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <h5 className="font-medium text-black dark:text-white">
-                      </h5>
                       <p className="text-sm text-center"> {record.batch_id}</p>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <h5 className="font-medium text-black dark:text-white">
-                      </h5>
                       <p className="text-sm text-center">
                         {record.date && DateTime.fromFormat(record.date, 'yyyy-MM-dd HH:mm:ss').toFormat('dd-MM-yyyy HH:mm:ss a')}
                       </p>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <h5 className="font-medium text-black dark:text-white">
-                      </h5>
-                      <p className="text-sm text-center"> {record.audio_size}</p>
-                    </td>
-                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <h5 className="font-medium text-black dark:text-white">
-                      </h5>
                       <p className="text-sm text-center"> {record.video_size}</p>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <h5 className="font-medium text-black dark:text-white">
-                      </h5>
+                      <p className="text-sm text-center"> {record.audio_size}</p>
+                    </td>
+                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                       <p className="text-sm text-center"> {record.duration}</p>
                     </td>
 
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <h5 className="font-medium text-black dark:text-white">
-                      </h5>
                       <p className="text-sm text-center"> {record.id == 0 ? '' : record.status == 1 ? 'Merging' : record.status == 2 ? 'Uploading' : record.status == 0 ? 'Recording' : 'Completed'}</p>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <h5 className="font-medium text-black dark:text-white">
-                      </h5>
-                      <p className="text-sm text-center"> {<Box sx={{ width: '80%', textAlign: 'center' }}>
+                      <span className="text-sm text-center"> {<Box sx={{ width: '80%', textAlign: 'center' }}>
                         <Typography variant="body1" gutterBottom>
                         </Typography>
                         <Box sx={{ position: 'relative', display: 'inline-flex' }}>
@@ -365,13 +471,12 @@ const Pi_Casting = () => {
                             </Typography>
                           </Box>
                         </Box>
-                      </Box>}</p>
+                      </Box>}
+                      </span>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <h5 className="font-medium text-black dark:text-white">
-                      </h5>
                       {/* <p className="text-sm text-center">{record.status != 0 && record.id != 0 && <progress value={record.upload_percentage} max="100"></progress>}</p> */}
-                      <p className="text-sm text-center"> {<Box sx={{ width: '80%', textAlign: 'center' }}>
+                      <span className="text-sm text-center"> {<Box sx={{ width: '80%', textAlign: 'center' }}>
                         <Typography variant="body1" gutterBottom>
                         </Typography>
                         <Box sx={{ position: 'relative', display: 'inline-flex' }}>
@@ -400,37 +505,71 @@ const Pi_Casting = () => {
                             </Typography>
                           </Box>
                         </Box>
-                      </Box>}</p>
+                      </Box>}</span>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                       <h5 className="font-medium text-black dark:text-white">
                         {record.status == 0 ?
                           <button
                             type="button"
-                            className="text-sm bg-orange-300 border-b-2 border-orange-800 text-center dark:text-white font-medium rounded-lg px-4 py-2 me-2 mb-2"
-                            onClick={() => stopRecord(record.pi_id, record.batch_id)}
-                          >
-                            <FaRegCircleStop style={{ width: '25px', height: '24px', display: 'block', margin: '0 auto'}} />
-                          </button> : record.id == 0 ? <button
+                            // className="text-sm text-black bg-orange-300 border-b-2 border-orange-800 text-center dark:text-white font-medium rounded-lg px-4 py-2 me-2 mb-2"
+                            className={`text-sm text-black bg-orange-300 border-b-2 border-orange-800 text-center dark:text-white font-medium rounded-lg px-4 py-2 me-2 mb-2 ${isLoading? "opacity-50 cursor-not-allowed" : ""}`}
+                            
+                            onClick={() => stopRecord(record.pi_id, record.batch_id)} disabled={isLoading}
+                          >{isLoading ? (
+                            loaderIcon
+                          ) : (
+                            <FaRegCircleStop className="mr-2" />
+                          )}
+                            {/* <FaRegCircleStop /> */}
+                          </button> : record.id == 0 ? <div><button
                             type="button"
-                            className="text-sm bg-green-400 border-green-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2"
-                            onClick={() => startRecord(record.pi_id)}
+                            className={`text-sm text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading? "opacity-50 cursor-not-allowed" : ""}`}
+                            onClick={() => startRecord(record.pi_id)} disabled={isLoading}
                           >
-                            <FaRegPlayCircle style={{ width: '25px', height: '24px', display: 'block', margin: '0 auto'}}/>
-                          </button> : record.status != 0 ? <div><button
+                            {isLoading ? (
+                            loaderIcon
+                          ) : (
+                            <FaRegPlayCircle className="mr-2" />
+                          )}
+                            {/* <FaRegPlayCircle /> */}
+                          </button><button
                             type="button"
-                            className="text-sm bg-blue-400 border-blue-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2"
+                            className="text-sm text-black bg-orange-400 border-b-orange-900 border-b-2 w-12 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2"
+                            onClick={() => clearRecord(record.pi_id)}
+                          ><MdCleaningServices /></button><button
+                            type="button"
+                            className="text-sm text-black bg-red-300 border-b-red-700 border-b-2 w-12 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2"
+                            onClick={() => reboot(record.pi_id)}>
+                              <BsBootstrapReboot />
+                              </button>
+                            <button
+                              type="button"
+                              className="text-sm bg-red-400 border-b-red-900 text-black border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2"
+                              onClick={() => shutDown(record.pi_id)}
+                            ><RiShutDownLine /></button><button
+                              type="button"
+                              className="text-sm border-b-2 bg-blue-200 border-b-blue-700 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2"
+                              onClick={() => reFresh(record.pi_id)}
+                            >
+                              <GrPowerReset />
+                            </button></div>  : record.status != 0 ? <div><button
+                            type="button"
+                            className="text-sm text-black bg-blue-400 border-blue-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2"
                             onClick={() => startMerging(record.pi_id, record.filename)}
                           >
-                            <TbArrowMerge style={{ width: '25px', height: '24px', display: 'block', margin: '0 auto'}}/>
+                            <TbArrowMerge />
                           </button><button
-                          type="button"
-                          className="text-sm bg-red-400 border-r-red-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2"
-                          onClick={() => trash(record.pi_id, record.filename)}
-                        >
-                          <RiDeleteBin6Fill style={{ width: '25px', height: '24px', display: 'block', margin: '0 auto'}}/>
-                        </button> </div>: record.status == 1 ? '' : ''}
+                              type="button"
+                              className="text-sm border-b-2 bg-red-200 border-b-red-700 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2"
+                              onClick={() => trash(record.pi_id, record.filename)}
+                            >
+                              <RiDeleteBin6Fill />
+                            </button></div> : record.status == 1 ? '' : ''}
                       </h5>
+                      {/* <tr> */}
+
+                      {/* </tr> */}
                     </td>
                   </tr>
                 ))
