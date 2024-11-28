@@ -33,10 +33,11 @@ function TypoGraphy(props) {
                         }}
                     />
                     <CircularProgress
-                        className="font-medium text-black dark:text-white"
+                        className={`dark:text-${{bgColoring}}`}
                         variant="determinate"
                         value={props.percentage}
                         size={50} // Adjust the size as needed
+                        // color='success'
                         color={bgColoring}
                         thickness={4.6}
                     />
