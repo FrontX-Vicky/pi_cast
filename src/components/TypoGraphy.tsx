@@ -2,6 +2,19 @@ import { Box, CircularProgress, Typography } from '@mui/material'
 import React from 'react'
 
 function TypoGraphy(props) {
+    let bgColoring = '';
+    var percent = parseInt(props.percentage);
+    if(props.type == 'storage'){
+        if(percent>=60){
+            bgColoring = 'warning';
+        }else if(percent < 10){
+            bgColoring = 'error';
+        }else{
+            bgColoring = 'info';
+        }
+    }else{
+        bgColoring = 'success';
+    }
     return (
         <>
             <Box sx={{ width: '80%', textAlign: 'center' }}>
@@ -10,20 +23,21 @@ function TypoGraphy(props) {
                 <Box sx={{ position: 'relative', display: 'inline-flex' }}>
                 <CircularProgress
                         variant="determinate"
-                        value={100} // 100% for background (i.e., full circle)
+                       // 100% for background (i.e., full circle)
                         size={50} // Adjust the size as needed
+                        value={100}
                         thickness={4.6}
                         sx={{
-                            color: 'grey', // Background color (orange)
+                            color: '#f4f4f4', // Background color (orange)
                             position: 'absolute',
                         }}
                     />
                     <CircularProgress
                         className="font-medium text-black dark:text-white"
                         variant="determinate"
-                        value={props.total}
+                        value={props.percentage}
                         size={50} // Adjust the size as needed
-                        color='warning'
+                        color={bgColoring}
                         thickness={4.6}
                     />
                     <Box
