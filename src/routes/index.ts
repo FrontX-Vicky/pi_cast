@@ -12,6 +12,8 @@ const Alerts = lazy(() => import('../pages/UiElements/Alerts'));
 const pi_cast = lazy(() => import('../pages/Pi_Cast'));
 const all_pi = lazy(() => import('../pages/AllPis'));
 const timer = lazy(() => import('../pages/TimerFnc'));
+const typoGraphy = lazy(() => import('../components/TypoGraphy'));
+const storageChart = lazy(() => import('../components/StorageUsageChart'));
 const Buttons = lazy(() => import('../pages/UiElements/Buttons'));
 
 const coreRoutes = [
@@ -79,6 +81,16 @@ const coreRoutes = [
     path: '/timer',
     title: 'All-timer',
     component: timer,
+  },
+  {
+    path: '/typoGraphy',
+    title: 'Typo-Graphy',
+    component: typoGraphy,
+  },
+  {
+    path: '/storageChart',
+    title: 'storage-Chart',
+    component: storageChart,
   },
 ];
 
