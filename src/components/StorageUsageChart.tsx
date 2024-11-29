@@ -1,25 +1,44 @@
 import { ApexOptions } from "apexcharts";
-import React, { useState } from "react";
+import React from "react";
 import ReactApexChart from "react-apexcharts";
 
-interface ChartFourState {
-  series: number[]; // Array of values for the circular chart
+interface StorageUsageChartProps {
+  data: {
+    free: number;
+    total: number;
+    used: number;
+  };
+  type: string;
 }
 
-const StorageUsageChart: React.FC = () => {
-  const [state, setState] = useState<ChartFourState>({
-    series: [55, 30, 15], // Example data: percentages for Used, Free, and Other
-  });
+const StorageUsageChart: React.FC<StorageUsageChartProps> = ({ data, type }) => {
+  // Check for valid data.total to avoid division by zero
+  const total = data.total || 1; // Default to 1 if total is 0 or undefined
+
+  // Calculate percentages
+  const usedPercentage = Math.round((data.used / total) * 100);
+  const freePercentage = Math.round((data.free / total) * 100);
+
+  // Log values for debugging
+  console.log(`Rendering ${type} chart`);
+  console.log("Data:", data);
+  console.log("Used Percentage:", usedPercentage);
+  console.log("Free Percentage:", freePercentage);
+
+  // Compute the series directly
+  const series = [usedPercentage, freePercentage];
 
   const options: ApexOptions = {
     chart: {
-      type: "donut", // Change type to "donut" for a circular chart
+      type: "donut",
       height: 350,
     },
-    labels: ["Used RAM", "Free RAM", "Other"], // Add meaningful labels
-    colors: ["#3C50E0", "#00E396", "#FF4560"], // Customize colors for segments
+    labels: [`Used ${type.toUpperCase()}`, `Free ${type.toUpperCase()}`],
+    colors: ["#8ebae9", "#e4a774"],
     dataLabels: {
       enabled: true,
+      // enabled: false,
+      formatter: (val) => `${val.toFixed(2)}%`,
     },
     legend: {
       show: true,
@@ -27,7 +46,7 @@ const StorageUsageChart: React.FC = () => {
     },
     tooltip: {
       y: {
-        formatter: (val) => `${val}%`, // Add percentage suffix
+        formatter: (val) => `${val.toFixed(2)}%`,
       },
     },
   };
@@ -36,7 +55,7 @@ const StorageUsageChart: React.FC = () => {
     <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pt-7.5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5">
       <div>
         <h3 className="text-xl font-semibold text-black dark:text-white">
-          RAM Usage Analytics
+          {type} Usage Analytics
         </h3>
       </div>
 
@@ -44,8 +63,8 @@ const StorageUsageChart: React.FC = () => {
         <div id="chartFour" className="-ml-5">
           <ReactApexChart
             options={options}
-            series={state.series}
-            type="donut" // Circular chart type
+            series={series}
+            type="donut"
             height={300}
           />
         </div>
