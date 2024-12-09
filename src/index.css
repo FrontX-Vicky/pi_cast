@@ -163,3 +163,28 @@ span.flatpickr-weekday,
 [x-cloak] {
   display: none !important;
 }
+
+.rect-animation {
+  animation: fade-in 2s ease-in-out forwards;
+}
+
+.circle-animation {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: draw 5s linear forwards;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

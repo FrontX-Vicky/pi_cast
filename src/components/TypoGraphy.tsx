@@ -5,10 +5,10 @@ function TypoGraphy(props) {
     let bgColoring = '';
     var percent = parseInt(props.percentage);
     if(props.type == 'storage'){
-        if(percent>=60){
-            bgColoring = 'warning';
-        }else if(percent < 10){
-            bgColoring = 'error';
+        if(percent<=60){
+            bgColoring = 'success';
+        }else if(percent >60 && percent <=80){
+            bgColoring = 'danger';
         }else{
             bgColoring = 'info';
         }

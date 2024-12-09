@@ -20,10 +20,10 @@ const StorageUsageChart: React.FC<StorageUsageChartProps> = ({ data, type }) => 
   const freePercentage = Math.round((data.free / total) * 100);
 
   // Log values for debugging
-  console.log(`Rendering ${type} chart`);
-  console.log("Data:", data);
-  console.log("Used Percentage:", usedPercentage);
-  console.log("Free Percentage:", freePercentage);
+  // console.log(`Rendering ${type} chart`);
+  // console.log("Data:", data);
+  // console.log("Used Percentage:", usedPercentage);
+  // console.log("Free Percentage:", freePercentage);
 
   // Compute the series directly
   const series = [usedPercentage, freePercentage];
@@ -31,18 +31,35 @@ const StorageUsageChart: React.FC<StorageUsageChartProps> = ({ data, type }) => 
   const options: ApexOptions = {
     chart: {
       type: "donut",
-      height: 350,
+      height: 250,
+    },
+    plotOptions: {
+      pie: {
+        donut: {
+          size: '75%',
+          background: 'transparent',
+        },
+      },
     },
     labels: [`Used ${type.toUpperCase()}`, `Free ${type.toUpperCase()}`],
     colors: ["#8ebae9", "#e4a774"],
-    dataLabels: {
-      enabled: true,
-      // enabled: false,
-      formatter: (val) => `${val.toFixed(2)}%`,
-    },
+      dataLabels: {
+        enabled: true,
+        formatter: (val) => `${val.toFixed(2)}%`,
+        style: {
+          colors: ['#02070d'], // Set the text color
+          fontSize: '14px',    // Change the font size
+          fontFamily: 'Arial, sans-serif', // Change the font family
+          fontWeight: 'bold',  // Set the font weight
+        },
+        dropShadow: {
+          enabled: false, // Disable the shadow effect on data labels
+        },
+      },
+      
     legend: {
       show: true,
-      position: "top",
+      position: "bottom",
     },
     tooltip: {
       y: {
@@ -54,18 +71,17 @@ const StorageUsageChart: React.FC<StorageUsageChartProps> = ({ data, type }) => 
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pt-7.5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5">
       <div>
-        <h3 className="text-xl font-semibold text-black dark:text-white">
+        <h3 className="text-xl font-semibold text-black dark:text-white text-center mb-4">
           {type} Usage Analytics
         </h3>
       </div>
-
       <div className="mb-2">
         <div id="chartFour" className="-ml-5">
           <ReactApexChart
             options={options}
             series={series}
             type="donut"
-            height={300}
+            height={250}
           />
         </div>
       </div>

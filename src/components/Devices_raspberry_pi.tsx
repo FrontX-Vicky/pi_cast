@@ -58,9 +58,11 @@ const Devices_raspberry_pi = () => {
                     <tbody className="bg-gray-2 text-center dark:bg-meta-4">
                         {raspberry_pi.map((respId) => (
                             <tr key={respId.id}>
-                                <td className="relative h-14 w-26 rounded-full flex items-center justify-center dark:text-white text-sm">
-                                    <img src={rpi} alt="User" style={{ height: '48px', width: '40px' }} />
-                                    <span className={`absolute right-2 bottom-3 h-3.5 w-3.5 rounded-full border-2 border-white ${respId['venue_id'] !== null ? 'bg-meta-3' : 'bg-meta-7'}`} />
+                                <td className="border-b border-[#eee] py-5 dark:border-strokedark">
+                                    <div className='flex justify-center'>
+                                        <img src={rpi} alt="User" style={{ height: '48px', width: '40px' }} />
+                                    </div>
+                                    {/* <span className={`absolute right-2 bottom-3 h-3.5 w-3.5 rounded-full border-2 border-white ${respId['venue_id'] !== null ? 'bg-meta-3' : 'bg-meta-7'}`} /> */}
                                 </td>
                                 <td className="border-b border-[#eee] py-5 dark:border-strokedark">
                                     <p className="text-sm"> {respId['id']}</p>

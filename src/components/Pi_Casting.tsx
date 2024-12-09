@@ -14,7 +14,7 @@ import { FaRegCircleStop } from "react-icons/fa6";
 import { RiShutDownLine } from "react-icons/ri";
 import { BsBootstrapReboot } from "react-icons/bs";
 import { GrPowerReset } from "react-icons/gr";
-
+import { LuRefreshCcwDot } from "react-icons/lu";
 import { MdCleaningServices } from "react-icons/md";
 import { DateTime } from 'luxon';
 import TypoGraphy from './TypoGraphy';
@@ -126,24 +126,24 @@ const Pi_Casting = () => {
   // }
 
   const loaderIcon = <svg
-  className="animate-spin h-5 w-5 text-white"
-  xmlns="http://www.w3.org/2000/svg"
-  fill="none"
-  viewBox="0 0 24 24"
->
-  <circle
-    className="opacity-25"
-    cx="12"
-    cy="12"
-    r="10"
-    stroke="currentColor"
-    strokeWidth="4"
-  ></circle>
-  <path
-    className="opacity-75"
-    fill="currentColor"
-    d="M4 12a8 8 0 018-8v8H4z"
-  ></path></svg>
+    className="animate-spin h-5 w-5 text-white"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+    ></circle>
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8v8H4z"
+    ></path></svg>
 
   useEffect(() => {
     return () => {
@@ -210,7 +210,7 @@ const Pi_Casting = () => {
     globalFunc(payload);
   }
 
-  const reFresh = (pi_id)=>{
+  const reFresh = (pi_id) => {
     setLoading(true);
     var payload = {
       "type": "refresh",
@@ -229,12 +229,13 @@ const Pi_Casting = () => {
     globalFunc(payload);
   }
 
-  const globalFunc = (payload)=>{
+  const globalFunc = (payload) => {
     axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
+      console.log(response);
       try {
         if (response) {
           // setLoading(false);
-          console.log('Successfully Going To '+  payload.action.toupperCase()); 
+          console.log('Successfully Going To ' + payload.type);
         } else {
           console.log('Something went wrong is Api response');
         }
@@ -249,19 +250,25 @@ const Pi_Casting = () => {
   return (
 
     <>
-      <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 ">
+      <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 overflow-hidden">
         <div style={{ display: styleLoader }}>
           {/* <Loader /> */}
         </div>
         <div className="max-w-full overflow-x-auto">
-          <table className="w-full table-auto">
+          <table className="w-full table-auto overflow-hidden">
             <thead>
               <tr className="bg-gray-2 text-center dark:bg-meta-4">
                 <th className="min-w-[110px] max-h-242.5 py-4 px-4 font-medium text-black dark:text-white">
                   Rec Status
                 </th>
-                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                <th className="min-w-[80px] py-4 px-4 font-medium text-black dark:text-white">
                   Pi Id
+                </th>
+                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                  Storage
+                </th>
+                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                  Ram
                 </th>
                 <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
                   Devices
@@ -275,12 +282,7 @@ const Pi_Casting = () => {
                 <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                   Video/Audio Size
                 </th>
-                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                  Storage
-                </th>
-                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                  Ram
-                </th>
+
                 <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                   Duration
                 </th>
@@ -312,6 +314,16 @@ const Pi_Casting = () => {
                     <td className="border-b border-[#eee] py-5 dark:border-strokedark ">
                       <p className="text-sm text-center"> {record.pi_id}</p>
                     </td>
+                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                      <span className="text-sm text-center">
+                        <TypoGraphy percentage={((element['stats']['storage']['used_storage'] / element['stats']['storage']['total_storage']) * 100)} total={element['stats']['storage']['total_storage']} type='storage' />
+                      </span>
+                    </td>
+                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                      <span className="text-sm text-center">
+                        <TypoGraphy percentage={((element['stats']['ram']['used_ram'] / element['stats']['ram']['total_ram']) * 100)} total={element['stats']['ram']['total_ram']} type='storage' />
+                      </span>
+                    </td>
                     <td className="text-sm text-center align-middle border-b border-[#eee] py-5 dark:border-strokedark">
                       {element['devices'].camera == 1 ? (
                         <HiVideoCamera style={{ width: '20px', height: '24px', display: 'block', margin: '0 auto', color: '#34e37d' }} />
@@ -324,7 +336,7 @@ const Pi_Casting = () => {
                         <IoIosMicOff style={{ width: '22px', height: '24px', display: 'block', margin: '0 auto', color: '#d63c49' }} />
                       )}
                     </td>
-                  
+
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                       <p className="text-sm text-center"> {record.batch_id}</p>
                     </td>
@@ -336,115 +348,137 @@ const Pi_Casting = () => {
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                       <p className="text-sm text-center"> {record.video_size}/{record.audio_size}</p>
                     </td>
-                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
-                      <span className="text-sm text-center">
-                      <TypoGraphy percentage = {((element['stats']['storage']['used_storage']/element['stats']['storage']['total_storage'])*100)} total= {element['stats']['storage']['total_storage']} type = 'storage'/>
-                        </span>
-                      </td>
-                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <span className="text-sm text-center">
-                      <TypoGraphy percentage = {((element['stats']['ram']['used_ram']/element['stats']['ram']['total_ram'])*100)} total= {element['stats']['ram']['total_ram']}  type = 'storage'/>
-                        </span>
-                    </td>
+
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                       <p className="text-sm text-center"> {record.duration}</p>
                     </td>
 
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <p className="text-sm text-center"> {record.id == 0 ? '' : record.status == 1 ? 'Merging' : record.status == 2 ? 'Uploading' : record.status == 0 ? 'Recording' : 'Completed'}</p>
+                      <p className="text-sm text-center"> {record.id == 0 ? 'Idle' : record.status == 1 ? 'Merging' : record.status == 2 ? 'Uploading' : record.status == 0 ? 'Recording' : 'Completed'}</p>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <span className="text-sm text-center"> <TypoGraphy percentage = {record.merge_percentage} total={record.merge_percentage}  type = 'upload'/>
+                      <span className="text-sm text-center"> <TypoGraphy percentage={record.merge_percentage} total={record.merge_percentage} type='upload' />
                       </span>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <span className="text-sm text-center"> <TypoGraphy percentage = {record.upload_percentage} total={record.upload_percentage} type = 'upload'/></span>
+                      <span className="text-sm text-center"> <TypoGraphy percentage={record.upload_percentage} total={record.upload_percentage} type='upload' /></span>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                       <h5 className="font-medium text-black dark:text-white">
+
                         {record.status == 0 ?
                           <button
                             type="button"
-                            className={`text-sm text-black bg-orange-300 border-b-2 border-orange-800 text-center dark:text-white font-medium rounded-lg px-4 py-2 me-2 mb-2 ${isLoading? "opacity-50 cursor-not-allowed" : ""}`}
-                            
-                            onClick={() => stopRecord(record.pi_id, record.batch_id)} disabled={isLoading}
-                          >{isLoading ? (
-                            loaderIcon
-                          ) : (
-                            <FaRegCircleStop />
-                          )}
+                            className={`text-sm text-black bg-orange-300 border-b-2 border-orange-800 text-center dark:text-white font-medium rounded-lg px-4 py-2 me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                            data-twe-toggle="tooltip" onClick={() => stopRecord(record.pi_id, record.batch_id)} disabled={isLoading}
+                            data-twe-placement="top"
+                            data-twe-ripple-init
+                            data-twe-ripple-color="light"
+                            title="Stop">
+                            {isLoading ? (
+                              loaderIcon
+                            ) : (
+                              <FaRegCircleStop />
+                            )}
                           </button> : record.id == 0 ? <div><button
                             type="button"
-                            className={`text-sm text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading? "opacity-50 cursor-not-allowed" : ""}`}
-                            onClick={() => startRecord(record.pi_id)} disabled={isLoading}
-                          >
+                            className={`text-sm text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                            data-twe-toggle="tooltip" onClick={() => startRecord(record.pi_id)} disabled={isLoading}
+                            data-twe-placement="top"
+                            data-twe-ripple-init
+                            data-twe-ripple-color="light"
+                            title="Start">
                             {isLoading ? (
-                            loaderIcon
-                          ) : (
-                            <FaRegPlayCircle />
-                          )}
+                              loaderIcon
+                            ) : (
+                              <FaRegPlayCircle />
+                            )}
                           </button><button
                             type="button"
-                            className={`text-sm text-black bg-orange-400 border-b-orange-900 border-b-2 w-12 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading? "opacity-50 cursor-not-allowed" : ""}`}
+                            className={`text-sm text-black bg-orange-400 border-b-orange-900 border-b-2 w-12 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                             onClick={() => clearRecord(record.pi_id)} disabled={isLoading}
-                          >
-                            {isLoading ? (
-                            loaderIcon
-                          ) : (
-                            <MdCleaningServices />
-                          )}
-                            
-                            </button><button
-                            type="button"
-                            className={`text-sm text-black bg-cyan-500 border-b-cyan-800 border-b-2 w-12 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading? "opacity-50 cursor-not-allowed" : ""}`}
-                            onClick={() => reboot(record.pi_id)} disabled={isLoading}>
+                            data-twe-toggle="tooltip"
+                            data-twe-placement="top"
+                            data-twe-ripple-init
+                            data-twe-ripple-color="light"
+                            title="Clean">
                               {isLoading ? (
-                            loaderIcon
-                          ) : (
-                            <BsBootstrapReboot />
-                          )}
-                              </button>
+                                loaderIcon
+                              ) : (
+                                <MdCleaningServices />
+                              )}
+                            </button> <button
+                              type="button"
+                              className={`text-sm text-black bg-cyan-500 border-b-cyan-800 border-b-2 w-12 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              onClick={() => reboot(record.pi_id)} disabled={isLoading}
+                              data-twe-toggle="tooltip"
+                              data-twe-placement="top"
+                              data-twe-ripple-init
+                              data-twe-ripple-color="light"
+                              title="Reboot">
+                              {isLoading ? (
+                                loaderIcon
+                              ) : (
+                                <BsBootstrapReboot />
+                              )}
+                            </button>
                             <button
                               type="button"
-                              className={`text-sm bg-red-400 border-b-red-900 text-black border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`text-sm bg-red-400 border-b-red-900 text-black border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => shutDown(record.pi_id)} disabled={isLoading}
-                            >
-                               {isLoading ? (
-                            loaderIcon
-                          ) : (
-                            <RiShutDownLine />
-                          )}
-                              </button><button
+                              data-twe-toggle="tooltip"
+                              data-twe-placement="top"
+                              data-twe-ripple-init
+                              data-twe-ripple-color="light"
+                              title="Shutdown">
+                              {isLoading ? (
+                                loaderIcon
+                              ) : (
+                                <RiShutDownLine />
+                              )}
+                            </button> <button
                               type="button"
-                              className={`text-sm border-b-2 bg-blue-200 border-b-blue-700 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`text-sm border-b-2 bg-blue-200 border-b-blue-700 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => reFresh(record.pi_id)} disabled={isLoading}
-                            >
-                               {isLoading ? (
-                            loaderIcon
-                          ) : (
-                            <GrPowerReset />
-                          )}
-                            </button></div>  : record.status != 0 ? <div><button
-                            type="button"
-                            className={`text-sm text-black bg-blue-400 border-blue-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading? "opacity-50 cursor-not-allowed" : ""}`}
-                            onClick={() => startReMerging(record.pi_id, record.filename)} disabled={isLoading}
-                          >
-                             {isLoading ? (
-                            loaderIcon
-                          ) : (
-                            <TbArrowMerge />
-                          )}
-                          </button><br/><button
+                              data-twe-toggle="tooltip"
+                              data-twe-placement="top"
+                              data-twe-ripple-init
+                              data-twe-ripple-color="light"
+                              title="Refresh">
+                              {isLoading ? (
+                                loaderIcon
+                              ) : (
+                                <LuRefreshCcwDot />
+                              )}
+                            </button> </div> : record.status != 0 ? <div><button
                               type="button"
-                              className={`text-sm border-b-2 bg-red-400 border-b-red-900 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`text-sm text-black bg-blue-400 border-blue-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              onClick={() => startReMerging(record.pi_id, record.filename)} disabled={isLoading}
+                              data-twe-toggle="tooltip"
+                              data-twe-placement="top"
+                              data-twe-ripple-init
+                              data-twe-ripple-color="light"
+                              title="ReMerge">
+                              {isLoading ? (
+                                loaderIcon
+                              ) : (
+                                <TbArrowMerge />
+                              )}
+                            </button> <br /><button
+                              type="button"
+                              className={`text-sm border-b-2 bg-red-400 border-b-red-900 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => trash(record.pi_id, record.filename)} disabled={isLoading}
-                            >
-                               {isLoading ? (
-                            loaderIcon
-                          ) : (
-                            <RiDeleteBin6Fill />
-                          )}
-                            </button></div> : record.status == 1 ? '' : ''}
+                              data-twe-toggle="tooltip"
+                              data-twe-placement="top"
+                              data-twe-ripple-init
+                              data-twe-ripple-color="light"
+                              title="Trash">
+                                {isLoading ? (
+                                  loaderIcon
+                                ) : (
+                                  <RiDeleteBin6Fill />
+                                )}
+                              </button> </div> : record.status == 1 ? '' : ''}
                       </h5>
                     </td>
                   </tr>
