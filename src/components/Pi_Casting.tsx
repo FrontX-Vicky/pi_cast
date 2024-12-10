@@ -16,6 +16,8 @@ import { BsBootstrapReboot } from "react-icons/bs";
 import { GrPowerReset } from "react-icons/gr";
 import { LuRefreshCcwDot } from "react-icons/lu";
 import { MdCleaningServices } from "react-icons/md";
+import { MdOutlineSdStorage } from "react-icons/md";
+import { GrClearOption } from "react-icons/gr";
 import { DateTime } from 'luxon';
 import TypoGraphy from './TypoGraphy';
 const Pi_Casting = () => {
@@ -225,6 +227,15 @@ const Pi_Casting = () => {
       "type": "trash",
       "id": pi_id,
       "filename": filename,
+    }
+    globalFunc(payload);
+  }
+
+  const storageClear = (pi_id) => {
+    setLoading(true);
+    var payload = {
+      "type": "storage_clear",
+      "id": pi_id
     }
     globalFunc(payload);
   }
@@ -449,6 +460,21 @@ const Pi_Casting = () => {
                                 loaderIcon
                               ) : (
                                 <LuRefreshCcwDot />
+                              )}
+                            </button> <button
+                              type="button"
+                              className={`text-sm border-b-2 bg-pink-200 border-b-pink-900 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              onClick={() => storageClear(record.pi_id)} disabled={isLoading}
+                              data-twe-toggle="tooltip"
+                              data-twe-placement="top"
+                              data-twe-ripple-init
+                              data-twe-ripple-color="light"
+                              title="Clear Storage">
+                              {isLoading ? (
+                                loaderIcon
+                              ) : (
+                                // <MdOutlineSdStorage />
+                                <GrClearOption />
                               )}
                             </button> </div> : record.status != 0 ? <div><button
                               type="button"

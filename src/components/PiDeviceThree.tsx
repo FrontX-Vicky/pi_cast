@@ -1,8 +1,9 @@
 import Pusher from 'pusher-js';
-import { lazy, useEffect, useRef, useState } from 'react';
+import { lazy, useEffect, useRef, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import Loader from '../common/Loader';
 import axios from 'axios';
+import ReactPlayer from 'react-player'
 import StorageUsageChart from './StorageUsageChart';
 import rpi from '../images/logo/raspberry-pi-icon-transparent.png';
 import { HiVideoCamera } from "react-icons/hi2";
@@ -19,6 +20,11 @@ import { DateTime } from 'luxon';
 import TypoGraphy from './TypoGraphy';
 import { LuRefreshCcwDot } from "react-icons/lu";
 import { MdCleaningServices } from "react-icons/md";
+import GdriveModal from './GdriveModal';
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+} from 'material-react-table';
 const TableThree = () => {
   const [datas, recordingData] = useState([]);
   const [allPiDatas, piData] = useState([]);
@@ -35,6 +41,8 @@ const TableThree = () => {
   const [recodStats, setrecodStats] = useState('0');
   const [noStatusZero, setNoStatusZero] = useState('');
   const [cameraRecording, setCameraRecording] = useState('');
+  const [driveUrl, setDriveUrl] = useState('');
+  const [showModal, setShowModal] = useState(false);
   let stats = '';
   let devices = '';
   let filterPi = {};
@@ -166,9 +174,8 @@ const TableThree = () => {
     getCameraRecFunc();
   }, []);
 
-  // useEffect(() =>{
-  //   getCameraRecFunc();
-  // })
+
+
   const stopRecord = (pi_id, batch_id) => {
     setLoading(true);
     var payload = {
@@ -268,15 +275,31 @@ const TableThree = () => {
     };
     axios.post('https://api.tickleright.in/api/camRecData', payload).then((response) => {
       if (response.status === 200) {
-        setCameraRecording(response.data);
+        if (response.data.error == 0) {
+          setCameraRecording(response.data[0]);
+        } else {
+          setCameraRecording('');
+        }
       } else {
         setCameraRecording('');
       }
     });
   }
 
+  const handleOpenModal = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setDriveUrl('');
+  };
+
   const viewRec = (file_id) => {
-    var driveUrl = 'https://drive.google.com/file/d/'+ file_id +'/view';
+    setDriveUrl(file_id);
+    handleOpenModal();
+    <GdriveModal handleCloseModal={handleCloseModal} handleOpenModal={handleOpenModal} file_id={file_id} />
+    // setDriveUrl('https://drive.google.com/file/d/' + file_id + '/preview');
   }
 
   const loaderIcon = <svg
@@ -299,69 +322,62 @@ const TableThree = () => {
       d="M4 12a8 8 0 018-8v8H4z"
     ></path></svg>
 
-  // debugger;
   return (
     <>
-      {/* <div className='h-20 w-20'>
-      
-      </div> */}
       <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
         <div style={{ display: styleLoader }}>
           <Loader />
         </div>
         <div className='flex flex-row'>
-        <div className='basis-1/4 text-green-800 font-bold'>
-          {storage && storage != '' ?  
-            <StorageUsageChart data={storage} type='Storage' /> 
-            : 'No Data Found' }
-           </div>
-           <div className='basis-1/4 mx-6 text-green-800 font-bold'>
-          {ram && ram != '' ? 
-            <StorageUsageChart data={ram} type='ram' />
-            : 'No Data Found'}</div>
-            
-          {/* {ram != '' && <div className='basis-1/4 mx-6'>
-            <StorageUsageChart data={ram} type='RAM' />
-          </div>} */}
-          <div className='basis-1/4'>
+          <div className='basis-1/4 text-green-800 font-bold'>
+            {storage && storage != '' ?
+              <StorageUsageChart data={storage} type='Storage' />
+              : 'No Data Found'}
+          </div>
+          <div className='basis-1/4 mx-6 text-green-800 font-bold'>
+            {ram && ram != '' ?
+              <StorageUsageChart data={ram} type='Ram' />
+              : 'No Data Found'}</div>
+
+          <div className=''>
             <div className='box h-28 w-28 p-4 mt-4 shadow-6'>
-              {camera && camera == '1' ? 
-                <HiVideoCamera style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#34e37d' }} /> : <IoIosMicOff style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#e7344c' }}/>
+              {camera && camera == '1' ?
+                <HiVideoCamera style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#34e37d' }} /> : <IoIosMicOff style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#e7344c' }} />
               }
             </div>
             <div className='box h-28 w-28 p-4 mt-9 shadow-6'>
               {mic && mic == '1' ?
-                <IoIosMic style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#34e37d' }} /> : <HiVideoCameraSlash style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#e7344c' }}/>
+                <IoIosMic style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#34e37d' }} /> : <HiVideoCameraSlash style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#e7344c' }} />
               }
             </div>
           </div>
-          <div className='basis-1/4 px-4 max-h-34'>
-            <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-h-64 overflow-scroll">
-              <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <div className='basis-2/4 px-4 max-h-60'>
+            <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-h-80 overflow-scroll ">
+              <table className="w-full text-center text-sm rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead className="bg-gray-2 text-center dark:bg-meta-4 border-b sticky top-0">
                   <tr>
-                    <th scope="col" className="px-6 py-3">
+                    <th scope="col" className="px-6 py-3 text-black dark:text-white">
                       Batch
                     </th>
-                    <th scope="col" className="px-6 py-3">
+                    <th scope="col" className="px-6 py-3 text-black dark:text-white">
                       Date
                     </th>
-                    <th scope="col" className="px-6 py-3">
+                    <th scope="col" className="px-6 py-3 text-black dark:text-white">
                       Action
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {cameraRecording && cameraRecording.map((recData) => (
-                    <tr key={recData.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                      <td scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    <tr key={recData.id} className="border-[#eee] py-5 px-4 pl-9 dark:border-strokedark border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                      <td scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap text-black dark:text-white">
                         {recData['batch_id']}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 text-black dark:text-white">
                         {recData['date']}
                       </td>
                       <td className="px-6 py-4">
-                        <button type="button" className="text-white bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 shadow-lg shadow-cyan-500/50 dark:shadow-lg dark:shadow-cyan-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2" onClick={() => viewRec(recData['file_id'])}>View</button>
+                        <button type="button" className=" text-black dark:text-white bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 shadow-lg shadow-cyan-500/50 dark:shadow-lg dark:shadow-cyan-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2" onClick={() => viewRec(recData['file_id'])}>View</button>
                       </td>
                     </tr>
                   ))}
@@ -371,6 +387,13 @@ const TableThree = () => {
           </div>
 
         </div>
+        {driveUrl != '' && (<GdriveModal
+          showModal={showModal}
+          handleCloseModal={handleCloseModal}
+          handleOpenModal={handleOpenModal}
+          file_id={driveUrl}
+        />)}
+
         <div className="flex py-4">
           <div className='basis-1/2 text-sm text-center'>
             {recodStats && <table className="w-100 table-auto shadow-6">
