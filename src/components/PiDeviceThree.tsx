@@ -21,10 +21,12 @@ import TypoGraphy from './TypoGraphy';
 import { LuRefreshCcwDot } from "react-icons/lu";
 import { MdCleaningServices } from "react-icons/md";
 import GdriveModal from './GdriveModal';
+import PreviewIcon from '@mui/icons-material/Preview';
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from 'material-react-table';
+import { Box, IconButton } from '@mui/material';
 const TableThree = () => {
   const [datas, recordingData] = useState([]);
   const [allPiDatas, piData] = useState([]);
@@ -295,10 +297,12 @@ const TableThree = () => {
     setDriveUrl('');
   };
 
-  const viewRec = (file_id) => {
-    setDriveUrl(file_id);
+  const viewRec = (file_data) => {
     handleOpenModal();
-    <GdriveModal handleCloseModal={handleCloseModal} handleOpenModal={handleOpenModal} file_id={file_id} />
+    let file_id = file_data['original']['file_id'];
+    setDriveUrl(file_id);
+    // console.log(file_data['original']['file_id']);
+    // <GdriveModal handleCloseModal={handleCloseModal} handleOpenModal={handleOpenModal} file_id={file_id} />
     // setDriveUrl('https://drive.google.com/file/d/' + file_id + '/preview');
   }
 
@@ -322,6 +326,62 @@ const TableThree = () => {
       d="M4 12a8 8 0 018-8v8H4z"
     ></path></svg>
 
+  const columns = useMemo(
+    () => [
+      {
+        accessorKey: "batch_id", //simple recommended way to define a column
+        header: "batch_id",
+        muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
+        Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong> //optional custom cell render
+      },
+      {
+        accessorFn: (row) => row.date, //alternate way
+        id: "date", //id required if you use accessorFn instead of accessorKey
+        header: "date",
+        Header: <i style={{ color: "red" }}>date</i> //optional custom markup
+      }
+    ],
+    []
+  );
+  const table = useMaterialReactTable({
+    columns,
+    data: cameraRecording,
+    
+    // initialState: { density: 'compact' },
+    // enableRowSelection: true,
+    enableFullScreenToggle: false,
+    enableDensityToggle: false,
+    enableHiding: false,
+    enableFilters: false,
+    positionGlobalFilter : 'right',
+    positionPagination : 'bottom',
+    // paginationDisplayMode: 'pages',
+    // enableBottomToolbar: false,
+    columnFilterDisplayMode: 'popover',
+    enableRowActions: true,
+    renderRowActions: ({ row }) => (
+      <Box>
+        <IconButton onClick={() => viewRec(row)}>
+          <PreviewIcon />
+        </IconButton>
+      </Box>
+    ),
+    initialState: {
+      showColumnFilters: true,
+      density: 'compact',
+      pagination: { pageSize: 4, pageIndex: 0 },
+      showGlobalFilter: true,
+    },
+    // <MRT_GlobalFilterTextField table={table} />
+    // <MRT_TablePagination table={table} />
+    muiPaginationProps: {
+      color: 'primary',
+      shape: 'rounded',
+      showRowsPerPage: false,
+      variant: 'outlined',
+    },
+    paginationDisplayMode: 'pages',
+  });
   return (
     <>
       <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
@@ -352,7 +412,21 @@ const TableThree = () => {
             </div>
           </div>
           <div className='basis-2/4 px-4 max-h-60'>
-            <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-h-80 overflow-scroll ">
+            <MaterialReactTable table={table} columns={columns} data={cameraRecording}
+            // renderRowActions={({ row, table }) => (
+            //   <Box sx={{ display: 'flex', flexWrap: 'nowrap', gap: '8px' }}>
+            //     <IconButton
+            //       color="primary"
+            //       onClick={() =>
+            //         viewRec(row['file_id'])
+            //       }
+            //     >
+            //       <PreviewIcon />
+            //     </IconButton>
+            //   </Box>
+            // )}
+            />
+            {/* <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-h-80 overflow-scroll ">
               <table className="w-full text-center text-sm rtl:text-right text-gray-500 dark:text-gray-400">
                 <thead className="bg-gray-2 text-center dark:bg-meta-4 border-b sticky top-0">
                   <tr>
@@ -383,7 +457,7 @@ const TableThree = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </div> */}
           </div>
 
         </div>
