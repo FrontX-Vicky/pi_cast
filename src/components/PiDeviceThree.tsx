@@ -330,15 +330,15 @@ const TableThree = () => {
     () => [
       {
         accessorKey: "batch_id", //simple recommended way to define a column
-        header: "batch_id",
+        header: "Batch Id",
         muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
         Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong> //optional custom cell render
       },
       {
         accessorFn: (row) => row.date, //alternate way
         id: "date", //id required if you use accessorFn instead of accessorKey
-        header: "date",
-        Header: <i style={{ color: "red" }}>date</i> //optional custom markup
+        header: "Date",
+        Header: <i style={{ color: "blue" }}>date</i> //optional custom markup
       }
     ],
     []
