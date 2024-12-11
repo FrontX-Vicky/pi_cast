@@ -301,9 +301,6 @@ const TableThree = () => {
     handleOpenModal();
     let file_id = file_data['original']['file_id'];
     setDriveUrl(file_id);
-    // console.log(file_data['original']['file_id']);
-    // <GdriveModal handleCloseModal={handleCloseModal} handleOpenModal={handleOpenModal} file_id={file_id} />
-    // setDriveUrl('https://drive.google.com/file/d/' + file_id + '/preview');
   }
 
   const loaderIcon = <svg
@@ -338,7 +335,7 @@ const TableThree = () => {
         accessorFn: (row) => row.date, //alternate way
         id: "date", //id required if you use accessorFn instead of accessorKey
         header: "Date",
-        Header: <i style={{ color: "blue" }}>date</i> //optional custom markup
+        Header: <b style={{ color: "blue" }}>Date</b> //optional custom markup
       }
     ],
     []
@@ -347,21 +344,21 @@ const TableThree = () => {
     columns,
     data: cameraRecording,
     
-    // initialState: { density: 'compact' },
     // enableRowSelection: true,
     enableFullScreenToggle: false,
     enableDensityToggle: false,
     enableHiding: false,
-    enableFilters: false,
     positionGlobalFilter : 'right',
     positionPagination : 'bottom',
     // paginationDisplayMode: 'pages',
     // enableBottomToolbar: false,
+    positionActionsColumn : 'last',
     columnFilterDisplayMode: 'popover',
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box>
-        <IconButton onClick={() => viewRec(row)}>
+        <IconButton color="warning"  onClick={() => viewRec(row)}>
+          
           <PreviewIcon />
         </IconButton>
       </Box>
