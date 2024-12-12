@@ -343,22 +343,35 @@ const TableThree = () => {
   const table = useMaterialReactTable({
     columns,
     data: cameraRecording,
-    
-    // enableRowSelection: true,
+    muiTableProps: {
+      className: 'rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1',
+    },
+
+    muiTableBodyProps: {
+      sx: {
+        '& td:nth-of-type(odd)': {
+          backgroundColor: '#f5f5f5',
+        },
+      },
+    },
+    muiTableBodyCellProps: {
+      sx: {
+        borderRight: '2px solid #e0e0e0',
+      },
+    },
+
     enableFullScreenToggle: false,
     enableDensityToggle: false,
     enableHiding: false,
-    positionGlobalFilter : 'right',
-    positionPagination : 'bottom',
-    // paginationDisplayMode: 'pages',
-    // enableBottomToolbar: false,
-    positionActionsColumn : 'last',
+    positionGlobalFilter: 'right',
+    positionPagination: 'bottom',
+    positionActionsColumn: 'last',
     columnFilterDisplayMode: 'popover',
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box>
-        <IconButton color="warning"  onClick={() => viewRec(row)}>
-          
+        <IconButton color="warning" onClick={() => viewRec(row)}>
+
           <PreviewIcon />
         </IconButton>
       </Box>
@@ -369,8 +382,6 @@ const TableThree = () => {
       pagination: { pageSize: 4, pageIndex: 0 },
       showGlobalFilter: true,
     },
-    // <MRT_GlobalFilterTextField table={table} />
-    // <MRT_TablePagination table={table} />
     muiPaginationProps: {
       color: 'primary',
       shape: 'rounded',
@@ -399,17 +410,18 @@ const TableThree = () => {
           <div className=''>
             <div className='box h-28 w-28 p-4 mt-4 shadow-6'>
               {camera && camera == '1' ?
-                <HiVideoCamera style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#34e37d' }} /> : <IoIosMicOff style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#e7344c' }} />
+                <HiVideoCamera style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#34e37d' }} /> : <HiVideoCameraSlash style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#e7344c' }} />
               }
             </div>
             <div className='box h-28 w-28 p-4 mt-9 shadow-6'>
               {mic && mic == '1' ?
-                <IoIosMic style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#34e37d' }} /> : <HiVideoCameraSlash style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#e7344c' }} />
+                <IoIosMic style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#34e37d' }} /> : <IoIosMicOff style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#e7344c' }} />
               }
             </div>
           </div>
-          <div className='basis-2/4 px-4 max-h-60'>
+          <div className='basis-2/4 max-h-60 border-[#eee] py-5 px-4 pl-9 dark:border-strokedark'>
             <MaterialReactTable table={table} columns={columns} data={cameraRecording}
+
             // renderRowActions={({ row, table }) => (
             //   <Box sx={{ display: 'flex', flexWrap: 'nowrap', gap: '8px' }}>
             //     <IconButton
