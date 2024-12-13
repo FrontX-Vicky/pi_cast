@@ -328,8 +328,7 @@ const TableThree = () => {
       {
         accessorKey: "batch_id", //simple recommended way to define a column
         header: "Batch Id",
-        muiTableHeadCellProps: { sx: { color: "green" } }, //custom props
-        Cell: ({ renderedCellValue }) => <strong>{renderedCellValue}</strong> //optional custom cell render
+        Header: <b style={{ color: "green" }}>Batch Id</b> //optional custom markup
       },
       {
         accessorFn: (row) => row.date, //alternate way
@@ -340,26 +339,34 @@ const TableThree = () => {
     ],
     []
   );
+// debugger;
+
+var localMode = localStorage.getItem('color-theme');
+var cleanedMode = localMode.replace(/^"|"$/g, ""); // Remove the surrounding quotes
+console.log(cleanedMode); // Should print "light"
+console.log(cleanedMode.length);
+// var text_color = cleanedMode == "light" ? 'text-black' : 'text-white'
+var bg_color = cleanedMode == "light" ? '#FFFFFF' : '#000000';  // For background color (light -> white, dark -> black)
+var text_color = cleanedMode == "light" ? '#000000' : '#FFFFFF';  // For text color (light -> black, dark -> white)
+
   const table = useMaterialReactTable({
     columns,
     data: cameraRecording,
     muiTableProps: {
-      className: 'rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1',
+      className: "rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ", // Apply the class to the table
     },
-
-    muiTableBodyProps: {
-      sx: {
-        '& td:nth-of-type(odd)': {
-          backgroundColor: '#f5f5f5',
-        },
-      },
+    muiTableHeadCellProps: {
+      className: "rounded-tl-sm rounded-tr-sm  dark:border-strokedark dark:bg-boxdark", // You can also add specific classes for header cells if needed
     },
-    muiTableBodyCellProps: {
-      sx: {
-        borderRight: '2px solid #e0e0e0',
-      },
+    muiTableBodyRowProps: {
+      className: "custom-row-class  dark:border-strokedark dark:bg-boxdark", // Apply custom class to rows
     },
-
+    muiTableFooterRowProps: {
+      className: "custom-footer-class  dark:border-strokedark dark:bg-boxdark", // Apply custom class to footer rows
+    },
+    muiTableFooterCellProps: {
+      className: "custom-footer-cell-class  dark:border-strokedark dark:bg-boxdark", // Apply custom class to footer cells
+    },
     enableFullScreenToggle: false,
     enableDensityToggle: false,
     enableHiding: false,
@@ -370,7 +377,7 @@ const TableThree = () => {
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box>
-        <IconButton color="warning" onClick={() => viewRec(row)}>
+        <IconButton clas color="warning" onClick={() => viewRec(row)}>
 
           <PreviewIcon />
         </IconButton>
@@ -419,54 +426,8 @@ const TableThree = () => {
               }
             </div>
           </div>
-          <div className='basis-2/4 max-h-60 border-[#eee] py-5 px-4 pl-9 dark:border-strokedark'>
-            <MaterialReactTable table={table} columns={columns} data={cameraRecording}
-
-            // renderRowActions={({ row, table }) => (
-            //   <Box sx={{ display: 'flex', flexWrap: 'nowrap', gap: '8px' }}>
-            //     <IconButton
-            //       color="primary"
-            //       onClick={() =>
-            //         viewRec(row['file_id'])
-            //       }
-            //     >
-            //       <PreviewIcon />
-            //     </IconButton>
-            //   </Box>
-            // )}
-            />
-            {/* <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-h-80 overflow-scroll ">
-              <table className="w-full text-center text-sm rtl:text-right text-gray-500 dark:text-gray-400">
-                <thead className="bg-gray-2 text-center dark:bg-meta-4 border-b sticky top-0">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-black dark:text-white">
-                      Batch
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-black dark:text-white">
-                      Date
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-black dark:text-white">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cameraRecording && cameraRecording.map((recData) => (
-                    <tr key={recData.id} className="border-[#eee] py-5 px-4 pl-9 dark:border-strokedark border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                      <td scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap text-black dark:text-white">
-                        {recData['batch_id']}
-                      </td>
-                      <td className="px-6 py-4 text-black dark:text-white">
-                        {recData['date']}
-                      </td>
-                      <td className="px-6 py-4">
-                        <button type="button" className=" text-black dark:text-white bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 shadow-lg shadow-cyan-500/50 dark:shadow-lg dark:shadow-cyan-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2" onClick={() => viewRec(recData['file_id'])}>View</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div> */}
+          <div className='basis-2/4 max-h-60 px-4'>
+              <MaterialReactTable table={table} columns={columns} data={cameraRecording}/>
           </div>
 
         </div>
