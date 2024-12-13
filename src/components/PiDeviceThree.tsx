@@ -326,7 +326,7 @@ const TableThree = () => {
   const columns = useMemo(
     () => [
       {
-        accessorKey: "batch_id", //simple recommended way to define a column
+        accessorKey: "batch", //simple recommended way to define a column
         header: "Batch Id",
         Header: <b style={{ color: "green" }}>Batch Id</b> //optional custom markup
       },
