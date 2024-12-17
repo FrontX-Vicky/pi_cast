@@ -56,7 +56,7 @@ const Devices_raspberry_pi = () => {
     // fetchRaspberryId();
     return (
         <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-            <div className='relative flex justify-end pr-7'>
+            <div className='relative flex justify-end pr-7 mb-4'>
                 <button id="dropdownDefaultButton" data-dropdown-toggle="dropdown" className="text-white bg-pink-500 hover:bg-pink-800 focus:ring-4 focus:outline-none focus:ring-pink-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-pink-500 dark:hover:bg-pink-700 dark:focus:ring-pink-800" type="button" onClick={() => { openDD() }}>Page Size : {pagesLength}
                 </button></div><div className='flex justify-end'>
                 {openDropDown && <div id="dropdown" className="absolute z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-30 dark:bg-gray-700">
