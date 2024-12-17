@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Pusher from 'pusher-js';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import Loader from '../common/Loader';
 import rpi from '../images/logo/raspberry-pi-icon-transparent.png';
 import { HiVideoCamera } from "react-icons/hi2";
@@ -20,13 +20,18 @@ import { MdOutlineSdStorage } from "react-icons/md";
 import { GrClearOption } from "react-icons/gr";
 import { DateTime } from 'luxon';
 import TypoGraphy from './TypoGraphy';
+import { SearchContext } from './SearchContext';
 const Pi_Casting = () => {
   var arrayOfRecording = [];
   var allRecording = [];
-
+  const context = useContext(SearchContext);
+  const { inputValue } = context;
+  if (!context) {
+    throw new Error('getSearchValue must be used within a SearchProvider');
+  }
   const [availablePi, setavailablePi] = useState<string[]>([]);
   const timerRefs = useRef({});
-  // const [availablePi, setavailablePi] = useState([]);
+  const [pages, setpages] = useState(1);
   let allPis = {};
   let piBtnDisabled = {};
   const [datas, setDatas] = useState([]);
@@ -269,6 +274,9 @@ const Pi_Casting = () => {
           <table className="w-full table-auto overflow-hidden">
             <thead>
               <tr className="bg-gray-2 text-center dark:bg-meta-4">
+                {/* <th className="min-w-[110px] max-h-242.5 py-4 px-4 font-medium text-black dark:text-white">
+                  Sr.No
+                </th> */}
                 <th className="min-w-[110px] max-h-242.5 py-4 px-4 font-medium text-black dark:text-white">
                   Rec Status
                 </th>
@@ -312,9 +320,16 @@ const Pi_Casting = () => {
               </tr>
             </thead>
             <tbody>
-              {datas && datas.length > 0 && datas.map((element, index) => (
-                element.recordings.map((record, index) => (
+              {datas && datas.length > 0 && datas.map((element, indexs) => (
+                element.recordings.filter((item) =>
+                  Object.values(item).some((value) =>
+                    String(value).toLowerCase().includes(inputValue.toLowerCase())
+                  )
+                ).map((record, index) => (
                   <tr key={record.id}>
+                    {/* <td className="border-b border-[#eee] py-5 dark:border-strokedark ">
+                      <p className="text-sm text-center"> {indexs + 1}</p>
+                    </td> */}
                     <td className="border-b relative rounded-full border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
                       <div className='h-10'>
                         <img src={rpi} alt="User" style={{ height: '48px', width: '40px' }} />
