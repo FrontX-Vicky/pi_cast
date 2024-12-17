@@ -7,10 +7,15 @@ const Devices_raspberry_pi = () => {
     const navigate = useNavigate();
     const [raspberry_pi, raspberryData] = useState([]);
     const context = useContext(SearchContext);
-        const { inputValue } = context;
-        if (!context) {
-            throw new Error('getSearchValue must be used within a SearchProvider');
-        }
+    const { inputValue } = context;
+    if (!context) {
+        throw new Error('getSearchValue must be used within a SearchProvider');
+    }
+    const [openDropDown, setOpen] = useState(false);
+
+    const [pages, setpages] = useState(1);
+    const [pagesLength, setpagesLength] = useState(5);
+    const [searchResult, setSearchResult] = useState<string>("");
     async function fetchRaspberryId() {
         try {
             await axios.get('https://api.tickleright.in/api/respData').then(response => {
@@ -28,12 +33,43 @@ const Devices_raspberry_pi = () => {
         fetchRaspberryId();
     }, []);
 
+    const pageSize = [5, 10, 20, 50];
     const renderTable = (piId) => {
         navigate(`/Pi-Details/${piId}`);
     }
+
+
+    const changePage = (pageIndex) => {
+        setpages(pageIndex);
+        // console.log('Updated page:', pageIndex);
+    };
+    const changePageSize = (pageSize) => {
+        setOpen(false);
+        setpagesLength(pageSize);
+        // console.log('Updated page:', pageIndex);
+    };
+
+    const openDD = () => {
+        setOpen(true);
+    }
+
     // fetchRaspberryId();
     return (
         <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+            <div className='relative flex justify-end pr-7'>
+                <button id="dropdownDefaultButton" data-dropdown-toggle="dropdown" className="text-white bg-pink-500 hover:bg-pink-800 focus:ring-4 focus:outline-none focus:ring-pink-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-pink-500 dark:hover:bg-pink-700 dark:focus:ring-pink-800" type="button" onClick={() => { openDD() }}>Page Size : {pagesLength}
+                </button></div><div className='flex justify-end'>
+                {openDropDown && <div id="dropdown" className="absolute z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-30 dark:bg-gray-700">
+                    <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
+                        {pageSize.map((num) => (
+                            <li>
+                                <a href="#" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white hover:bg-slate-300" onClick={() => { changePageSize(num) }}>{num}</a>
+                            </li>
+                        ))}
+
+                    </ul>
+                </div>}
+            </div>
             <div className="max-w-full overflow-x-auto">
                 <table className="w-full table-auto">
                     <thead>
@@ -61,67 +97,142 @@ const Devices_raspberry_pi = () => {
                             </th>
                         </tr>
                     </thead>
-                    <tbody className="bg-gray-2 text-center dark:bg-meta-4">
-                        {raspberry_pi.filter((item) =>
+                    <tbody className="bg-gray-100 text-center dark:bg-meta-4">
+                        {raspberry_pi
+                            .filter((item) =>
                                 Object.values(item).some((value) =>
                                     String(value).toLowerCase().includes(inputValue.toLowerCase())
                                 )
-                            ).map((respId) => (
-                            <tr key={respId['id']}>
-                                <td className="border-b border-[#eee] py-5 dark:border-strokedark">
-                                    <div className='flex justify-center'>
-                                        <img src={rpi} alt="User" style={{ height: '48px', width: '40px' }} />
-                                    </div>
-                                    {/* <span className={`absolute right-2 bottom-3 h-3.5 w-3.5 rounded-full border-2 border-white ${respId['venue_id'] !== null ? 'bg-meta-3' : 'bg-meta-7'}`} /> */}
-                                </td>
-                                <td className="border-b border-[#eee] py-5 dark:border-strokedark">
-                                    <p className="text-sm"> {respId['id']}</p>
-                                </td>
-                                <td className="border-b border-[#eee] py-5 dark:border-strokedark">
-                                    <p className="text-sm"> {respId['name']}</p>
-                                </td>
-                                <td className="border-b border-[#eee] py-5 dark:border-strokedark">
-                                    <p className="text-sm"> {respId['venue_id']}</p>
-                                </td>
-                                <td className="border-b border-[#eee] py-5 dark:border-strokedark">
-                                    <p className="text-sm"> {respId['ip_address']}</p>
-                                </td>
-                                <td className="border-b border-[#eee] py-5 dark:border-strokedark">
-                                    <p className="text-sm"> {respId['mac_address']}</p>
-                                </td>
-                                <td className="border-b border-[#eee] py-5 dark:border-strokedark flex justify-center">
-                                    {respId['venue_id'] != null ? (
-                                        <button
-                                            type="button"
-                                            style={{ display: 'inline-block', backgroundColor: '#007BFF', padding: '10px' }}
-                                            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 inline-flex items-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                                            onClick={() => renderTable(respId['id'])}
-                                        >
-                                            <svg
-                                                className="w-4 h-4"
-                                                aria-hidden="true"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 14 10"
+                            )
+                            .slice((pages - 1) * pagesLength, pages * pagesLength)
+                            .map((respId) => (
+                                <tr key={respId['id']} className="border-b border-slate-200 dark:border-strokedark">
+                                    <td className="py-4">
+                                        <div className="flex justify-center">
+                                            <img src={rpi} alt="User" className="h-12 w-10" />
+                                        </div>
+                                    </td>
+                                    <td className="py-4 text-sm">{respId['id']}</td>
+                                    <td className="py-4 text-sm">{respId['name']}</td>
+                                    <td className="py-4 text-sm">{respId['venue_id']}</td>
+                                    <td className="py-4 text-sm">{respId['ip_address']}</td>
+                                    <td className="py-4 text-sm">{respId['mac_address']}</td>
+                                    <td className="py-4 flex justify-center">
+                                        {respId['venue_id'] && (
+                                            <button
+                                                type="button"
+                                                className="p-2.5 bg-pink-500 text-white rounded-full hover:bg-pink-700 focus:ring-4 focus:ring-pink-300"
+                                                onClick={() => renderTable(respId['id'])}
                                             >
-                                                <path
-                                                    stroke="currentColor"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M1 5h12m0 0L9 1m4 4L9 9"
-                                                />
-                                            </svg>
-                                            <span className="sr-only">Icon description</span>
-                                        </button>
-                                    ) : (
-                                        ' '
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
+                                                <svg
+                                                    className="w-4 h-4"
+                                                    aria-hidden="true"
+                                                    fill="none"
+                                                    viewBox="0 0 14 10"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                    <path
+                                                        stroke="currentColor"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M1 5h12m0 0L9 1m4 4L9 9"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
                     </tbody>
                 </table>
+                <div className='flex justify-between'>
+                    <span className="mt-4 block text-right text-sm">
+                        Showing {(pages - 1) * pagesLength + 1} to{" "}
+                        {Math.min(pages * pagesLength, raspberry_pi.length)} of {raspberry_pi.length} results
+                    </span>
+
+                    <nav className="mt-4 flex justify-center">
+                        <ul className="flex space-x-1">
+                            {/* Previous Button */}
+                            <li>
+                                <button
+                                    className={`px-4 py-2 border rounded-l-lg text-gray-500 hover:bg-gray-100 ${pages === 1 ? "opacity-50 cursor-not-allowed" : ""
+                                        }`}
+                                    disabled={pages === 1}
+                                    onClick={() => changePage(pages - 1)}
+                                >
+                                    Previous
+                                </button>
+                            </li>
+
+                            {/* First Page Button */}
+                            {pages > 3 && (
+                                <li>
+                                    <button
+                                        onClick={() => changePage(1)}
+                                        className="px-4 py-2 border text-gray-500 hover:bg-gray-100"
+                                    >
+                                        1
+                                    </button>
+                                </li>
+                            )}
+                            {pages > 3 && <li className="px-2 text-gray-500">...</li>}
+
+                            {/* Page Numbers */}
+                            {Array.from({ length: 5 }, (_, i) => {
+                                const pageNumber = pages - 2 + i;
+                                if (pageNumber > 0 && pageNumber <= Math.ceil(raspberry_pi.length / pagesLength)) {
+                                    return (
+                                        <li key={pageNumber}>
+                                            <button
+                                                onClick={() => changePage(pageNumber)}
+                                                className={`px-4 py-2 border text-gray-500 rounded-full hover:bg-gray-100 ${pages === pageNumber ? "bg-pink-500 text-white" : "bg-white"
+                                                    }`}
+                                            >
+                                                {pageNumber}
+                                            </button>
+                                        </li>
+                                    );
+                                }
+                                return null;
+                            })}
+
+                            {/* Last Page Button */}
+                            {pages < Math.ceil(raspberry_pi.length / pagesLength) - 2 && (
+                                <>
+                                    <li className="px-2 text-gray-500">...</li>
+                                    <li>
+                                        <button
+                                            onClick={() =>
+                                                changePage(Math.ceil(raspberry_pi.length / pagesLength))
+                                            }
+                                            className="px-4 py-2 border text-gray-500 hover:bg-gray-100"
+                                        >
+                                            {Math.ceil(raspberry_pi.length / pagesLength)}
+                                        </button>
+                                    </li>
+                                </>
+                            )}
+
+                            {/* Next Button */}
+                            <li>
+                                <button
+                                    className={`px-4 py-2 border rounded-r-lg text-gray-500 hover:bg-gray-100 ${pages >= Math.ceil(raspberry_pi.length / pagesLength)
+                                        ? "opacity-50 cursor-not-allowed"
+                                        : ""
+                                        }`}
+                                    disabled={pages >= Math.ceil(raspberry_pi.length / pagesLength)}
+                                    onClick={() => changePage(pages + 1)}
+                                >
+                                    Next
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+
+                </div>
+
             </div>
         </div>
 
