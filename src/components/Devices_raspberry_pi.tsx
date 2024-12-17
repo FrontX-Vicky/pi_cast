@@ -22,8 +22,8 @@ const Devices_raspberry_pi = () => {
         fetchRaspberryId();
     }, []);
 
-    const renderTable = (id) => {
-        navigate(`/Pi-Details/${id}`);
+    const renderTable = (piId) => {
+        navigate(`/Pi-Details/${piId}`);
     }
     // fetchRaspberryId();
     return (
@@ -57,7 +57,7 @@ const Devices_raspberry_pi = () => {
                     </thead>
                     <tbody className="bg-gray-2 text-center dark:bg-meta-4">
                         {raspberry_pi.map((respId) => (
-                            <tr key={respId.id}>
+                            <tr key={respId['id']}>
                                 <td className="border-b border-[#eee] py-5 dark:border-strokedark">
                                     <div className='flex justify-center'>
                                         <img src={rpi} alt="User" style={{ height: '48px', width: '40px' }} />
