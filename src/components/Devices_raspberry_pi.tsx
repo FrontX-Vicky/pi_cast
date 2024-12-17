@@ -1,10 +1,16 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import rpi from '../images/logo/raspberry-pi-icon-transparent.png';
+import { SearchContext } from './SearchContext';
 const Devices_raspberry_pi = () => {
     const navigate = useNavigate();
     const [raspberry_pi, raspberryData] = useState([]);
+    const context = useContext(SearchContext);
+        const { inputValue } = context;
+        if (!context) {
+            throw new Error('getSearchValue must be used within a SearchProvider');
+        }
     async function fetchRaspberryId() {
         try {
             await axios.get('https://api.tickleright.in/api/respData').then(response => {
@@ -56,7 +62,11 @@ const Devices_raspberry_pi = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-gray-2 text-center dark:bg-meta-4">
-                        {raspberry_pi.map((respId) => (
+                        {raspberry_pi.filter((item) =>
+                                Object.values(item).some((value) =>
+                                    String(value).toLowerCase().includes(inputValue.toLowerCase())
+                                )
+                            ).map((respId) => (
                             <tr key={respId['id']}>
                                 <td className="border-b border-[#eee] py-5 dark:border-strokedark">
                                     <div className='flex justify-center'>
