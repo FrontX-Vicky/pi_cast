@@ -56,8 +56,9 @@ const Header = (props: {
             <img src={Logo} alt="Logo" />
           </Link>
         </div>
-
-       <SearchBar/>
+        <div className="w-full">
+          <SearchBar />
+        </div>
 
         <div className="flex items-center gap-3 2xsm:gap-7">
           <ul className="flex items-center gap-2 2xsm:gap-4">
