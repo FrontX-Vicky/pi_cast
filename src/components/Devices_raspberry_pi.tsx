@@ -84,7 +84,7 @@ const Devices_raspberry_pi = () => {
                                 Name
                             </th>
                             <th className="min-w-[150px] py-4 font-medium text-black dark:text-white">
-                                venue_id
+                                Venue Name
                             </th>
                             <th className="min-w-[150px] py-4 font-medium text-black dark:text-white">
                                 ip_address
@@ -114,7 +114,7 @@ const Devices_raspberry_pi = () => {
                                     </td>
                                     <td className="py-4 text-sm">{respId['id']}</td>
                                     <td className="py-4 text-sm">{respId['name']}</td>
-                                    <td className="py-4 text-sm">{respId['venue_id']}</td>
+                                    <td className="py-4 text-sm">{respId['venue']}</td>
                                     <td className="py-4 text-sm">{respId['ip_address']}</td>
                                     <td className="py-4 text-sm">{respId['mac_address']}</td>
                                     <td className="py-4 flex justify-center">
