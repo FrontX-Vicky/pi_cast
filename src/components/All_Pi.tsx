@@ -49,7 +49,8 @@ function All_Pi() {
     }, []);
     const viewRec = (file_data) => {
         handleOpenModal();
-        let file_id = file_data;
+        // let file_id = file_data;
+        let file_id = file_data['original']['file_id'];
         setDriveUrl(file_id);
     }
 
@@ -87,7 +88,6 @@ function All_Pi() {
         ],
         []
     );
-
     // console.log(colorMode);
     const table = useMaterialReactTable({
         columns,
@@ -130,9 +130,9 @@ function All_Pi() {
             if (typeof document !== 'undefined') {
                 document.documentElement.classList.toggle('dark', cleanedMode === 'dark');
             }
-
+            // console.log(localStorage.getItem('color-theme'));
             return {
-                className: "rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1",
+                className: "border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:text-white dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1",
             };
         },
         muiTableHeadCellProps: ({ table }) => {
@@ -141,11 +141,16 @@ function All_Pi() {
 
             const isDarkMode = cleanedMode === 'dark';
 
+            if (typeof document !== 'undefined') {
+                document.documentElement.classList.toggle('dark', cleanedMode === 'dark');
+            }
+            // console.log(isDarkMode);
             return {
-                style: {
-                    backgroundColor: isDarkMode ? '#374151' : '#ffffff',
-                    color: isDarkMode ? '#d1d5db' : '#374151',
-                },
+                // style: {
+                //     backgroundColor: isDarkMode ? '#374151' : '#ffffff',
+                //     color: isDarkMode ? '#d1d5db' : '#374151',
+                // },
+                className: "dark:text-white dark:border-strokedark dark:bg-boxdark"
             };
         },
 
@@ -156,12 +161,9 @@ function All_Pi() {
             const isDarkMode = cleanedMode === 'dark';
 
             return {
-                style: {
-                    backgroundColor: isDarkMode ? '#374151' : '#ffffff',
-                    color: isDarkMode ? '#d1d5db' : '#374151',
-                },
+                className: "dark:text-white dark:border-strokedark dark:bg-boxdark"
             };
-        },
+        }
 
     });
 
@@ -175,7 +177,7 @@ function All_Pi() {
                 file_id={driveUrl}
             />)}
 
-        
+
 
         </>
     )
