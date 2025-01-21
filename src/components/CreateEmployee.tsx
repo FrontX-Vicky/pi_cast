@@ -33,26 +33,11 @@ function CreateEmployee() {
   const [city, setCity] = useState("");
   const [gender, Setgender] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneCountryCode, setPhoneCountryCode] = useState("");
   const [phone2, setPhone2] = useState("");
   const [EmergencyPhone, setEmergencyPhone] = useState("");
   const [relation, setRelation] = useState('');
-  const styles = {
-    th: {
-      border: '1px solid #ddd',
-      padding: '8px',
-      backgroundColor: '#f2f2f2',
-      textAlign: 'left',
-      width: '30%',
-    },
-    td: {
-      border: '1px solid #ddd',
-      padding: '8px',
-      textAlign: 'left',
-    },
-    tr: {
-      ':nth-child(even)': { backgroundColor: '#f9f9f9' },
-    },
-  };
+
   // page 2
   const [qualification, setQualification] = useState('');
   const [qualificationFile, setQualificationFile] = useState(null);
@@ -123,54 +108,6 @@ function CreateEmployee() {
   ]
 
   const submitBtn = () => {
-    // const payload = {
-    //   "fname": fname,
-    //   "mname": mname,
-    //   "lname": lname,
-    //   "relativeName": relativeName,
-    //   "personalEmail": pemail,
-    //   "officeEmail": oemail,
-    //   "dob": dob,
-    //   "address": address,
-    //   pinCode,
-    //   city,
-    //   gender,
-    //   phone,
-    //   phone2,
-    //   EmergencyPhone,
-    //   relation,
-    //   empPosition,
-    //   empDepartment,
-    //   qualification,
-    //   qualificationFile,
-    //   aadharCardFile,
-    //   panCardFile,
-    //   serviceAgreementFile,
-    //   degreeDesignation,
-    //   marksObtain,
-    //   panCardNum,
-    //   aadharCardNum,
-    //   doj,
-    //   empParent,
-    //   baseSalary,
-    //   empSalaryType,
-    //   empAutoAssign,
-    //   empAllowance,
-    //   empSalaryDeductionType,
-    //   empIncentive,
-    //   empRenew,
-    //   workShiftIn,
-    //   workShiftOut,
-    //   empStatus,
-    //   empCreateUserAcc,
-    //   empCalcSalary,
-    //   empAssociate,
-    //   empQualifier,
-    //   empNoticePeriod,
-    //   noticeStartDate,
-    //   noticeEndDate,
-    //   exitDate
-    // }
 
     const payload = {
       fname: fname,
@@ -184,6 +121,7 @@ function CreateEmployee() {
       pinCode: pinCode,
       city: city,
       gender: gender,
+      phoneCountryCode: phoneCountryCode,
       phone: phone,
       phone2: phone2,
       EmergencyPhone: EmergencyPhone,
@@ -222,9 +160,13 @@ function CreateEmployee() {
   };
 
     setPayload(payload);
+    console.log(payload);
     // payloadData
     try {
-      axios.post("https://api.tickleright.in/api/employee/createEmployee", payload).then((res) => {
+      axios.post("https://api.tickleright.in/api/employee/createEmployee", payload, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }}).then((res) => {
         if (res.data.error == 0) {
           console.log("no position found");
         } else {
@@ -235,7 +177,7 @@ function CreateEmployee() {
       console.log("Error" + err);
     }
 
-    console.log(payload);
+   
   }
 
   useEffect(() => {
@@ -327,6 +269,9 @@ function CreateEmployee() {
       if (!mname.trim()) currentErrors.mname = "Middle name is required.";
       if (!lname.trim()) currentErrors.lname = "Last name is required.";
       if (!relativeName.trim()) currentErrors.relativeName = "Relative name is required.";
+      if (phone.length<10) currentErrors.phone = "This phone number is either invalid or is in the wrong format'";
+      if (phone2.length<10) currentErrors.phone2 = "This phone number is either invalid or is in the wrong format'";
+      // if (EmergencyPhone.length<10) currentErrors.EmergencyPhone = "This phone number is either invalid or is in the wrong format'";
       if (!pemail.trim()) {
         currentErrors.pemail = "Primary email is required.";
       } else if (!/\S+@\S+\.\S+/.test(pemail)) {
@@ -354,31 +299,8 @@ function CreateEmployee() {
     return Object.keys(currentErrors).length === 0;
   };
 
-  const qualificationFileUpload = (e, stateChanged) => {
-    const res = handleFileChange(e);
-    if (res == 1) {
-      stateChanged(res);
-    }
-  }
 
-  const aadharCardFileUpload = (e, stateChanged) => {
-    const res = handleFileChange(e);
-    // debugger;
-    if (res == 1) {
-      stateChanged(e);
-    }
-  }
-
-  const panCardFileUpload = (e, stateChanged) => {
-    const res = handleFileChange(e);
-    if (res == 1) {
-      stateChanged(e);
-    }
-
-    // console.log(panCardFile);
-  }
-
-  const serviceAgreementFileUpload = (e, stateChanged) => {
+  const fileChangeGlobal=(e, stateChanged)=>{
     const res = handleFileChange(e);
     if (res == 1) {
       stateChanged(e);
@@ -425,10 +347,10 @@ function CreateEmployee() {
   const nextPage = () => {
     // if (validatePage()) {
     setPageInfo(pageInfo + 1);
+    // }
     if (pageInfo == 3) {
       submitBtn();
     }
-    // }
   }
 
 
@@ -535,7 +457,11 @@ function CreateEmployee() {
               <PhoneInput
                 country={"in"}
                 value={phone}
-                onChange={(phone) => setPhone(phone)}
+                onChange={(value, data, event, formattedValue) => {
+                  setPhoneCountryCode(data.dialCode); // Extract and set the country code
+                  setPhone(value); // Set the phone number without the country code
+                }}
+                // onChange={(phone) => setPhone(phone)}
                 inputStyle={{ width: '100%' }}
               />
               {errors.phone && <span className="error text-red-600">{errors.phone}</span>}
@@ -588,7 +514,7 @@ function CreateEmployee() {
                 onChange={(EmergencyPhone) => setEmergencyPhone(EmergencyPhone)}
                 inputStyle={{ width: '100%' }}
               />
-              {errors.emergencyPhone && <span className="error text-red-600">{errors.emergencyPhone}</span>}
+              {errors.EmergencyPhone && <span className="error text-red-600">{errors.EmergencyPhone}</span>}
             </div>
           </div>
           <div className="grid gap-6 mb-6 md:grid-cols-3 pr-10 pl-10">
@@ -674,7 +600,7 @@ function CreateEmployee() {
             </div>
             <div>
               <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Upload File Of Highest Qualification</label>
-              <input className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" id="file_input" type="file" accept=".pdf,.doc,.docx,image/*" onChange={(e) => { qualificationFileUpload(e.target.files[0], setQualificationFile) }} />
+              <input className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" id="file_input" type="file" accept=".pdf,.doc,.docx,image/*" onChange={(e) => { fileChangeGlobal(e.target.files[0], setQualificationFile) }} />
               {errors.degreeDesignation && <span className="error text-red-600">{errors.degreeDesignation}</span>}
             </div>
           </div>
@@ -691,7 +617,7 @@ function CreateEmployee() {
             </div>
             <div>
               <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Aadhar Card</label>
-              <input className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" id="file_input" name='setAadharCard' type="file" accept=".pdf,.doc,.docx,image/*" onChange={(e) => { aadharCardFileUpload(e.target.files[0], setAadharCard) }} />
+              <input className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" id="file_input" name='setAadharCard' type="file" accept=".pdf,.doc,.docx,image/*" onChange={(e) => { fileChangeGlobal(e.target.files[0], setAadharCard) }} />
               {errors.setAadharCard && <span className="error text-red-600">{errors.setAadharCard}</span>}
             </div>
             <div>
@@ -701,12 +627,12 @@ function CreateEmployee() {
             </div>
             <div>
               <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pan Card</label>
-              <input className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" id="file_input" type="file" name='setPanCardFile' accept=".pdf,.doc,.docx,image/*" onChange={(e) => { panCardFileUpload(e.target.files[0], setPanCardFile) }} />
+              <input className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" id="file_input" type="file" name='setPanCardFile' accept=".pdf,.doc,.docx,image/*" onChange={(e) => { fileChangeGlobal(e.target.files[0], setPanCardFile) }} />
               {errors.panCardFile && <span className="error text-red-600">{errors.panCardFile}</span>}
             </div>
             <div>
               <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Service Agreement</label>
-              <input className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" id="file_input" type="file" accept=".pdf,.doc,.docx,image/*" onChange={(e) => { serviceAgreementFileUpload(e.target.files[0], setServiceAgreementFile) }} />
+              <input className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" id="file_input" type="file" accept=".pdf,.doc,.docx,image/*" onChange={(e) => { fileChangeGlobal(e.target.files[0], setServiceAgreementFile) }} />
               {errors.setServiceAgreementFile && <span className="error text-red-600">{errors.setServiceAgreementFile}</span>}
             </div>
           </div>
