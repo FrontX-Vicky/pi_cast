@@ -33,10 +33,13 @@ function CreateEmployee() {
   const [city, setCity] = useState("");
   const [gender, Setgender] = useState("");
   const [phone, setPhone] = useState("");
-  const [phoneCountryCode, setPhoneCountryCode] = useState("");
+  const [phoneCountryCode, setPhoneCountryCode] = useState("+91");
   const [phone2, setPhone2] = useState("");
+  const [phone2CountryCode, setPhone2CountryCode] = useState("+91");
   const [EmergencyPhone, setEmergencyPhone] = useState("");
   const [relation, setRelation] = useState('');
+  const [maritalStatus, setMaritalStatus] = useState('');
+  const [formalTitle, setFormalTitle] = useState('');
 
   // page 2
   const [qualification, setQualification] = useState('');
@@ -123,6 +126,7 @@ function CreateEmployee() {
       gender: gender,
       phoneCountryCode: phoneCountryCode,
       phone: phone,
+      phone2CountryCode: phone2CountryCode,
       phone2: phone2,
       EmergencyPhone: EmergencyPhone,
       relation: relation,
@@ -138,6 +142,8 @@ function CreateEmployee() {
       panCardNum: panCardNum,
       aadharCardNum: aadharCardNum,
       doj: doj,
+      maritalStatus: maritalStatus,
+      formalTitle: formalTitle,
       empParent: empParent,
       baseSalary: baseSalary,
       empSalaryType: empSalaryType,
@@ -157,7 +163,7 @@ function CreateEmployee() {
       noticeStartDate: noticeStartDate,
       noticeEndDate: noticeEndDate,
       exitDate: exitDate // Assuming 'exitDa' was a typo
-  };
+    };
 
     setPayload(payload);
     console.log(payload);
@@ -166,7 +172,8 @@ function CreateEmployee() {
       axios.post("https://api.tickleright.in/api/employee/createEmployee", payload, {
         headers: {
           'Content-Type': 'multipart/form-data'
-        }}).then((res) => {
+        }
+      }).then((res) => {
         if (res.data.error == 0) {
           console.log("no position found");
         } else {
@@ -177,7 +184,7 @@ function CreateEmployee() {
       console.log("Error" + err);
     }
 
-   
+
   }
 
   useEffect(() => {
@@ -265,12 +272,14 @@ function CreateEmployee() {
     let currentErrors = {};
 
     if (pageInfo === 1) {
+      if (!formalTitle.trim()) currentErrors.formalTitle = "Select Title";
       if (!fname.trim()) currentErrors.fname = "First name is required.";
       if (!mname.trim()) currentErrors.mname = "Middle name is required.";
       if (!lname.trim()) currentErrors.lname = "Last name is required.";
+      if (!maritalStatus.trim()) currentErrors.maritalStatus = "Marital Status is required.";
       if (!relativeName.trim()) currentErrors.relativeName = "Relative name is required.";
-      if (phone.length<10) currentErrors.phone = "This phone number is either invalid or is in the wrong format'";
-      if (phone2.length<10) currentErrors.phone2 = "This phone number is either invalid or is in the wrong format'";
+      if (phone.length < 10) currentErrors.phone = "This phone number is either invalid or is in the wrong format'";
+      if (phone2.length < 10) currentErrors.phone2 = "This phone number is either invalid or is in the wrong format'";
       // if (EmergencyPhone.length<10) currentErrors.EmergencyPhone = "This phone number is either invalid or is in the wrong format'";
       if (!pemail.trim()) {
         currentErrors.pemail = "Primary email is required.";
@@ -300,7 +309,7 @@ function CreateEmployee() {
   };
 
 
-  const fileChangeGlobal=(e, stateChanged)=>{
+  const fileChangeGlobal = (e, stateChanged) => {
     const res = handleFileChange(e);
     if (res == 1) {
       stateChanged(e);
@@ -349,7 +358,10 @@ function CreateEmployee() {
     setPageInfo(pageInfo + 1);
     // }
     if (pageInfo == 3) {
-      submitBtn();
+      var removeCountryPhone = phone.replace(phoneCountryCode, "");
+      var removeCountryPhone2 = phone2.replace(phone2CountryCode, "");
+      setPhone(removeCountryPhone);
+      setPhone2(removeCountryPhone2);
     }
   }
 
@@ -411,7 +423,28 @@ function CreateEmployee() {
       {/*/ Hers the form Start */}
       {pageInfo == 1 &&
         <div className='form'>
-          <div className="grid gap-6 mb-6 md:grid-cols-3 pr-10 pl-10">
+          <div className="grid gap-6 mb-6 md:grid-cols-4 pr-10 pl-10">
+            <div>
+              <label htmlFor="genderSelect" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                Select Formal Title
+              </label>
+              <select
+                id="formalTitle"
+                value={formalTitle}
+                onChange={(e) => { handleChange(e, setFormalTitle) }}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
+                    focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 
+                    dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
+                    dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500"
+              >
+                <option value="" disabled>
+                  Choose a formalTitle
+                </option>
+                <option value="Mr">Mr.</option>
+                <option value="Ms">Ms.</option>
+              </select>
+              {errors.formalTitle && <span className="error text-red-600">{errors.formalTitle}</span>}
+            </div>
             <div>
               <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First name</label>
               <input type="text" id="first_name" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="Raj" value={fname} onChange={(e) => { changeValue(e, setFname) }} required />
@@ -429,7 +462,7 @@ function CreateEmployee() {
             </div>
 
           </div>
-          <div className="grid gap-6 mb-6 md:grid-cols-3 pr-10 pl-10">
+          <div className="grid gap-6 mb-6 md:grid-cols-4 pr-10 pl-10">
             <div>
               <label htmlFor="genderSelect" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                 Select Gender
@@ -453,6 +486,31 @@ function CreateEmployee() {
               {errors.gender && <span className="error text-red-600">{errors.gender}</span>}
             </div>
             <div>
+              <label htmlFor="genderSelect" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                Select Marital Status
+              </label>
+              <select
+                id="genderSelect"
+                value={maritalStatus}
+                onChange={(e) => { handleChange(e, setMaritalStatus) }}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
+                    focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 
+                    dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
+                    dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500"
+              >
+                <option value="" disabled>
+                  Choose a Marital Status
+                </option>
+                <option value="0">single</option>
+                <option value="1">married</option>
+                <option value="2">widowed</option>
+                <option value="3">divorced</option>
+                <option value="4">separated</option>
+                <option value="5">registered partnership</option>
+              </select>
+              {errors.maritalStatus && <span className="error text-red-600">{errors.maritalStatus}</span>}
+            </div>
+            <div>
               <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Personal Contact</label>
               <PhoneInput
                 country={"in"}
@@ -471,7 +529,11 @@ function CreateEmployee() {
               <PhoneInput
                 country={"in"}
                 value={phone2}
-                onChange={(phone2) => setPhone2(phone2)}
+                onChange={(value, data, event, formattedValue) => {
+                  setPhone2CountryCode(data.dialCode); // Extract and set the country code
+                  setPhone2(value); // Set the phone number without the country code
+                }}
+                // onChange={(phone2) => setPhone2(phone2)}
                 inputStyle={{ width: '100%' }}
               />
               {errors.phone2 && <span className="error text-red-600">{errors.phone2}</span>}
