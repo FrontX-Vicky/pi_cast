@@ -62,12 +62,19 @@ function CreateEmployee() {
   const [empPosition, setEmpPosition] = useState('');
   const [empParent, setEmpParent] = useState('');
   const [baseSalary, setBaseSalary] = useState('');
+  const [tds_percent, setTds_percent] = useState('');
+  const [rateMultiplier, setRateMultiplier] = useState('');
+  const [p_incentive_c, setP_incentive_c] = useState(0);
+  const [p_incentive_sc, setP_incentive_sc] = useState(0);
+  const [assignment_check, setAssignment_check] = useState(0);
+  const [assignment_no, setAssignment_no] = useState(0);
   const [empSalaryType, setEmpSalaryType] = useState('');
   const [empSalaryDeductionType, setEmpSalaryDeductionType] = useState('');
-  const [empAutoAssign, setEmpAutoAssign] = useState('');
+  const [empAutoAssign, setEmpAutoAssign] = useState(0);
   const [empAllowance, setEmpAllowance] = useState('');
-  const [empIncentive, setEmpIncentive] = useState('');
-  const [empRenew, setEmpRenew] = useState('');
+  const [empIncentive, setEmpIncentive] = useState(0);
+  const [empGrade, setEmpGrade] = useState('');
+  const [empRenew, setEmpRenew] = useState(0);
   const [workShiftIn, setWorkShiftIn] = useState('10:00');
   const [workShiftOut, setWorkShiftOut] = useState('06:00');
   const [empWorkShiftGlobal, setEmpWorkShiftGlobal] = useState('');
@@ -146,12 +153,17 @@ function CreateEmployee() {
       formalTitle: formalTitle,
       empParent: empParent,
       baseSalary: baseSalary,
+      tds_percent: tds_percent,
+      rateMultiplier: rateMultiplier,
+      p_incentive_c: p_incentive_c,
       empSalaryType: empSalaryType,
       empAutoAssign: empAutoAssign,
       empAllowance: empAllowance,
+      empGrade: empGrade,
       empSalaryDeductionType: empSalaryDeductionType,
       empIncentive: empIncentive,
       empRenew: empRenew,
+      empWorkShiftGlobal: empWorkShiftGlobal,
       workShiftIn: workShiftIn,
       workShiftOut: workShiftOut,
       empStatus: empStatus,
@@ -777,14 +789,16 @@ function CreateEmployee() {
               <input type="date" id="doj" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" value={doj} onChange={(e) => { changeValue(e, setDoj) }} placeholder="01-01-2000" required />
               {errors.doj && <span className="error text-red-600">{errors.doj}</span>}
             </div>
-
-            <div>
+          </div>
+          <div className="grid gap-6 mb-6 md:grid-cols-4 pr-10 pl-10">
+            <div className="col-span-1">
               <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Base Salary</label>
               <input type="text" id="base_salary" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="20000" value={baseSalary} onChange={(e) => { changeValue(e, setBaseSalary) }} required />
               {errors.baseSalary && <span className="error text-red-600">{errors.baseSalary}</span>}
             </div>
 
-            <div>
+
+            <div className="col-span-1">
               <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Salary Type</label>
               <select
                 id="Choose Salary Type"
@@ -808,7 +822,7 @@ function CreateEmployee() {
               {errors.empSalaryType && <span className="error text-red-600">{errors.empSalaryType}</span>}
             </div>
 
-            <div>
+            <div className="col-span-1">
               <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Salary Deduction Type</label>
               <select
                 id="Choose Deduction Type"
@@ -828,14 +842,41 @@ function CreateEmployee() {
               </select>
               {errors.empSalaryDeductionType && <span className="error text-red-600">{errors.empSalaryDeductionType}</span>}
             </div>
-
-            <div>
-              <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Allowance</label>
-              <input type="text" id="allowance" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="20" value={empAllowance} onChange={(e) => { changeValue(e, setEmpAllowance) }} required />
-              {errors.empAllowance && <span className="error text-red-600">{errors.empAllowance}</span>}
+            <div className="col-span-1">
+              <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Rate Multiplier</label>
+              <input type="text" id="rateMultiplier" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="20000" value={rateMultiplier} onChange={(e) => { changeValue(e, setRateMultiplier) }} required />
+              {errors.rateMultiplier && <span className="error text-red-600">{errors.rateMultiplier}</span>}
             </div>
+
+            
           </div>
-          {empPosition && empPosition === '31' && (
+
+          <div className="grid gap-6 mb-6 md:grid-cols-4 pr-10 pl-10">
+            {empPosition == '7' &&
+              <div>
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">P_incentive_c</label>
+                  <input type="text" id="p_incentive_c" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="20000" value={p_incentive_c} onChange={(e) => { changeValue(e, setP_incentive_c) }} required />
+                  {errors.p_incentive_c && <span className="error text-red-600">{errors.p_incentive_c}</span>}
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">P_incentive_Sc</label>
+                  <input type="text" id="p_incentive_sc" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="20000" value={p_incentive_sc} onChange={(e) => { changeValue(e, setP_incentive_sc) }} required />
+                  {errors.p_incentive_sc && <span className="error text-red-600">{errors.p_incentive_sc}</span>}
+                </div>
+              </div>
+            }
+            {empSalaryDeductionType == '3' &&
+              <div>
+                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">TDS Percentage</label>
+                <input type="text" id="tds_percent" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="10" value={tds_percent} onChange={(e) => { changeValue(e, setTds_percent) }} required />
+                {errors.tds_percent && <span className="error text-red-600">{errors.tds_percent}</span>}
+              </div>
+            }
+
+          </div>
+
+          {empPosition && empPosition === '31' && empDepartment === '3' &&
             <div className="grid gap-6 mb-6 md:grid-cols-4 pr-10 pl-10">
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Auto Assign Inquiry</label>
@@ -869,9 +910,26 @@ function CreateEmployee() {
                 {errors.empRenew && <span className="error text-red-600">{errors.empRenew}</span>}
               </div>
             </div>
-          )}
-
+          }
+          {empPosition && empPosition == '48'  && empDepartment =='8' &&
+            <div className="grid gap-6 mb-6 md:grid-cols-4 pr-10 pl-10">
+              <div className="flex items-center">
+                <input id="checked-checkbox" type="checkbox" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" value={assignment_check} checked={assignment_check === '1'} onChange={(e) => { handleCheckboxChange(e, setAssignment_check) }} />
+                <label className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Assingment check</label>
+              </div>
+              <div>
+                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Assignment no</label>
+                <input type="text" id="assignment_no" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="20000" value={assignment_no} onChange={(e) => { changeValue(e, setAssignment_no) }} required />
+                {errors.assignment_no && <span className="error text-red-600">{errors.assignment_no}</span>}
+              </div>
+            </div>
+          }
           <div className="grid gap-6 mb-6 md:grid-cols-4 pr-10 pl-10">
+          <div className="col-span-1">
+              <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Allowance</label>
+              <input type="text" id="allowance" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="20" value={empAllowance} onChange={(e) => { changeValue(e, setEmpAllowance) }} required />
+              {errors.empAllowance && <span className="error text-red-600">{errors.empAllowance}</span>}
+            </div>
             <div>
               <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">WorkShift Hours In</label>
               <div className="relative">
@@ -931,6 +989,8 @@ function CreateEmployee() {
                 <input id="checked-checkbox" type="checkbox" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" value={empNoticePeriod} checked={empNoticePeriod === '1'} onChange={(e) => { handleCheckboxChange(e, setEmpNoticePeriod) }} />
                 <label className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Notice Period</label>
               </div>
+
+
             </div>
             {empNoticePeriod === '1' &&
               <div>
