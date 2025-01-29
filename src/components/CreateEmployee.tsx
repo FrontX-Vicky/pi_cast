@@ -18,6 +18,7 @@ function CreateEmployee() {
   const contact_id = id;
   const [error, setErrorData] = useState(false);
   const [resStatus, setResStatus] = useState(0);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const location = useLocation();
   const [payloadData, setPayload] = useState([]);
@@ -130,8 +131,8 @@ function CreateEmployee() {
 
   ]
 
-  const submitBtn = async(condition) => {
-    
+  const submitBtn = (condition) => {
+
     if (pageInfo == 4) {
       var removeCountryPhone = phone.replace(phoneCountryCode, "");
       var removeCountryPhone2 = phone2.replace(phone2CountryCode, "");
@@ -216,6 +217,7 @@ function CreateEmployee() {
         }).then((res) => {
           if (res.data.error == 0) {
             setResStatus(1);
+            setErrorMessage('Successfully Created');
             console.log("Employee Created SuccessFully!😀");
           } else {
             console.log("Employee Not Created!😓");
@@ -225,8 +227,6 @@ function CreateEmployee() {
         console.log("Error" + err);
       }
     } else {
-      // debugger;
-      console.log(payload);
       try {
         axios.post("https://api.tickleright.in/api/employee/updateEmployee", payload, {
           headers: {
@@ -236,6 +236,7 @@ function CreateEmployee() {
           if (res.data.error == 0) {
             setResStatus(1);
             setErrorData(true);
+            setErrorMessage('Successfully Updated');
             console.log("Employee Updated SuccessFully!😀");
           } else {
             setErrorData(false);
@@ -359,6 +360,7 @@ function CreateEmployee() {
       if (!dob.trim()) currentErrors.dob = "Date of birth is required.";
 
     } else if (pageInfo === 2) {
+      if (!qualification.trim()) currentErrors.qualification = "Qualification is required.";
       if (!degreeDesignation.trim()) currentErrors.degreeDesignation = "Degree Designation is required.";
       if (!marksObtain.trim()) currentErrors.marksObtain = "Marks Obtain is required.";
       if (!panCardNum.trim()) currentErrors.panCardNum = "Pan Card Number is required.";
@@ -420,7 +422,7 @@ function CreateEmployee() {
 
   const nextPage = () => {
     if (validatePage()) {
-    setPageInfo(pageInfo + 1);
+      setPageInfo(pageInfo + 1);
     }
   }
 
@@ -436,6 +438,7 @@ function CreateEmployee() {
             setEmployeeData(res.data.data[0]);
             setValue(res.data.data[0]); // Ensure setValue is defined
             setErrorData(false);
+            setErrorMessage('No Records Founding');
             setResStatus(0);
           } else {
             setErrorData(true);
@@ -452,7 +455,7 @@ function CreateEmployee() {
   }, [contact_id]);
 
   const setValue = (data) => {
-    
+
     const firstParse = JSON.parse(data.qualification_data);
     const qualificationJsonDecode = typeof firstParse === 'string' ? JSON.parse(firstParse) : firstParse;
 
@@ -480,7 +483,7 @@ function CreateEmployee() {
     setQualification(qualificationJsonDecode.qualification);
     setDegreeDesignation(qualificationJsonDecode.degreeDesignation);
     setMarksObtain(qualificationJsonDecode.marksObtain);
-    const qualificationFileUrl = qualificationJsonDecode != '' ? `${fileUploadedPath}${qualificationJsonDecode}` : null;
+    const qualificationFileUrl = qualificationJsonDecode.qualificationFilename != '' ? `${fileUploadedPath}${qualificationJsonDecode.qualificationFilename}` : null;
     setQualificationFile(qualificationFileUrl);
     const aadharCardUrl = data.document_image != '' ? `${fileUploadedPath}${data.document_image}` : null;
     setAadharCard(aadharCardUrl);
@@ -527,7 +530,7 @@ function CreateEmployee() {
   return (
     <>
       {error ? (
-        <EmptyErrorComponent message="No Records Founding" description="" status={resStatus}/>  // Conditionally render EmptyErrorComponent if there's an error
+        <EmptyErrorComponent message={errorMessage} description="" status={resStatus} />  // Conditionally render EmptyErrorComponent if there's an error
       ) : (
         <div>
           <ol className="flex items-center w-full text-sm font-medium text-center text-gray-500 dark:text-gray-400 sm:text-base mb-6">
@@ -557,10 +560,7 @@ function CreateEmployee() {
                     id="formalTitle"
                     value={formalTitle}
                     onChange={(e) => { handleChange(e, setFormalTitle, 'formalTitle') }}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 
-                    dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
-                    dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500"
+                    className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                   >
                     <option value="" disabled>
                       Choose a formalTitle
@@ -572,17 +572,17 @@ function CreateEmployee() {
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First name</label>
-                  <input type="text" id="first_name" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="Raj" value={fname} onChange={(e) => { changeValue(e, setFname, 'fname') }} required />
+                  <input type="text" id="first_name" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" placeholder="Raj" value={fname} onChange={(e) => { changeValue(e, setFname, 'fname') }} required />
                   {errors.fname && <span className="error text-red-600">{errors.fname}</span>}
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Middle name</label>
-                  <input type="text" id="m_name" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="Kumar" onChange={(e) => { changeValue(e, setMname, 'mname') }} value={mname} required />
+                  <input type="text" id="m_name" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" placeholder="Kumar" onChange={(e) => { changeValue(e, setMname, 'mname') }} value={mname} required />
                   {errors.mname && <span className="error text-red-600">{errors.mname}</span>}
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Last name</label>
-                  <input type="text" id="l_name" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="John" onChange={(e) => { changeValue(e, setLname, 'lname') }} value={lname} required />
+                  <input type="text" id="l_name" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" placeholder="John" onChange={(e) => { changeValue(e, setLname, 'lname') }} value={lname} required />
                   {errors.lname && <span className="error text-red-600">{errors.lname}</span>}
                 </div>
 
@@ -596,10 +596,7 @@ function CreateEmployee() {
                     id="genderSelect"
                     value={gender}
                     onChange={(e) => { handleChange(e, Setgender, 'gender') }}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 
-                    dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
-                    dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500"
+                    className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                   >
                     <option value="" disabled>
                       Choose a Gender
@@ -617,7 +614,7 @@ function CreateEmployee() {
                     country={"in"}
                     value={phone}
                     onChange={(value, data, event, formattedValue) => {
-                   
+
                       setPhoneCountryCode(data.dialCode);
                       setPhone(value); // Set the phone number without the country code
                       'phone'
@@ -633,7 +630,7 @@ function CreateEmployee() {
                     country={"in"}
                     value={phone2}
                     onChange={(value, data, event, formattedValue) => {
-                      
+
                       setPhone2CountryCode(data.dialCode);
                       setPhone2(value); // Set the phone number without the country code
                       'phone2'
@@ -657,7 +654,7 @@ function CreateEmployee() {
               <div className="grid gap-6 mb-6 md:grid-cols-4 pr-10 pl-10">
                 {/* <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Relative Name</label>
-                  <input type="text" id="relativeName" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" value={relativeName} onChange={(e) => { changeValue(e, setRelativeName) }} placeholder="Relative Name" required />
+                  <input type="text" id="relativeName" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" value={relativeName} onChange={(e) => { changeValue(e, setRelativeName) }} placeholder="Relative Name" required />
                   {errors.relativeName && <span className="error text-red-600">{errors.relativeName}</span>}
                 </div> */}
                 <div>
@@ -668,10 +665,7 @@ function CreateEmployee() {
                     id="genderSelect"
                     value={maritalStatus}
                     onChange={(e) => { handleChange(e, setMaritalStatus, 'maritalStatus') }}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 
-                    dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
-                    dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500"
+                    className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                   >
                     <option value="" disabled>
                       Choose a Marital Status
@@ -694,10 +688,7 @@ function CreateEmployee() {
                     id="relationSelect"
                     value={relation}
                     onChange={(e) => { handleChange(e, setRelation, 'relationSelect') }}
-                    className="dark:text-white bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 
-                    dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
-                     dark:focus:ring-slate-500 dark:focus:border-slate-500"
+                    className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                   >
                     <option value="" disabled>
                       Choose a relation
@@ -712,13 +703,13 @@ function CreateEmployee() {
 
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date Of Birth</label>
-                  <input type="date" id="date" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" value={dob} onChange={(e) => { changeValue(e, setdob, 'dob') }} placeholder="01-01-2000" required />
+                  <input type="date" id="date" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" value={dob} onChange={(e) => { changeValue(e, setdob, 'dob') }} placeholder="01-01-2000" required />
                   {errors.dob && <span className="error text-red-600">{errors.dob}</span>}
                 </div>
 
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Personal Email Id</label>
-                  <input type="text" id="personalMailId" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" value={pemail} onChange={(e) => { changeValue(e, setPemail, 'pemail') }} placeholder="raj@gmail.com" required />
+                  <input type="text" id="personalMailId" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" value={pemail} onChange={(e) => { changeValue(e, setPemail, 'pemail') }} placeholder="raj@gmail.com" required />
                   {errors.pemail && <span className="error text-red-600">{errors.pemail}</span>}
                 </div>
               </div>
@@ -726,22 +717,22 @@ function CreateEmployee() {
 
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Office Email Id</label>
-                  <input type="text" id="officeMailId" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" value={oemail} onChange={(e) => { changeValue(e, setOemail, 'oemail') }} placeholder="raj@tickleright.com" />
+                  <input type="text" id="officeMailId" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" value={oemail} onChange={(e) => { changeValue(e, setOemail, 'oemail') }} placeholder="raj@tickleright.com" />
                   {errors.oemail && <span className="error text-red-600">{errors.oemail}</span>}
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Address</label>
-                  <input type="text" id="address" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" value={address} onChange={(e) => { changeValue(e, setAddress, 'address') }} placeholder="Address" required />
+                  <input type="text" id="address" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" value={address} onChange={(e) => { changeValue(e, setAddress, 'address') }} placeholder="Address" required />
                   {errors.address && <span className="error text-red-600">{errors.address}</span>}
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">City</label>
-                  <input type="text" id="city" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" value={city} onChange={(e) => { changeValue(e, setCity, 'city') }} placeholder="City" required />
+                  <input type="text" id="city" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" value={city} onChange={(e) => { changeValue(e, setCity, 'city') }} placeholder="City" required />
                   {errors.city && <span className="error text-red-600">{errors.city}</span>}
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pin Code</label>
-                  <input type="text" id="pin_code" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" value={pinCode} onChange={(e) => { changeValue(e, setPinCode, 'pinCode') }} placeholder="400070" required />
+                  <input type="text" id="pin_code" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" value={pinCode} onChange={(e) => { changeValue(e, setPinCode, 'pinCode') }} placeholder="400070" required />
                 </div>
               </div>
             </div>
@@ -761,10 +752,7 @@ function CreateEmployee() {
                     id="highest_qualification"
                     value={qualification}
                     onChange={(e) => { handleChange(e, setQualification, 'qualification') }}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 
-                    dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
-                    dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500"
+                    className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                   >
                     <option value="" disabled>
                       Choose Highest Qualification
@@ -778,23 +766,27 @@ function CreateEmployee() {
                     <option value="Master's degree">Master's degree</option>
                     <option value="Doctorate or higher">Doctorate or higher</option>
                   </select>
-                  {/* {errors.qualification && <span className="error text-red-600">{errors.qualification}</span>} */}
+                  {errors.qualification && <span className="error text-red-600">{errors.qualification}</span>}
                 </div>
 
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Degree Specification</label>
-                  <input type="text" id="degree_designation" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="bachelor of science in information technology" value={degreeDesignation} onChange={(e) => { changeValue(e, setDegreeDesignation, 'degreeDesignation') }} required />
-                  {/* {errors.degreeDesignation && <span className="error text-red-600">{errors.degreeDesignation}</span>} */}
+                  <input type="text" id="degree_designation" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" placeholder="bachelor of science in information technology" value={degreeDesignation} onChange={(e) => { changeValue(e, setDegreeDesignation, 'degreeDesignation') }} required />
+                  {errors.degreeDesignation && <span className="error text-red-600">{errors.degreeDesignation}</span>}
                 </div>
 
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Marks Obtain (CGPA)</label>
-                  <input type="text" id="marks" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="bachelor of science in information technology" value={marksObtain} onChange={(e) => { changeValue(e, setMarksObtain, 'marksObtain') }} required />
+                  <input type="text" id="marks" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" placeholder="bachelor of science in information technology" value={marksObtain} onChange={(e) => { changeValue(e, setMarksObtain, 'marksObtain') }} required />
                   {/* {errors.marksObtain && <span className="error text-red-600">{errors.marksObtain}</span>} */}
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Upload File Of Highest Qualification</label>
-                  <input className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" id="file_input" type="file" accept=".pdf,.doc,.docx,image/*" onChange={(e) => { fileChangeGlobal(e.target.files[0], setQualificationFile) }} />
+                  <input className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" id="file_input" type="file" accept=".pdf,.doc,.docx,image/*" onChange={(e) => { fileChangeGlobal(e.target.files[0], setQualificationFile) }} />
+                  {contact_id != undefined && qualificationFile != null &&
+                    <a style={{ display: 'inline-flex', alignItems: 'center' }} href={qualificationFile} target="_blank" rel="noopener noreferrer">
+                      <FaSearch style={{ marginRight: '8px' }} />View Document</a>
+                  }
                 </div>
               </div>
               <div className="grid gap-6 mb-6 md:grid-cols-4 pr-10 pl-10">
@@ -805,12 +797,12 @@ function CreateEmployee() {
               <div className="grid gap-6 mb-6 md:grid-cols-4 pr-10 pl-10">
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Aadhar Card Number</label>
-                  <input type="text" id="aadhar_card" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" name='setAadharNumCard' placeholder="1234 5678 4321" maxLength="12" value={aadharCardNum} onChange={(e) => { changeValue(e, setAadharNumCard, 'aadharCardNum') }} required />
+                  <input type="text" id="aadhar_card" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" name='setAadharNumCard' placeholder="1234 5678 4321" maxLength="12" value={aadharCardNum} onChange={(e) => { changeValue(e, setAadharNumCard, 'aadharCardNum') }} required />
                   {errors.aadharCardNum && <span className="error text-red-600">{errors.aadharCardNum}</span>}
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Aadhar Card</label>
-                  <input className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" id="file_inputAadhar" name='setAadharCard' type="file" accept=".pdf,.doc,.docx,image/*" onChange={(e) => { fileChangeGlobal(e.target.files[0], setAadharCard) }} />
+                  <input className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" id="file_inputAadhar" name='setAadharCard' type="file" accept=".pdf,.doc,.docx,image/*" onChange={(e) => { fileChangeGlobal(e.target.files[0], setAadharCard) }} />
                   {contact_id != undefined && aadharCardFile != null &&
                     <a style={{ display: 'inline-flex', alignItems: 'center' }} href={aadharCardFile} target="_blank" rel="noopener noreferrer">
                       <FaSearch style={{ marginRight: '8px' }} />View Document</a>
@@ -819,12 +811,12 @@ function CreateEmployee() {
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pan Card Number</label>
-                  <input type="text" id="pan_card" className="uppercase bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" name='setPanCardNum' placeholder="1234 5678 4321" maxLength="10" value={panCardNum} onChange={(e) => { changeValue(e, setPanCardNum, 'panCardNum') }} required />
+                  <input type="text" id="pan_card" className="uppercase w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" name='setPanCardNum' placeholder="1234 5678 4321" maxLength="10" value={panCardNum} onChange={(e) => { changeValue(e, setPanCardNum, 'panCardNum') }} required />
                   {errors.panCardNum && <span className="error text-red-600">{errors.panCardNum}</span>}
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pan Card</label>
-                  <input className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" id="file_inputPan" type="file" name='setPanCardFile' accept=".pdf,.doc,.docx,image/*" onChange={(e) => { fileChangeGlobal(e.target.files[0], setPanCardFile) }} />
+                  <input className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" id="file_inputPan" type="file" name='setPanCardFile' accept=".pdf,.doc,.docx,image/*" onChange={(e) => { fileChangeGlobal(e.target.files[0], setPanCardFile) }} />
                   {errors.panCardFile && <span className="error text-red-600">{errors.panCardFile}</span>}
                   {contact_id != undefined && panCardFile != null &&
                     <a style={{ display: 'inline-flex', alignItems: 'center' }} href={panCardFile} target="_blank" rel="noopener noreferrer">
@@ -833,7 +825,7 @@ function CreateEmployee() {
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Service Agreement</label>
-                  <input className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" id="file_inputService" type="file" accept=".pdf,.doc,.docx,image/*" onChange={(e) => { fileChangeGlobal(e.target.files[0], setServiceAgreementFile) }} />
+                  <input className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" id="file_inputService" type="file" accept=".pdf,.doc,.docx,image/*" onChange={(e) => { fileChangeGlobal(e.target.files[0], setServiceAgreementFile) }} />
                   {contact_id != undefined && serviceAgreementFile != null &&
                     <a style={{ display: 'inline-flex', alignItems: 'center' }} href={serviceAgreementFile} target="_blank" rel="noopener noreferrer">
                       <FaSearch style={{ marginRight: '8px' }} />View Document</a>
@@ -858,10 +850,7 @@ function CreateEmployee() {
                     id="Choose Department"
                     value={empDepartment}
                     onChange={(e) => { handleChange(e, setEmpDepartment, 'empDepartment') }}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 
-                    dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
-                    dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500"
+                    className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                   >
                     <option value="" disabled>
                       Choose Department
@@ -878,10 +867,7 @@ function CreateEmployee() {
                     id="Choose Position"
                     value={empPosition}
                     onChange={(e) => { handleChange(e, setEmpPosition, 'empPosition') }}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 
-                    dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
-                    dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500"
+                    className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                   >
                     <option value="" disabled>
                       Choose Position
@@ -899,10 +885,7 @@ function CreateEmployee() {
                     id="Choose Parent"
                     value={empParent}
                     onChange={(e) => { handleChange(e, setEmpParent, 'empParent') }}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 
-                    dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
-                    dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500"
+                    className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                   >
                     <option value="" disabled>
                       Choose Position
@@ -916,14 +899,14 @@ function CreateEmployee() {
 
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date Of Joining</label>
-                  <input type="date" id="doj" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" value={doj} onChange={(e) => { changeValue(e, setDoj, 'doj') }} placeholder="01-01-2000" required />
+                  <input type="date" id="doj" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" value={doj} onChange={(e) => { changeValue(e, setDoj, 'doj') }} placeholder="01-01-2000" required />
                   {errors.doj && <span className="error text-red-600">{errors.doj}</span>}
                 </div>
               </div>
               <div className="grid gap-6 mb-6 md:grid-cols-4 pr-10 pl-10">
                 <div className="col-span-1">
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Base Salary</label>
-                  <input type="text" id="base_salary" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="20000" value={baseSalary} onChange={(e) => { changeValue(e, setBaseSalary, 'baseSalary') }} required />
+                  <input type="text" id="base_salary" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" placeholder="20000" value={baseSalary} onChange={(e) => { changeValue(e, setBaseSalary, 'baseSalary') }} required />
                   {errors.baseSalary && <span className="error text-red-600">{errors.baseSalary}</span>}
                 </div>
 
@@ -934,10 +917,7 @@ function CreateEmployee() {
                     id="Choose Salary Type"
                     value={empSalaryType}
                     onChange={(e) => { handleChange(e, setEmpSalaryType, 'empSalaryType') }}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 
-                    dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
-                    dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500"
+                    className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                   >
                     <option value="" disabled>
                       Select Salary Type
@@ -958,10 +938,7 @@ function CreateEmployee() {
                     id="Choose Deduction Type"
                     value={empSalaryDeductionType}
                     onChange={(e) => { handleChange(e, setEmpSalaryDeductionType, 'empSalaryDeductionType') }}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 
-                    dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
-                    dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500"
+                    className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                   >
                     <option value="" disabled>
                       Select Deduction Type
@@ -974,7 +951,7 @@ function CreateEmployee() {
                 </div>
                 <div className="col-span-1">
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Rate Multiplier</label>
-                  <input type="text" id="rateMultiplier" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="20000" value={rateMultiplier} onChange={(e) => { changeValue(e, setRateMultiplier, 'rateMultiplier') }} required />
+                  <input type="text" id="rateMultiplier" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" placeholder="20000" value={rateMultiplier} onChange={(e) => { changeValue(e, setRateMultiplier, 'rateMultiplier') }} required />
                   {errors.rateMultiplier && <span className="error text-red-600">{errors.rateMultiplier}</span>}
                 </div>
 
@@ -986,12 +963,12 @@ function CreateEmployee() {
                   <div>
                     <div>
                       <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">P_incentive_c</label>
-                      <input type="text" id="p_incentive_c" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="20000" value={p_incentive_c} onChange={(e) => { changeValue(e, setP_incentive_c, 'p_incentive_c') }} required />
+                      <input type="text" id="p_incentive_c" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" placeholder="20000" value={p_incentive_c} onChange={(e) => { changeValue(e, setP_incentive_c, 'p_incentive_c') }} required />
                       {errors.p_incentive_c && <span className="error text-red-600">{errors.p_incentive_c}</span>}
                     </div>
                     <div>
                       <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">P_incentive_Sc</label>
-                      <input type="text" id="p_incentive_sc" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="20000" value={p_incentive_sc} onChange={(e) => { changeValue(e, setP_incentive_sc, 'p_incentive_sc') }} required />
+                      <input type="text" id="p_incentive_sc" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" placeholder="20000" value={p_incentive_sc} onChange={(e) => { changeValue(e, setP_incentive_sc, 'p_incentive_sc') }} required />
                       {errors.p_incentive_sc && <span className="error text-red-600">{errors.p_incentive_sc}</span>}
                     </div>
                   </div>
@@ -999,7 +976,7 @@ function CreateEmployee() {
                 {empSalaryDeductionType == '3' &&
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">TDS Percentage</label>
-                    <input type="text" id="tds_percent" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="10" value={tds_percent} onChange={(e) => { changeValue(e, setTds_percent, 'tds_percent') }} required />
+                    <input type="text" id="tds_percent" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" placeholder="10" value={tds_percent} onChange={(e) => { changeValue(e, setTds_percent, 'tds_percent') }} required />
                     {errors.tds_percent && <span className="error text-red-600">{errors.tds_percent}</span>}
                   </div>
                 }
@@ -1014,10 +991,7 @@ function CreateEmployee() {
                       id="Choose Salary Type"
                       value={empAutoAssign}
                       onChange={(e) => { handleChange(e, setEmpAutoAssign, 'empAutoAssign') }}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 
-                    dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
-                    dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500"
+                      className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                     >
                       <option value="" disabled>
                         Select Salary Type
@@ -1031,12 +1005,12 @@ function CreateEmployee() {
                   </div>
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Incentive</label>
-                    <input type="text" id="incentive" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="200 %" value={empIncentive} onChange={(e) => { changeValue(e, setEmpIncentive, 'empIncentive') }} required />
+                    <input type="text" id="incentive" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" placeholder="200 %" value={empIncentive} onChange={(e) => { changeValue(e, setEmpIncentive, 'empIncentive') }} required />
                     {errors.empIncentive && <span className="error text-red-600">{errors.empIncentive}</span>}
                   </div>
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Renew</label>
-                    <input type="text" id="renew" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="200 %" value={empRenew} onChange={(e) => { changeValue(e, setEmpRenew, 'empRenew') }} required />
+                    <input type="text" id="renew" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" placeholder="200 %" value={empRenew} onChange={(e) => { changeValue(e, setEmpRenew, 'empRenew') }} required />
                     {errors.empRenew && <span className="error text-red-600">{errors.empRenew}</span>}
                   </div>
                 </div>
@@ -1049,7 +1023,7 @@ function CreateEmployee() {
                   </div>
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Assignment no</label>
-                    <input type="text" id="assignment_no" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="20000" value={assignment_no} onChange={(e) => { changeValue(e, setAssignment_no, 'assignment_no') }} required />
+                    <input type="text" id="assignment_no" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" placeholder="20000" value={assignment_no} onChange={(e) => { changeValue(e, setAssignment_no, 'assignment_no') }} required />
                     {errors.assignment_no && <span className="error text-red-600">{errors.assignment_no}</span>}
                   </div>
                 </div>
@@ -1057,19 +1031,19 @@ function CreateEmployee() {
               <div className="grid gap-6 mb-6 md:grid-cols-4 pr-10 pl-10">
                 <div className="col-span-1">
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Allowance</label>
-                  <input type="text" id="allowance" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" placeholder="20" value={empAllowance} onChange={(e) => { changeValue(e, setEmpAllowance, 'empAllowance') }} required />
+                  <input type="text" id="allowance" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" placeholder="20" value={empAllowance} onChange={(e) => { changeValue(e, setEmpAllowance, 'empAllowance') }} required />
                   {errors.empAllowance && <span className="error text-red-600">{errors.empAllowance}</span>}
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">WorkShift Hours In</label>
                   <div className="relative">
-                    <input type="time" id="intime" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" min="09:00" max="18:00" value={workShiftIn} onChange={(e) => { changeValue(e, setWorkShiftIn, 'workShiftIn') }} required />
+                    <input type="time" id="intime" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" min="09:00" max="18:00" value={workShiftIn} onChange={(e) => { changeValue(e, setWorkShiftIn, 'workShiftIn') }} required />
                   </div>
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">WorkShift Hours In</label>
                   <div className="relative">
-                    <input type="time" id="outTime" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" min="09:00" max="18:00" value={workShiftOut} onChange={(e) => { changeValue(e, setWorkShiftOut, 'workShiftOut') }} required />
+                    <input type="time" id="outTime" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" min="09:00" max="18:00" value={workShiftOut} onChange={(e) => { changeValue(e, setWorkShiftOut, 'workShiftOut') }} required />
                   </div>
 
                 </div>
@@ -1079,10 +1053,7 @@ function CreateEmployee() {
                     id="Choose Work-Shift"
                     value={empWorkShiftGlobal}
                     onChange={(e) => { handleChange(e, setEmpWorkShiftGlobal, 'empWorkShiftGlobal') }}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                    focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 
-                    dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
-                    dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500"
+                    className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                   >
                     <option value="" disabled>
                       Choose Work-Shift
@@ -1125,19 +1096,19 @@ function CreateEmployee() {
                 {empNoticePeriod === 1 &&
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Notice Start Date</label>
-                    <input type="date" id="noticeStartDate" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" value={noticeStartDate} onChange={(e) => { changeValue(e, setNoticeStartDate, 'noticeStartDate') }} placeholder="01-01-2000" required />
+                    <input type="date" id="noticeStartDate" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" value={noticeStartDate} onChange={(e) => { changeValue(e, setNoticeStartDate, 'noticeStartDate') }} placeholder="01-01-2000" required />
                   </div>
                 }
                 {empNoticePeriod === 1 &&
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Notice End Date</label>
-                    <input type="date" id="noticeEndDate" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" value={noticeEndDate} onChange={(e) => { changeValue(e, setNoticeEndDate, 'noticeEndDate') }} placeholder="01-01-2000" required />
+                    <input type="date" id="noticeEndDate" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" value={noticeEndDate} onChange={(e) => { changeValue(e, setNoticeEndDate, 'noticeEndDate') }} placeholder="01-01-2000" required />
                   </div>
                 }
                 {empNoticePeriod === 1 &&
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Exit Date</label>
-                    <input type="date" id="exitDate" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block w-80 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-500 dark:focus:border-slate-500" value={exitDate} onChange={(e) => { changeValue(e, setExitDate, 'exitDate') }} placeholder="01-01-2000" required />
+                    <input type="date" id="exitDate" className="w-full rounded border-[1.5px] border-grey bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" value={exitDate} onChange={(e) => { changeValue(e, setExitDate, 'exitDate') }} placeholder="01-01-2000" required />
                   </div>
                 }
 
@@ -1147,7 +1118,7 @@ function CreateEmployee() {
           {
             pageInfo == 4 &&
             <div className='justify-items-center w-full mt-9'>
-              <div id="toast-success" className="w-180 p-4 mb-4 text-gray-500 bg-white rounded-lg shadow shadow-purple-600 dark:text-gray-400 dark:bg-gray-800" role="alert">
+              <div id="toast-success" className="w-180 p-4 mb-4 text-gray-500 bg-white rounded-lg shadow  dark:border-form-strokedark dark:bg-form-input shadow-purple-600 dark:text-gray-400 dark:bg-gray-800" role="alert">
                 <div id="toast-success" className="flex items-center mb-4">
 
                   <div className="mr-5 inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
