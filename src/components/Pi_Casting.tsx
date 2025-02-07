@@ -240,6 +240,7 @@ const Pi_Casting = () => {
     setLoading(true);
     var payload = {
       "type": "storage_clear",
+      "days": "10",
       "id": pi_id
     }
     globalFunc(payload);

@@ -65,10 +65,12 @@ function All_Pi() {
 
     const columns = useMemo(
         () => [
-            {
-                header: "Sr.No",
-                Header: <b style={{ color: "green" }}>SR.no</b> //optional custom markup
-            },
+            
+            // {
+            //     accessorKey: sr_no+1,
+            //     header: "Sr.No",
+            //     Header: <b style={{ color: "green" }}>SR.no</b> //optional custom markup
+            // },
             {
                 accessorKey: "batch_id", //simple recommended way to define a column
                 header: "Batch Id",
@@ -95,6 +97,7 @@ function All_Pi() {
         enableFullScreenToggle: false,
         enableDensityToggle: false,
         enableColumnActions: false,
+        enableRowNumbers : true,
         enableHiding: false,
         positionGlobalFilter: 'right',
         positionPagination: 'bottom',
@@ -144,12 +147,7 @@ function All_Pi() {
             if (typeof document !== 'undefined') {
                 document.documentElement.classList.toggle('dark', cleanedMode === 'dark');
             }
-            // console.log(isDarkMode);
             return {
-                // style: {
-                //     backgroundColor: isDarkMode ? '#374151' : '#ffffff',
-                //     color: isDarkMode ? '#d1d5db' : '#374151',
-                // },
                 className: "dark:text-white dark:border-strokedark dark:bg-boxdark"
             };
         },

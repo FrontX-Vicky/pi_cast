@@ -23,8 +23,10 @@ function CreateEmployee() {
   const location = useLocation();
   const [payloadData, setPayload] = useState([]);
   const [pageInfo, setPageInfo] = useState(1);
-  const urlPath = `${window.location.protocol}//${window.location.hostname}`;
-  const fileUploadedPath = `${urlPath}/content/contact_document/`;
+  // const urlPath = `${window.location.protocol}//${window.location.hostname}`;
+  // const urlPath = 'admin.tickleright.in';
+  const fileUploadedPath = 'https://admin.tickleright.in/content/contact_document/';
+  // const fileUploadedPath = `${urlPath}/content/contact_document/`;
   // const uploadPath = `${location.pathname.replace(/\/$/, '')}/content/contact_document/`;
 
   // page 1
@@ -65,9 +67,9 @@ function CreateEmployee() {
   const [positionDropDown, setPositionDropDown] = useState([]);
   const [parentDropDown, setParentDropDown] = useState([]);
   const [empWorkShiftArray, setEmpWorkShiftArray] = useState([]);
-  const [empDepartment, setEmpDepartment] = useState('');
-  const [empPosition, setEmpPosition] = useState('');
-  const [empParent, setEmpParent] = useState('');
+  const [empDepartment, setEmpDepartment] = useState(0);
+  const [empPosition, setEmpPosition] = useState(0);
+  const [empParent, setEmpParent] = useState(0);
   const [baseSalary, setBaseSalary] = useState('');
   const [tds_percent, setTds_percent] = useState('');
   const [rateMultiplier, setRateMultiplier] = useState('');
@@ -421,9 +423,9 @@ function CreateEmployee() {
   };
 
   const nextPage = () => {
-    if (validatePage()) {
-      setPageInfo(pageInfo + 1);
-    }
+    // if (validatePage()) {
+    setPageInfo(pageInfo + 1);
+    // }
   }
 
   useEffect(() => {
@@ -438,9 +440,9 @@ function CreateEmployee() {
             setEmployeeData(res.data.data[0]);
             setValue(res.data.data[0]); // Ensure setValue is defined
             setErrorData(false);
-            setErrorMessage('No Records Founding');
             setResStatus(0);
           } else {
+            setErrorMessage('No Records Founding 😓');
             setErrorData(true);
             setResStatus(2);
           }
@@ -455,9 +457,6 @@ function CreateEmployee() {
   }, [contact_id]);
 
   const setValue = (data) => {
-
-    const firstParse = JSON.parse(data.qualification_data);
-    const qualificationJsonDecode = typeof firstParse === 'string' ? JSON.parse(firstParse) : firstParse;
 
     //& page 1
     setFname(data.fname);
@@ -480,11 +479,17 @@ function CreateEmployee() {
     setFormalTitle(data.formal_title);
 
     //& page 2
-    setQualification(qualificationJsonDecode.qualification);
-    setDegreeDesignation(qualificationJsonDecode.degreeDesignation);
-    setMarksObtain(qualificationJsonDecode.marksObtain);
-    const qualificationFileUrl = qualificationJsonDecode.qualificationFilename != '' ? `${fileUploadedPath}${qualificationJsonDecode.qualificationFilename}` : null;
-    setQualificationFile(qualificationFileUrl);
+
+    if (data.qualification_data != "null") {
+      const firstParse = JSON.parse(data.qualification_data);
+      const qualificationJsonDecode = typeof firstParse === 'string' ? JSON.parse(firstParse) : firstParse;
+      setQualification(qualificationJsonDecode.qualification);
+      setDegreeDesignation(qualificationJsonDecode.degreeDesignation);
+      setMarksObtain(qualificationJsonDecode.marksObtain);
+      const qualificationFileUrl = qualificationJsonDecode.qualificationFilename != '' ? `${fileUploadedPath}${qualificationJsonDecode.qualificationFilename}` : null;
+      setQualificationFile(qualificationFileUrl);
+    }
+
     const aadharCardUrl = data.document_image != '' ? `${fileUploadedPath}${data.document_image}` : null;
     setAadharCard(aadharCardUrl);
     const panCardUrl = data.document_image_2 != '' ? `${fileUploadedPath}${data.document_image_2}` : null;
@@ -872,12 +877,21 @@ function CreateEmployee() {
                     <option value="" disabled>
                       Choose Position
                     </option>
-                    {positionDropDown && positionDropDown.filter(itemPosition => itemPosition['department_id'] == empDepartment).map((itemPosition) => (
-                      <option key={itemPosition['id']} value={itemPosition['parent_id']}>{itemPosition['position']}</option>
-                    ))}
+                    {positionDropDown && positionDropDown
+                      .filter(itemPosition => empPosition != 0
+                        ? itemPosition['department_id'] == empDepartment
+                        : true)
+                      .map((itemPosition) => (
+                        <option key={itemPosition['id']} value={itemPosition['id']}>
+                          {itemPosition['position']}
+                        </option>
+                      ))
+                    }
                   </select>
                   {errors.empPosition && <span className="error text-red-600">{errors.empPosition}</span>}
                 </div>
+
+
 
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select Parent</label>
@@ -890,8 +904,8 @@ function CreateEmployee() {
                     <option value="" disabled>
                       Choose Position
                     </option>
-                    {parentDropDown && parentDropDown.filter(itemParent => itemParent.position_id == empPosition).map((itemParent) => (
-                      <option key={itemParent['id']} value={itemParent['id']}>{itemParent['fullname']}</option>
+                    {parentDropDown && parentDropDown.filter(itemParent => empParent != 0 ? itemParent.position_id == empPosition : true).map((itemParent) => (
+                      <option key={itemParent['id']} value={itemParent['contact_id']}>{itemParent['fullname']}</option>
                     ))}
                   </select>
                   {errors.empParent && <span className="error text-red-600">{errors.empParent}</span>}
@@ -959,7 +973,7 @@ function CreateEmployee() {
               </div>
 
               <div className="grid gap-6 mb-6 md:grid-cols-4 pr-10 pl-10">
-                {empPosition == '7' &&
+                {empPosition == 7 &&
                   <div>
                     <div>
                       <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">P_incentive_c</label>
@@ -983,7 +997,7 @@ function CreateEmployee() {
 
               </div>
 
-              {empPosition != '' && empPosition === '31' && empDepartment === '3' &&
+              {empPosition != 0 && empPosition === 31 && empDepartment === 3 &&
                 <div className="grid gap-6 mb-6 md:grid-cols-4 pr-10 pl-10">
                   <div>
                     <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Auto Assign Inquiry</label>
@@ -1015,7 +1029,7 @@ function CreateEmployee() {
                   </div>
                 </div>
               }
-              {empPosition != '' && empPosition == '48' && empDepartment == '8' &&
+              {empPosition != 0 && empPosition == 48 && empDepartment == 8 &&
                 <div className="grid gap-6 mb-6 md:grid-cols-4 pr-10 pl-10">
                   <div className="flex items-center">
                     <input id="checked-checkbox" type="checkbox" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" value={assignment_check} checked={assignment_check == 1} onChange={(e) => { handleCheckboxChange(e, setAssignment_check) }} />

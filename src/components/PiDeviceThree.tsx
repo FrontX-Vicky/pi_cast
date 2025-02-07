@@ -146,31 +146,38 @@ const TableThree = () => {
                 });
               }
               filterPi[filterData.pi_id] = filterData;
-
+              
             }
           } else {
             // hideLoader('block');
           }
         }
         recordingData(Object.values(filterPi));
-        stats = data['message']['stats'];
-        devices = data['message']['devices'];
-        const storageData = {
-          free: stats['storage']['free_storage'],
-          total: stats['storage']['total_storage'],
-          used: stats['storage']['used_storage'],
-        };
-        setcamera(devices['camera']);
-        setmic(devices['mic']);
+        // console.log(data);
+        if(Object.keys(filterPi).length>0){
+          devices = data['message']['devices'];
+          setcamera(devices['camera']);
+          setmic(devices['mic']);
+          
+          stats = data['message']['stats'];
+          const storageData = {
+            free: stats['storage']['free_storage'],
+            total: stats['storage']['total_storage'],
+            used: stats['storage']['used_storage'],
+          };
+       
+          const ramData = {
+            free: stats['ram']['free_ram'],
+            total: stats['ram']['total_ram'],
+            used: stats['ram']['used_ram'],
+          };
+  
+          setStorage(storageData);
+          setRam(ramData);
+        }
+    
         // Extract RAM data
-        const ramData = {
-          free: stats['ram']['free_ram'],
-          total: stats['ram']['total_ram'],
-          used: stats['ram']['used_ram'],
-        };
-
-        setStorage(storageData);
-        setRam(ramData);
+        
       }
     });
     getCameraRecFunc();
@@ -339,15 +346,15 @@ const TableThree = () => {
     ],
     []
   );
-// debugger;
+  // debugger;
 
-var localMode = localStorage.getItem('color-theme');
-var cleanedMode = localMode.replace(/^"|"$/g, ""); // Remove the surrounding quotes
-console.log(cleanedMode); // Should print "light"
-console.log(cleanedMode.length);
-// var text_color = cleanedMode == "light" ? 'text-black' : 'text-white'
-var bg_color = cleanedMode == "light" ? '#FFFFFF' : '#000000';  // For background color (light -> white, dark -> black)
-var text_color = cleanedMode == "light" ? '#000000' : '#FFFFFF';  // For text color (light -> black, dark -> white)
+  var localMode = localStorage.getItem('color-theme');
+  var cleanedMode = localMode.replace(/^"|"$/g, ""); // Remove the surrounding quotes
+  console.log(cleanedMode); // Should print "light"
+  console.log(cleanedMode.length);
+  // var text_color = cleanedMode == "light" ? 'text-black' : 'text-white'
+  var bg_color = cleanedMode == "light" ? '#FFFFFF' : '#000000';  // For background color (light -> white, dark -> black)
+  var text_color = cleanedMode == "light" ? '#000000' : '#FFFFFF';  // For text color (light -> black, dark -> white)
 
   const table = useMaterialReactTable({
     columns,
@@ -367,6 +374,43 @@ var text_color = cleanedMode == "light" ? '#000000' : '#FFFFFF';  // For text co
     muiTableFooterCellProps: {
       className: "custom-footer-cell-class  dark:border-strokedark dark:bg-boxdark", // Apply custom class to footer cells
     },
+
+    muiTableBodyCellProps: ({ table }) => {
+      const localMode = localStorage.getItem('color-theme');
+      const cleanedMode = localMode?.replace(/^"|"$/g, "") || 'light';
+
+      if (typeof document !== 'undefined') {
+        document.documentElement.classList.toggle('dark', cleanedMode === 'dark');
+      }
+      // console.log(localStorage.getItem('color-theme'));
+      return {
+        className: "border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:text-white dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1",
+      };
+    },
+    muiTableHeadCellProps: ({ table }) => {
+      const localMode = localStorage.getItem('color-theme');
+      const cleanedMode = localMode?.replace(/^"|"$/g, "") || 'light';
+
+      const isDarkMode = cleanedMode === 'dark';
+
+      if (typeof document !== 'undefined') {
+        document.documentElement.classList.toggle('dark', cleanedMode === 'dark');
+      }
+      return {
+        className: "dark:text-white dark:border-strokedark dark:bg-boxdark"
+      };
+    },
+
+    muiTableFooterCellProps: ({ table }) => {
+      const localMode = localStorage.getItem('color-theme');
+      const cleanedMode = localMode?.replace(/^"|"$/g, "") || 'light';
+
+      const isDarkMode = cleanedMode === 'dark';
+
+      return {
+        className: "dark:text-white dark:border-strokedark dark:bg-boxdark"
+      };
+    },
     enableFullScreenToggle: false,
     enableDensityToggle: false,
     enableHiding: false,
@@ -377,7 +421,7 @@ var text_color = cleanedMode == "light" ? '#000000' : '#FFFFFF';  // For text co
     enableRowActions: true,
     renderRowActions: ({ row }) => (
       <Box>
-        <IconButton clas color="warning" onClick={() => viewRec(row)}>
+        <IconButton color="warning" onClick={() => viewRec(row)}>
 
           <PreviewIcon />
         </IconButton>
@@ -427,7 +471,7 @@ var text_color = cleanedMode == "light" ? '#000000' : '#FFFFFF';  // For text co
             </div>
           </div>
           <div className='basis-2/4 max-h-60 px-4'>
-              <MaterialReactTable table={table} columns={columns} data={cameraRecording}/>
+            <MaterialReactTable table={table} columns={columns} data={cameraRecording} />
           </div>
 
         </div>

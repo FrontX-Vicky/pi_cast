@@ -57,8 +57,9 @@ const Devices_raspberry_pi = () => {
     return (
         <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
             <div className='relative flex justify-end pr-7 mb-4'>
-                <button id="dropdownDefaultButton" data-dropdown-toggle="dropdown" className="text-white bg-pink-500 hover:bg-pink-800 focus:ring-4 focus:outline-none focus:ring-pink-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-pink-500 dark:hover:bg-pink-700 dark:focus:ring-pink-800" type="button" onClick={() => { openDD() }}>Page Size : {pagesLength}
-                </button></div><div className='flex justify-end'>
+                <button id="dropdownDefaultButton" data-dropdown-toggle="dropdown" className="text-white bg-slate-500 hover:bg-slate-800 focus:ring-4 focus:outline-none focus:ring-slate-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-slate-500 dark:hover:bg-slate-700 dark:focus:ring-slate-800" type="button" onClick={() => { openDD() }}>Page Size : {pagesLength}
+                </button></div>
+            <div className='flex justify-end'>
                 {openDropDown && <div id="dropdown" className="absolute z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-30 dark:bg-gray-700">
                     <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
                         {pageSize.map((num) => (
@@ -121,7 +122,7 @@ const Devices_raspberry_pi = () => {
                                         {respId['venue_id'] && (
                                             <button
                                                 type="button"
-                                                className="p-2.5 bg-pink-500 text-white rounded-full hover:bg-pink-700 focus:ring-4 focus:ring-pink-300"
+                                                className="p-2.5 bg-slate-500 text-white rounded-full hover:bg-slate-700 focus:ring-4 focus:ring-slate-300"
                                                 onClick={() => renderTable(respId['id'])}
                                             >
                                                 <svg
@@ -187,7 +188,7 @@ const Devices_raspberry_pi = () => {
                                         <li key={pageNumber}>
                                             <button
                                                 onClick={() => changePage(pageNumber)}
-                                                className={`px-4 py-2 border text-gray-500 rounded-full hover:bg-gray-100 ${pages === pageNumber ? "bg-pink-500 text-white" : "bg-white"
+                                                className={`px-4 py-2 border text-gray-500 rounded-full hover:bg-gray-100 ${pages === pageNumber ? "bg-slate-500 text-white" : "bg-white"
                                                     }`}
                                             >
                                                 {pageNumber}

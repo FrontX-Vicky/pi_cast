@@ -32,6 +32,9 @@ const StorageUsageChart: React.FC<StorageUsageChartProps> = ({ data, type }) => 
     chart: {
       type: "donut",
       height: 250,
+      animations: {
+        enabled: false, // Disable animations
+      },
     },
     plotOptions: {
       pie: {

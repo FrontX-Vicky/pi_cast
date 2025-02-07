@@ -1,25 +1,81 @@
 import { Link } from 'react-router-dom';
 import LogoDark from '../../images/logo/logo-dark.svg';
 import Logo from '../../images/logo/logo.png';
-
+import React, { useState, useMemo } from 'react'
+import Select from 'react-select'
+import countryList from 'react-select-country-list'
+import "react-phone-input-2/lib/bootstrap.css";
+import PhoneInput from "react-phone-input-2";
 const SignIn = () => {
+  // const [pinValue, setPinValue] = useState('')
+  const [pinValue, setPinValue] = useState<string>('+91'); // Default to India
+
+  const [passwordValue, setPassword] = useState('')
+  const [mobileValue, setMobileValue] = useState('')
+  const options = useMemo(() => countryList().getData(), [])
+  const [showAlertSeverity, setAlertSeverity] = useState('false');
+  const [showAlertMsg, setAlertMsg] = useState('false');
+  const changeHandler = (e, stateValue) => {
+    var val = e.target == null || e.target == undefined ? e : e.target.value
+    stateValue(val)
+  }
+
+  const sign_in = () => {
+    if (passwordValue == '' || pinValue == '' || mobileValue == '') {
+      setAlertSeverity('true');
+      setAlertMsg('please enter your password')
+    } else {
+      const formData = {
+        countryCode: pinValue,
+        mobile: mobileValue,
+        password: passwordValue,
+      }
+      console.log(formData);
+    }
+  }
+
+  function dismissAlert() {
+    const alert = document.getElementById('alert-border-4');
+    if (alert) {
+      alert.style.display = 'none';
+      setAlertSeverity('false');
+    }
+  }
+
+  setTimeout(dismissAlert, 3000);
+
   return (
     <>
-      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-        <div className="flex flex-wrap items-center">
+      <div className="h-full rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        {showAlertSeverity == 'true' &&
+          <div id="alert-border-4" className="fixed w-full flex items-center p-4 mb-4 text-yellow-800 border-t-4 border-yellow-300 bg-yellow-50 dark:text-yellow-300 dark:bg-gray-800 dark:border-yellow-800" role="alert">
+            <svg className="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+            </svg>
+            <div className="ms-3 text-sm font-medium">
+              {showAlertMsg}
+            </div>
+            {/* <button type="button" className="ms-auto -mx-1.5 -my-1.5 bg-yellow-50 text-yellow-500 rounded-lg focus:ring-2 focus:ring-yellow-400 p-1.5 hover:bg-yellow-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-yellow-300 dark:hover:bg-gray-700" data-dismiss-target="#alert-border-4" aria-label="Close">
+            <span className="sr-only">Dismiss</span>
+            <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+            </svg>
+          </button> */}
+          </div>
+        }
+        <div className="h-full flex flex-wrap items-center">
           <div className="hidden w-full xl:block xl:w-1/2">
             <div className="py-17.5 px-26 text-center">
-              <Link className="mb-5.5 inline-block" to="/">
+              {/* <Link className="mb-5.5 inline-block" to="/">
                 <img className="hidden dark:block" src={Logo} alt="Logo" />
                 <img className="dark:hidden" src={LogoDark} alt="Logo" />
-              </Link>
+              </Link> */}
 
               <p className="2xl:px-20">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit
-                suspendisse.
+                Welcome
               </p>
-
-              <span className="mt-15 inline-block">
+              <img className="pl-50 h-75" src={Logo} alt="Logo" />
+              {/* <span className="mt-15 inline-block">
                 <svg
                   width="350"
                   height="350"
@@ -140,58 +196,56 @@ const SignIn = () => {
                     fill="#1C2434"
                   />
                 </svg>
-              </span>
+              </span> */}
             </div>
           </div>
 
           <div className="w-full border-stroke dark:border-strokedark xl:w-1/2 xl:border-l-2">
             <div className="w-full p-4 sm:p-12.5 xl:p-17.5">
-              <span className="mb-1.5 block font-medium">Start for free</span>
               <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
-                Sign In to TailAdmin
+                Sign In to Tickle-Right
               </h2>
 
               <form>
                 <div className="mb-4">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
-                    Email
+                    Mobile No
                   </label>
-                  <div className="relative">
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-                    />
+                  <div className="rounded-lg border border-stroke bg-transparent grid grid-cols-4 gap-3">
+                    <div className="">
+                      <div className='py-4 pl-6 pr-10 col-start-2 col-end-1'>
+                        <PhoneInput
+                          country={"eg"}
+                          enableSearch={true}
+                          value={mobileValue}
+                          onChange={(value) => changeHandler(value, setMobileValue)}
+                        />
+                        {/* <Select options={options} value={pinValue} placeholder={"Country Code"} onChange={(e) => changeHandler(e, setPinValue)} /> */}
+                      </div>
+                    </div>
+                    {/* <div className='py-4 pl-6 pr-10 col-start-2 col-span-3'>
+                      <input
+                        type="Mobile No"
+                        placeholder="Enter your Mobile No" onChange={(e) => changeHandler(e, setMobileValue)}
+                        className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+                      />
+                      <span className="absolute right-4 top-4">
 
-                    <span className="absolute right-4 top-4">
-                      <svg
-                        className="fill-current"
-                        width="22"
-                        height="22"
-                        viewBox="0 0 22 22"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g opacity="0.5">
-                          <path
-                            d="M19.2516 3.30005H2.75156C1.58281 3.30005 0.585938 4.26255 0.585938 5.46567V16.6032C0.585938 17.7719 1.54844 18.7688 2.75156 18.7688H19.2516C20.4203 18.7688 21.4172 17.8063 21.4172 16.6032V5.4313C21.4172 4.26255 20.4203 3.30005 19.2516 3.30005ZM19.2516 4.84692C19.2859 4.84692 19.3203 4.84692 19.3547 4.84692L11.0016 10.2094L2.64844 4.84692C2.68281 4.84692 2.71719 4.84692 2.75156 4.84692H19.2516ZM19.2516 17.1532H2.75156C2.40781 17.1532 2.13281 16.8782 2.13281 16.5344V6.35942L10.1766 11.5157C10.4172 11.6875 10.6922 11.7563 10.9672 11.7563C11.2422 11.7563 11.5172 11.6875 11.7578 11.5157L19.8016 6.35942V16.5688C19.8703 16.9125 19.5953 17.1532 19.2516 17.1532Z"
-                            fill=""
-                          />
-                        </g>
-                      </svg>
-                    </span>
+                      </span>
+                    </div> */}
+                    {/* </div> */}
                   </div>
                 </div>
 
                 <div className="mb-6">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
-                    Re-type Password
+                    Password
                   </label>
                   <div className="relative">
                     <input
                       type="password"
-                      placeholder="6+ Characters, 1 Capital letter"
-                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+                      placeholder="Password"
+                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" onChange={(e) => changeHandler(e, setPassword)}
                     />
 
                     <span className="absolute right-4 top-4">
@@ -220,13 +274,13 @@ const SignIn = () => {
 
                 <div className="mb-5">
                   <input
-                    type="submit"
-                    value="Sign In"
+                    type="button"
+                    value="Sign In" onClick={() => sign_in()}
                     className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
                   />
                 </div>
 
-                <button className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-stroke bg-gray p-4 hover:bg-opacity-50 dark:border-strokedark dark:bg-meta-4 dark:hover:bg-opacity-50">
+                {/* <button className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-stroke bg-gray p-4 hover:bg-opacity-50 dark:border-strokedark dark:bg-meta-4 dark:hover:bg-opacity-50">
                   <span>
                     <svg
                       width="20"
@@ -261,14 +315,14 @@ const SignIn = () => {
                     </svg>
                   </span>
                   Sign in with Google
-                </button>
+                </button> */}
 
                 <div className="mt-6 text-center">
                   <p>
-                    Don’t have any account?{' '}
-                    <Link to="/auth/signup" className="text-primary">
+                    Don’t have any account?{' '} please contact admins
+                    {/* <Link to="/auth/signup" className="text-primary">
                       Sign Up
-                    </Link>
+                    </Link> */}
                   </p>
                 </div>
               </form>

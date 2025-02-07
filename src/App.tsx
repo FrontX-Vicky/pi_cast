@@ -30,7 +30,7 @@ function App() {
       <SearchProvider>
         <Routes>
           <Route path="/auth/signin" element={<SignIn />} />
-          <Route path="/auth/signup" element={<SignUp />} />
+          {/* <Route path="/auth/signup" element={<SignUp />} /> */}
           <Route element={<DefaultLayout />}>
             <Route index element={<ECommerce />} />
             {routes.map((routes, index) => {
