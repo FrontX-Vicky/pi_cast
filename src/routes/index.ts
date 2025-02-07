@@ -11,6 +11,10 @@ const DevicesPi = lazy(() => import('../pages/DevicesPi'));
 const Alerts = lazy(() => import('../pages/UiElements/Alerts'));
 const pi_cast = lazy(() => import('../pages/Pi_Cast'));
 const all_pi = lazy(() => import('../pages/AllPis'));
+const timer = lazy(() => import('../pages/TimerFnc'));
+const typoGraphy = lazy(() => import('../components/TypoGraphy'));
+const storageChart = lazy(() => import('../components/StorageUsageChart'));
+const createEmployee =  lazy(() => import('../pages/CreateEmp'));
 const Buttons = lazy(() => import('../pages/UiElements/Buttons'));
 
 const coreRoutes = [
@@ -50,7 +54,7 @@ const coreRoutes = [
     component: Chart,
   },
   {
-    path: '/Devices',
+    path: 'Pis/Devices',
     title: 'DevicesPi',
     component: DevicesPi,
   },
@@ -65,14 +69,39 @@ const coreRoutes = [
     component: Buttons,
   },
   {
-    path: '/Pi-Casting',
+    path: 'Pis/Pi-Casting',
     title: 'pi_cast',
     component: pi_cast,
   },
   {
-    path: '/All-Pis',
+    path: 'Pis/All-Pis',
     title: 'All-pi',
     component: all_pi,
+  },
+  {
+    path: '/timer',
+    title: 'All-timer',
+    component: timer,
+  },
+  {
+    path: '/typoGraphy',
+    title: 'Typo-Graphy',
+    component: typoGraphy,
+  },
+  {
+    path: '/storageChart',
+    title: 'storage-Chart',
+    component: storageChart,
+  },
+  {
+    path: 'Employee/CreateEmp/:id',
+    title: 'Create-Emp',
+    component: createEmployee,
+  },
+  {
+    path: 'Employee/CreateEmp',
+    title: 'Create-Emp',
+    component: createEmployee,
   },
 ];
 
