@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Pusher from 'pusher-js';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState , Fragment} from 'react';
 import Loader from '../common/Loader';
 import rpi from '../images/logo/raspberry-pi-icon-transparent.png';
 import { HiVideoCamera } from "react-icons/hi2";
@@ -15,12 +15,15 @@ import { RiShutDownLine } from "react-icons/ri";
 import { BsBootstrapReboot } from "react-icons/bs";
 import { GrPowerReset } from "react-icons/gr";
 import { LuRefreshCcwDot } from "react-icons/lu";
+import { FcCamera  } from "react-icons/fc";
 import { MdCleaningServices } from "react-icons/md";
 import { MdOutlineSdStorage } from "react-icons/md";
 import { GrClearOption } from "react-icons/gr";
 import { DateTime } from 'luxon';
 import TypoGraphy from './TypoGraphy';
 import { SearchContext } from './SearchContext';
+import { Dialog, Transition } from "@headlessui/react";
+
 const Pi_Casting = () => {
   var arrayOfRecording = [];
   var allRecording = [];
@@ -30,6 +33,9 @@ const Pi_Casting = () => {
     throw new Error('getSearchValue must be used within a SearchProvider');
   }
   const [availablePi, setavailablePi] = useState<string[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [timestamp, setTimestamp] = useState(Date.now());
+  const [selectedId, setSelectedId] = useState(null);
   const timerRefs = useRef({});
   const [pages, setpages] = useState(1);
   let allPis = {};
@@ -128,9 +134,20 @@ const Pi_Casting = () => {
     });
   }, []);
 
-  // const piLoader = (pi_id)=>{
-  //   piBtnDisabled[pi_id] = true;
-  // }
+  useEffect(() => {
+    // Update the timestamp every second
+    const interval = setInterval(() => {
+      setTimestamp(Date.now());
+    }, 500);
+ 
+    // Clear the interval on component unmount to avoid memory leaks
+    return () => clearInterval(interval);
+  }, []);
+
+  const openModal = (id) => {
+    setSelectedId(id);
+    setIsOpen(true);
+  };
 
   const loaderIcon = <svg
     className="animate-spin h-5 w-5 text-white"
@@ -391,12 +408,12 @@ const Pi_Casting = () => {
                       <span className="text-sm text-center"> <TypoGraphy percentage={record.upload_percentage} total={record.upload_percentage} type='upload' /></span>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <h5 className="font-medium text-black dark:text-white">
+                      {/* <h5 className="font-medium text-black dark:text-white"> */}
 
                         {record.status == 0 ?
                           <button
                             type="button"
-                            className={`text-sm text-black bg-orange-300 border-b-2 border-orange-800 text-center dark:text-white font-medium rounded-lg px-4 py-2 me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                            className={`text-black bg-orange-300 border-b-2 border-orange-800 text-center dark:text-white font-medium rounded-lg px-4 py-2 me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                             data-twe-toggle="tooltip" onClick={() => stopRecord(record.pi_id, record.batch_id)} disabled={isLoading}
                             data-twe-placement="top"
                             data-twe-ripple-init
@@ -407,9 +424,26 @@ const Pi_Casting = () => {
                             ) : (
                               <FaRegCircleStop />
                             )}
-                          </button> : record.id == 0 ? <div><button
+                          </button> : record.id == 0 ? 
+                          <div>
+                            <button
+                              type="button"
+                              className={`text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white  rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              data-twe-toggle="tooltip"  onClick={() => openModal(record.pi_id)}
+                              disabled={isLoading}
+                              data-twe-placement="top"
+                              data-twe-ripple-init
+                              data-twe-ripple-color="light"
+                              title="Start">
+                              {isLoading ? (
+                                loaderIcon
+                              ) : (
+                                <FcCamera  />
+                              )}
+                            </button>
+                            <button
                             type="button"
-                            className={`text-sm text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                            className={`text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                             data-twe-toggle="tooltip" onClick={() => startRecord(record.pi_id)} disabled={isLoading}
                             data-twe-placement="top"
                             data-twe-ripple-init
@@ -422,7 +456,7 @@ const Pi_Casting = () => {
                             )}
                           </button><button
                             type="button"
-                            className={`text-sm text-black bg-orange-400 border-b-orange-900 border-b-2 w-12 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                            className={`text-black bg-orange-400 border-b-orange-900 border-b-2 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                             onClick={() => clearRecord(record.pi_id)} disabled={isLoading}
                             data-twe-toggle="tooltip"
                             data-twe-placement="top"
@@ -436,7 +470,7 @@ const Pi_Casting = () => {
                               )}
                             </button> <button
                               type="button"
-                              className={`text-sm text-black bg-cyan-500 border-b-cyan-800 border-b-2 w-12 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`text-black bg-cyan-500 border-b-cyan-800 border-b-2 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-1 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => reboot(record.pi_id)} disabled={isLoading}
                               data-twe-toggle="tooltip"
                               data-twe-placement="top"
@@ -451,7 +485,7 @@ const Pi_Casting = () => {
                             </button>
                             <button
                               type="button"
-                              className={`text-sm bg-red-400 border-b-red-900 text-black border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`bg-red-400 border-b-red-900 text-black border-b-2 dark:text-white font-bold rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => shutDown(record.pi_id)} disabled={isLoading}
                               data-twe-toggle="tooltip"
                               data-twe-placement="top"
@@ -465,7 +499,7 @@ const Pi_Casting = () => {
                               )}
                             </button> <button
                               type="button"
-                              className={`text-sm border-b-2 bg-blue-200 border-b-blue-700 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`border-b-2 bg-blue-200 border-b-blue-700 dark:text-white rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => reFresh(record.pi_id)} disabled={isLoading}
                               data-twe-toggle="tooltip"
                               data-twe-placement="top"
@@ -479,7 +513,7 @@ const Pi_Casting = () => {
                               )}
                             </button> <button
                               type="button"
-                              className={`text-sm border-b-2 bg-pink-200 border-b-pink-900 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`border-b-2 bg-pink-200 border-b-pink-900 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => storageClear(record.pi_id)} disabled={isLoading}
                               data-twe-toggle="tooltip"
                               data-twe-placement="top"
@@ -494,7 +528,7 @@ const Pi_Casting = () => {
                               )}
                             </button> </div> : record.status != 0 ? <div><button
                               type="button"
-                              className={`text-sm text-black bg-blue-400 border-blue-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`text-black bg-blue-400 border-blue-900 border-b-2 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => startReMerging(record.pi_id, record.filename)} disabled={isLoading}
                               data-twe-toggle="tooltip"
                               data-twe-placement="top"
@@ -508,7 +542,7 @@ const Pi_Casting = () => {
                               )}
                             </button> <br /><button
                               type="button"
-                              className={`text-sm border-b-2 bg-red-400 border-b-red-900 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`border-b-2 bg-red-400 border-b-red-900 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => trash(record.pi_id, record.filename)} disabled={isLoading}
                               data-twe-toggle="tooltip"
                               data-twe-placement="top"
@@ -521,7 +555,7 @@ const Pi_Casting = () => {
                                   <RiDeleteBin6Fill />
                                 )}
                               </button> </div> : record.status == 1 ? '' : ''}
-                      </h5>
+                      {/* </h5> */}
                     </td>
                   </tr>
                 ))
@@ -529,6 +563,58 @@ const Pi_Casting = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Camera preview modal */}
+        <Transition appear show={isOpen} as={Fragment}>
+          <Dialog as="div" className="relative z-10" onClose={setIsOpen}>
+            {/* Overlay */}
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-black bg-opacity-50" />
+            </Transition.Child>
+
+            {/* Modal container */}
+            <div className="fixed inset-0 flex items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="bg-white rounded-lg p-6">
+                  <Dialog.Title className="text-xl font-bold">
+                    Preview
+                  </Dialog.Title>
+                  <div className="mt-4">
+                  <img
+                      src={`https://api.tickleright.in/cam_image/image_${selectedId}.jpg?t=${timestamp}`}
+                      alt="Dynamic"
+                    />
+                  </div>
+
+                  <div className="mt-6 flex justify-end">
+                    <button
+                      onClick={() => setIsOpen(false)}
+                      className="px-4 py-2 bg-blue-500 text-white rounded"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </Dialog>
+        </Transition>
       </div>
 
     </>
