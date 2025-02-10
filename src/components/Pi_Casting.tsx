@@ -24,6 +24,12 @@ import TypoGraphy from './TypoGraphy';
 import { SearchContext } from './SearchContext';
 import { Dialog, Transition } from "@headlessui/react";
 
+// icons
+
+import { FcStart } from "react-icons/fc";
+import { FaPlay } from "react-icons/fa";
+import { BsRecordCircle } from "react-icons/bs";
+
 const Pi_Casting = () => {
   var arrayOfRecording = [];
   var allRecording = [];
@@ -408,8 +414,6 @@ const Pi_Casting = () => {
                       <span className="text-sm text-center"> <TypoGraphy percentage={record.upload_percentage} total={record.upload_percentage} type='upload' /></span>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      {/* <h5 className="font-medium text-black dark:text-white"> */}
-
                         {record.status == 0 ?
                           <button
                             type="button"
@@ -418,7 +422,7 @@ const Pi_Casting = () => {
                             data-twe-placement="top"
                             data-twe-ripple-init
                             data-twe-ripple-color="light"
-                            title="Stop">
+                            title="Stop Recording">
                             {isLoading ? (
                               loaderIcon
                             ) : (
@@ -434,7 +438,7 @@ const Pi_Casting = () => {
                               data-twe-placement="top"
                               data-twe-ripple-init
                               data-twe-ripple-color="light"
-                              title="Start">
+                              title="Camera Preview">
                               {isLoading ? (
                                 loaderIcon
                               ) : (
@@ -448,13 +452,14 @@ const Pi_Casting = () => {
                             data-twe-placement="top"
                             data-twe-ripple-init
                             data-twe-ripple-color="light"
-                            title="Start">
+                            title="Start Recording">
                             {isLoading ? (
                               loaderIcon
                             ) : (
-                              <FaRegPlayCircle />
+                              <BsRecordCircle />
                             )}
-                          </button><button
+                            </button>
+                            <button
                             type="button"
                             className={`text-black bg-orange-400 border-b-orange-900 border-b-2 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                             onClick={() => clearRecord(record.pi_id)} disabled={isLoading}
@@ -468,7 +473,8 @@ const Pi_Casting = () => {
                               ) : (
                                 <MdCleaningServices />
                               )}
-                            </button> <button
+                            </button> 
+                            <button
                               type="button"
                               className={`text-black bg-cyan-500 border-b-cyan-800 border-b-2 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-1 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => reboot(record.pi_id)} disabled={isLoading}
@@ -497,7 +503,8 @@ const Pi_Casting = () => {
                               ) : (
                                 <RiShutDownLine />
                               )}
-                            </button> <button
+                            </button> 
+                            <button
                               type="button"
                               className={`border-b-2 bg-blue-200 border-b-blue-700 dark:text-white rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => reFresh(record.pi_id)} disabled={isLoading}
@@ -511,7 +518,8 @@ const Pi_Casting = () => {
                               ) : (
                                 <LuRefreshCcwDot />
                               )}
-                            </button> <button
+                            </button> 
+                            <button
                               type="button"
                               className={`border-b-2 bg-pink-200 border-b-pink-900 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => storageClear(record.pi_id)} disabled={isLoading}
@@ -526,7 +534,9 @@ const Pi_Casting = () => {
                                 // <MdOutlineSdStorage />
                                 <GrClearOption />
                               )}
-                            </button> </div> : record.status != 0 ? <div><button
+                            </button> 
+                          </div> : record.status != 0 ? <div>
+                            <button
                               type="button"
                               className={`text-black bg-blue-400 border-blue-900 border-b-2 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => startReMerging(record.pi_id, record.filename)} disabled={isLoading}
@@ -540,7 +550,8 @@ const Pi_Casting = () => {
                               ) : (
                                 <TbArrowMerge />
                               )}
-                            </button> <br /><button
+                            </button> <br />
+                            <button
                               type="button"
                               className={`border-b-2 bg-red-400 border-b-red-900 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => trash(record.pi_id, record.filename)} disabled={isLoading}
@@ -554,8 +565,8 @@ const Pi_Casting = () => {
                                 ) : (
                                   <RiDeleteBin6Fill />
                                 )}
-                              </button> </div> : record.status == 1 ? '' : ''}
-                      {/* </h5> */}
+                            </button> 
+                          </div> : record.status == 1 ? '' : ''}
                     </td>
                   </tr>
                 ))
