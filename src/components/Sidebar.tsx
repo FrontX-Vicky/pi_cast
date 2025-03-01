@@ -9,6 +9,7 @@ import { MdCast } from "react-icons/md";
 import { SiRaspberrypi } from "react-icons/si";
 import { RxDashboard } from "react-icons/rx";
 import { BiUserPin } from "react-icons/bi";
+import { MdOutlinePermMedia } from "react-icons/md";
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
@@ -344,7 +345,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-white')
                               }
-                            ><MdImportantDevices />
+                            >< MdImportantDevices/>
                               Devices
                             </NavLink>
                           </li>
@@ -355,7 +356,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-white')
                               }
-                            ><MdImportantDevices />
+                            ><MdOutlinePermMedia />
                               All Recordings
                             </NavLink>
                           </li>
