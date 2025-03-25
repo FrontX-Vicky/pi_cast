@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { del, get, post, put } from "../helpers/api_helper";
 import Pusher from 'pusher-js';
 import React, { useContext, useEffect, useRef, useState , Fragment} from 'react';
 import Loader from '../common/Loader';
@@ -39,6 +40,9 @@ const Pi_Casting = () => {
     throw new Error('getSearchValue must be used within a SearchProvider');
   }
   const [availablePi, setavailablePi] = useState<string[]>([]);
+  const [venues, setVenues] = useState<string[]>([]);
+  const [batches, setBatches] = useState<string[]>([]);
+  const [classrooms, setClassrooms] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [timestamp, setTimestamp] = useState(Date.now());
   const [selectedId, setSelectedId] = useState(null);
@@ -77,7 +81,7 @@ const Pi_Casting = () => {
           // Update the state after deletion
           setDatas(Object.values(allPis));
           // console.log('Deleted data.message.pi_id after 15 seconds: ' + data.message.pi_id);
-        }, 15000); //!wait 10 seconds
+        }, 30000); //!wait 10 seconds
 
 
         if (data.message && data.message.recordings.length == 0) {
@@ -138,6 +142,12 @@ const Pi_Casting = () => {
       setDatas(Object.values(allPis));
       setLoading(false);
     });
+  }, []);
+
+  useEffect(() => {
+    getBatches();
+    getVenues();
+    getClassrooms();
   }, []);
 
   useEffect(() => {
@@ -263,11 +273,81 @@ const Pi_Casting = () => {
     setLoading(true);
     var payload = {
       "type": "storage_clear",
-      "days": "10",
+      "days": "1",
       "id": pi_id
     }
     globalFunc(payload);
   }
+
+  const getClassrooms = () => {
+    var payload = {}
+    var url = 'get_classrooms';
+    // api(payload,url);
+  }
+
+  const getVenues = async () => {
+    try {
+      const response = await get("get_venues", {}); // Wait for the response
+      console.log(response);
+      setVenues(JSON.parse(response.data));
+    } catch (error) {
+      console.error("Error fetching batches:", error);
+    }
+  }
+
+  const getBatches = async () => {
+    try {
+      const response = await get("get_batches", {}); // Wait for the response
+      setBatches(JSON.parse(response.data));
+    } catch (error) {
+      console.error("Error fetching batches:", error);
+    }
+  };
+
+
+  // const api = (data = {}, url, type = 'get') => {
+  //   if(url){
+  //     switch(type){
+  //       case 'get':
+  //         axios.get('https://api.tickleright.in/api/rpi/' + url, data).then((response) => {
+  //           console.log(response);
+  //           try {
+  //             if (response) {
+  //               // setLoading(false);
+  //               console.log('Successfully fetch' + url);
+  //             } else {
+  //               console.log('Something went wrong is Api response');
+  //             }
+  //           } catch (err) {
+  //             console.log('Error Occured while making an API request');
+  //           }
+  //         });
+  //         break;
+
+  //         case 'post':
+  //           axios.post('https://api.tickleright.in/api/rpi/' + url, data).then((response) => {
+  //             console.log(response);
+  //             try {
+  //               if (response) {
+  //                 // setLoading(false);
+  //                 console.log('Successfully fetch' + url);
+  //               } else {
+  //                 console.log('Something went wrong is Api response');
+  //               }
+  //             } catch (err) {
+  //               console.log('Error Occured while making an API request');
+  //             }
+  //           });
+  //           break;
+
+  //     }
+      
+    
+  //   }else{
+  //     console.log("API url error: "+ url)
+  //   }
+
+  // }
 
   const globalFunc = (payload) => {
     axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
@@ -290,7 +370,7 @@ const Pi_Casting = () => {
   return (
 
     <>
-      <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 overflow-hidden">
+      <div className="rounded-sm border border-stroke bg-white px-5 pt-1 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 overflow-hidden">
         <div style={{ display: styleLoader }}>
           {/* <Loader /> */}
         </div>
@@ -301,44 +381,41 @@ const Pi_Casting = () => {
                 {/* <th className="min-w-[110px] max-h-242.5 py-4 px-4 font-medium text-black dark:text-white">
                   Sr.No
                 </th> */}
-                <th className="min-w-[110px] max-h-242.5 py-4 px-4 font-medium text-black dark:text-white">
-                  Rec Status
+                <th className="min-w-[90px] max-h-242.5 py-2 px-2 font-medium text-black dark:text-white">
+                  #
                 </th>
-                <th className="min-w-[80px] py-4 px-4 font-medium text-black dark:text-white">
-                  Pi Id
+                <th className="min-w-[200px] py-2 px-4 font-medium text-black dark:text-white">
+                  Pi Id - Venue
                 </th>
-                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                <th className="min-w-[90px] py-2 px-4 font-medium text-black dark:text-white">
                   Storage
                 </th>
-                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                  Ram
-                </th>
-                <th className="min-w-[50px] py-4 px-1 font-medium text-black dark:text-white">
+                <th className="min-w-[50px] py-2 px-1 font-medium text-black dark:text-white">
                   Devices
                 </th>
-                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                <th className="min-w-[250px] py-2 px-4 font-medium text-black dark:text-white">
                   Batch Id
                 </th>
-                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                <th className="min-w-[130px] py-2 px-4 text-black dark:text-white">
                   Date
                 </th>
-                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
                   Video/Audio Size
                 </th>
 
-                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
                   Duration
                 </th>
-                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
                   Status
                 </th>
-                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                  Merge Percentage
+                <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
+                  Percentage
                 </th>
-                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                {/* <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
                   Upload Percentage
-                </th>
-                <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white">
+                </th> */}
+                <th className="min-w-[220px] py-2 px-4 font-medium text-black dark:text-white">
                   Actions
                 </th>
               </tr>
@@ -351,30 +428,30 @@ const Pi_Casting = () => {
                   )
                 ).map((record, index) => (
                   <tr key={record.id}>
-                    {/* <td className="border-b border-[#eee] py-5 dark:border-strokedark ">
+                    {/* <td className="border-b border-[#eee] py-2 dark:border-strokedark ">
                       <p className="text-sm text-center"> {indexs + 1}</p>
                     </td> */}
-                    <td className="border-b relative rounded-full border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <div className='h-10'>
-                        <img src={rpi} alt="User" style={{ height: '48px', width: '40px' }} />
-                        <span className={`animate-ping absolute right-7.5 bottom-8 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0 ? 'bg-meta-3' : record.status == 1 ? 'bg-primary' : record.status == 2 ? 'bg-meta-6' : 'bg-meta-7'}`} />
-                        <span className={`absolute right-7.5 bottom-8 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0 ? 'bg-meta-3' : record.status == 1 ? 'bg-primary' : record.status == 2 ? 'bg-meta-6' : 'bg-meta-7'}`} />
+                    <td className="border-b relative rounded-full border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
+                      <div className='h-10 relative'>
+                        <img src={rpi} alt="User" style={{ height: '40px', width: '38px' }} />
+                        <span className={`animate-ping absolute right-0 bottom-0 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0 ? 'bg-meta-3' : record.status == 1 ? 'bg-primary' : record.status == 2 ? 'bg-meta-6' : 'bg-meta-7'}`} />
+                        <span className={`absolute right-0 bottom-0 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0 ? 'bg-meta-3' : record.status == 1 ? 'bg-primary' : record.status == 2 ? 'bg-meta-6' : 'bg-meta-7'}`} />
                       </div>
                     </td>
-                    <td className="border-b border-[#eee] py-5 dark:border-strokedark ">
-                      <p className="text-sm text-center"> {record.pi_id}</p>
+                    <td className="border-b border-[#eee] pt-2 dark:border-strokedark ">
+                      <p className="text-md font-bold text-white text-center"> <span>{record.pi_id}</span><br/> {venues[element['venue_id']]}</p>
                     </td>
-                    <td className="text-sm text-center border-b border-[#eee] py-5 dark:border-strokedark">
+                    <td className="text-sm text-center border-b border-[#eee] pt-2 dark:border-strokedark">
                       <span className="text-sm text-center">
                         <TypoGraphy percentage={((element['stats']['storage']['used_storage'] / element['stats']['storage']['total_storage']) * 100)} total={element['stats']['storage']['total_storage']} type='storage' />
                       </span>
-                    </td>
-                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <span className="text-sm text-center">
+                    {/* </td>
+                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark"> */}
+                      {/* <span className="text-sm text-center">
                         <TypoGraphy percentage={((element['stats']['ram']['used_ram'] / element['stats']['ram']['total_ram']) * 100)} total={element['stats']['ram']['total_ram']} type='storage' />
-                      </span>
+                      </span> */}
                     </td>
-                    <td className="text-sm text-center align-middle border-b border-[#eee] py-5 dark:border-strokedark">
+                    <td className="text-sm text-center align-middle border-b border-[#eee] pt-2 dark:border-strokedark">
                       {element['devices'].camera == 1 ? (
                         <HiVideoCamera style={{ width: '20px', height: '24px', display: 'block', margin: '0 auto', color: '#34e37d' }} />
                       ) : (
@@ -387,33 +464,36 @@ const Pi_Casting = () => {
                       )}
                     </td>
 
-                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <p className="text-sm text-center"> {record.batch_id}</p>
+                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
+                      <p className="text-sm text-center"> {batches[record.batch_id]}</p>
                     </td>
-                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
                       <p className="text-sm text-center">
                         {record.date && DateTime.fromFormat(record.date, 'yyyy-MM-dd HH:mm:ss').toFormat('dd-MM-yyyy HH:mm:ss a')}
                       </p>
                     </td>
-                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
                       <p className="text-sm text-center"> {record.video_size}/{record.audio_size}</p>
                     </td>
 
-                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
                       <p className="text-sm text-center"> {record.duration}</p>
                     </td>
 
-                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
                       <p className="text-sm text-center"> {record.id == 0 ? 'Idle' : record.status == 1 ? 'Merging' : record.status == 2 ? 'Uploading' : record.status == 0 ? 'Recording' : 'Completed'}</p>
                     </td>
-                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <span className="text-sm text-center"> <TypoGraphy percentage={record.merge_percentage} total={record.merge_percentage} type='upload' />
-                      </span>
+                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
+
+                    {record.status != 0 ? record.status == 1? <span className="text-sm text-center"> <TypoGraphy percentage={record.merge_percentage} total={record.merge_percentage} type='upload' />
+                    </span> : <span className="text-sm text-center"> <TypoGraphy percentage={record.upload_percentage} total={record.upload_percentage} type='upload' /></span>:<span></span>}
+
+                   
                     </td>
-                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                      <span className="text-sm text-center"> <TypoGraphy percentage={record.upload_percentage} total={record.upload_percentage} type='upload' /></span>
-                    </td>
-                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                    {/* <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
+                      
+                    </td> */}
+                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
                         {record.status == 0 ?
                           <button
                             type="button"
