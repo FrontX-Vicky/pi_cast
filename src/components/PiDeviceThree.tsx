@@ -75,13 +75,11 @@ const TableThree = () => {
       forceTLS: true
     });
     var channel = pusher.subscribe('pi_cast');
-    // debugger;
     // Subscribe to a channel and log incoming events
     // Log all events to the console
     // channel.bind_global(function (eventName = 'AppConnect', data) {
     channel.bind_global(function (eventName, data) {
       // console.log('Full event data:', data);
-      // debugger;
       if (data != undefined && data.message) {
         hideLoader('none');
         // console.log(data.message.pi_id);
@@ -346,7 +344,6 @@ const TableThree = () => {
     ],
     []
   );
-  // debugger;
 
   var localMode = localStorage.getItem('color-theme');
   var cleanedMode = localMode.replace(/^"|"$/g, ""); // Remove the surrounding quotes

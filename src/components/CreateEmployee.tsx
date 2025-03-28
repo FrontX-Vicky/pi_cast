@@ -434,7 +434,7 @@ function CreateEmployee() {
       const fetchEmployeeData = async () => {
         try {
           const res = await axios.get(`https://api.tickleright.in/api/employee/getEmployee/${id}`);
-          // debugger;
+         
           if (res.data.error === 0) {
             setUpdateBtn(2);
             setEmployeeData(res.data.data[0]);

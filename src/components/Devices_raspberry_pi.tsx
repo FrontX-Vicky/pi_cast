@@ -24,7 +24,6 @@ const Devices_raspberry_pi = () => {
                 if (response.length>0) {
                     raspberryData(response);
                     const initialCheckedState = {};
-                    // debugger;
                     response.forEach((item) => {
                         initialCheckedState[item.id] = item.send_mail;
                     });
