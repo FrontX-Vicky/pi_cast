@@ -37,8 +37,6 @@ const SignIn = () => {
         mobile: mobileValue,
         password: passwordValue,
       }
-      console.log(formData);
-     
       try {
         const response = await post("/sign_in", formData, {});
         if (response.data.error == '0') {
