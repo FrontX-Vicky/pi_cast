@@ -56,7 +56,6 @@ const SignIn = () => {
           setAlertMsg(response.data.message)
           return;
         }
-        console.log(response);
       } catch (error) {
         console.error("Error fetching batches:", error);
       }

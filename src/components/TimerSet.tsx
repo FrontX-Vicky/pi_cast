@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 
 const TimerSet=(pi_id) =>{  
-  console.log('here258');
 
   const [PiExpire, SetPiexpire] = useState('');
   const timerRefs = useRef({}); // Store timeouts

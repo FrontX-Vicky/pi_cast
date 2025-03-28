@@ -71,7 +71,6 @@ const Pi_Casting = () => {
 
         if (timerRefs.current[data.message.pi_id]) {
           clearTimeout(timerRefs.current[data.message.pi_id]);
-          // console.log('Cleared timeout for data.message.pi_id: ' + data.message.pi_id);
         }
 
         // Set a new timeout to delete the data.message.pi_id after 15 seconds
@@ -80,7 +79,6 @@ const Pi_Casting = () => {
           delete timerRefs.current[data.message.pi_id];
           // Update the state after deletion
           setDatas(Object.values(allPis));
-          // console.log('Deleted data.message.pi_id after 15 seconds: ' + data.message.pi_id);
         }, 30000); //!wait 10 seconds
 
 
@@ -138,7 +136,6 @@ const Pi_Casting = () => {
 
         }
       }
-      // console.log(allPis);
       setDatas(Object.values(allPis));
       setLoading(false);
     });
@@ -287,8 +284,7 @@ const Pi_Casting = () => {
 
   const getVenues = async () => {
     try {
-      const response = await get("rpi/get_venues", {}); // Wait for the response
-      console.log(response);
+      const response = await get("rpi/get_venues", {});
       setVenues(JSON.parse(response.data));
     } catch (error) {
       console.error("Error fetching batches:", error);
@@ -307,7 +303,6 @@ const Pi_Casting = () => {
 
   const globalFunc = (payload) => {
     axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
-      console.log(response);
       try {
         if (response) {
           // setLoading(false);
@@ -320,8 +315,6 @@ const Pi_Casting = () => {
       }
     });
   }
-
-  // console.log(datas);
 
   return (
 

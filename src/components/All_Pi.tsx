@@ -17,10 +17,7 @@ function All_Pi() {
     if (!context) {
         throw new Error('getSearchValue must be used within a SearchProvider');
     }
-    // useEffect(() => {
-    //     console.log('Search Input Value:', context.inputValue);
-    //     SetFilter(context.inputValue)
-    // }, []);
+
 
     const [openDropDown, setOpen] = useState(false);
 
@@ -94,7 +91,6 @@ function All_Pi() {
         ],
         []
     );
-    // console.log(colorMode);
     const table = useMaterialReactTable({
         columns,
         data: camData,
@@ -137,7 +133,6 @@ function All_Pi() {
             if (typeof document !== 'undefined') {
                 document.documentElement.classList.toggle('dark', cleanedMode === 'dark');
             }
-            // console.log(localStorage.getItem('color-theme'));
             return {
                 className: "border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:text-white dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1",
             };

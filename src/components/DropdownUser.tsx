@@ -21,7 +21,6 @@ const DropdownUser = () => {
       } else {
         alert(response.message);
       }
-      console.log(response);
     } catch (error) {
       console.error("Error fetching batches:", error);
     }
