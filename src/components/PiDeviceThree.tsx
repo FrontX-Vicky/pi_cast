@@ -79,10 +79,8 @@ const TableThree = () => {
     // Log all events to the console
     // channel.bind_global(function (eventName = 'AppConnect', data) {
     channel.bind_global(function (eventName, data) {
-      // console.log('Full event data:', data);
       if (data != undefined && data.message) {
         hideLoader('none');
-        // console.log(data.message.pi_id);
         if (data && data.message.pi_id != '' && data.message.pi_id != null) {
           const filterData = data.message.pi_id == piId['id'] ? data.message : '';
           if (filterData != '') {
@@ -151,7 +149,6 @@ const TableThree = () => {
           }
         }
         recordingData(Object.values(filterPi));
-        // console.log(data);
         if(Object.keys(filterPi).length>0){
           devices = data['message']['devices'];
           setcamera(devices['camera']);
@@ -261,7 +258,6 @@ const TableThree = () => {
 
   const globalFunc = (payload) => {
     axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
-      console.log(response);
 
       try {
         if (response) {
@@ -347,8 +343,7 @@ const TableThree = () => {
 
   var localMode = localStorage.getItem('color-theme');
   var cleanedMode = localMode.replace(/^"|"$/g, ""); // Remove the surrounding quotes
-  console.log(cleanedMode); // Should print "light"
-  console.log(cleanedMode.length);
+
   // var text_color = cleanedMode == "light" ? 'text-black' : 'text-white'
   var bg_color = cleanedMode == "light" ? '#FFFFFF' : '#000000';  // For background color (light -> white, dark -> black)
   var text_color = cleanedMode == "light" ? '#000000' : '#FFFFFF';  // For text color (light -> black, dark -> white)
@@ -379,7 +374,6 @@ const TableThree = () => {
       if (typeof document !== 'undefined') {
         document.documentElement.classList.toggle('dark', cleanedMode === 'dark');
       }
-      // console.log(localStorage.getItem('color-theme'));
       return {
         className: "border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:text-white dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1",
       };

@@ -68,10 +68,8 @@ const Devices_raspberry_pi = () => {
             "id": id,
             "mail": mailValue
         };
-        console.log('Checkbox clicked for ID:', id);
         try {
             const response = await post("rpi/send_mail", payload, {});
-            console.log(response);
         } catch (error) {
             console.error("Error fetching batches:", error);
         }

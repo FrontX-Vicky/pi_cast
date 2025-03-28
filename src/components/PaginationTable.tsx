@@ -5,13 +5,11 @@ function PaginationTable(props) {
   const [openDropDown, setOpen] = useState(false);
   const changePage = (pageIndex) => {
     props.setpages(pageIndex);
-    // console.log('Updated page:', pageIndex);
   };
 
   const changePageSize = (pageSizes) => {
     setOpen(false);
     props.setpagesLength(pageSizes);
-    // console.log('Updated page:', pageIndex);
   };
 
   const openDD = () => {

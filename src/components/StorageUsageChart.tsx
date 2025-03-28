@@ -19,12 +19,6 @@ const StorageUsageChart: React.FC<StorageUsageChartProps> = ({ data, type }) => 
   const usedPercentage = Math.round((data.used / total) * 100);
   const freePercentage = Math.round((data.free / total) * 100);
 
-  // Log values for debugging
-  // console.log(`Rendering ${type} chart`);
-  // console.log("Data:", data);
-  // console.log("Used Percentage:", usedPercentage);
-  // console.log("Free Percentage:", freePercentage);
-
   // Compute the series directly
   const series = [usedPercentage, freePercentage];
 

@@ -14,9 +14,6 @@ const Login = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Add your login logic here
-    console.log('Phone:', mobileValue);
-    console.log('Password:', password);
   };
 
   return (
