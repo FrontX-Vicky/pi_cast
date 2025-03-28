@@ -1,12 +1,14 @@
 import Breadcrumb from '../components/Breadcrumb';
 import userThree from '../images/user/user-03.png';
+import logo from '../images/logo/logo.png';
 import fireToast from '../hooks/fireToast';
 import { Table } from "../components/TableSettings";
 import { Modal } from "../components/ModalSettings";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 const Settings = () => {
   const [modalOpen, setModalOpen] = useState(false);
-  const [rows, setRows] = useState(localStorage.getItem("alertSettings")?JSON.parse(localStorage.getItem("alertSettings")):[]);
+  const userData = JSON.parse(localStorage.getItem('contact_data') || '{}');
+  const [rows, setRows] = useState(localStorage.getItem("alertSettings") ? JSON.parse(localStorage.getItem("alertSettings")) : []);
   useEffect(() => {
     // storing input name
     localStorage.setItem("alertSettings", JSON.stringify(rows));
@@ -27,18 +29,17 @@ const Settings = () => {
     rowToEdit === null
       ? setRows([...rows, newRow])
       : setRows(
-          rows.map((currRow, idx) => {
-            if (idx !== rowToEdit) return currRow;
+        rows.map((currRow, idx) => {
+          if (idx !== rowToEdit) return currRow;
 
-            return newRow;
-          })
-        );
+          return newRow;
+        })
+      );
   };
 
   return (
     <>
       <div className="mx-auto max-w-270">
-        
         <Breadcrumb pageName="Settings" />
 
         <div className="grid grid-cols-5 gap-8">
@@ -90,8 +91,8 @@ const Settings = () => {
                           type="text"
                           name="fullName"
                           id="fullName"
-                          placeholder="Devid Jhon"
-                          defaultValue="Devid Jhon"
+                          placeholder={userData.fullname}
+                          defaultValue={userData.fullname}
                         />
                       </div>
                     </div>
@@ -108,8 +109,8 @@ const Settings = () => {
                         type="text"
                         name="phoneNumber"
                         id="phoneNumber"
-                        placeholder="+990 3343 7865"
-                        defaultValue="+990 3343 7865"
+                        placeholder={userData.country_code + userData.mobile}
+                        defaultValue={userData.country_code + userData.mobile}
                       />
                     </div>
                   </div>
@@ -152,8 +153,8 @@ const Settings = () => {
                         type="email"
                         name="emailAddress"
                         id="emailAddress"
-                        placeholder="devidjond45@gmail.com"
-                        defaultValue="devidjond45@gmail.com"
+                        placeholder={userData.email}
+                        defaultValue={userData.email}
                       />
                     </div>
                   </div>
@@ -163,15 +164,31 @@ const Settings = () => {
                       className="mb-3 block text-sm font-medium text-black dark:text-white"
                       htmlFor="Username"
                     >
-                      Username
+                      Department
                     </label>
                     <input
                       className="w-full rounded border border-stroke bg-gray py-3 px-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                       type="text"
-                      name="Username"
-                      id="Username"
-                      placeholder="devidjhon24"
-                      defaultValue="devidjhon24"
+                      name="Department"
+                      id="Department"
+                      placeholder={userData.department}
+                      defaultValue={userData.department}
+                    />
+                  </div>
+                  <div className="mb-5.5">
+                    <label
+                      className="mb-3 block text-sm font-medium text-black dark:text-white"
+                      htmlFor="Username"
+                    >
+                      Salary
+                    </label>
+                    <input
+                      className="w-full rounded border border-stroke bg-gray py-3 px-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                      type="text"
+                      name="Salary"
+                      id="Salary"
+                      placeholder={userData.salary}
+                      defaultValue={userData.salary}
                     />
                   </div>
 
@@ -180,7 +197,7 @@ const Settings = () => {
                       className="mb-3 block text-sm font-medium text-black dark:text-white"
                       htmlFor="Username"
                     >
-                      BIO
+                      Address
                     </label>
                     <div className="relative">
                       <span className="absolute left-4.5 top-4">
@@ -219,13 +236,13 @@ const Settings = () => {
                         name="bio"
                         id="bio"
                         rows={6}
-                        placeholder="Write your bio here"
-                        defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque posuere fermentum urna, eu condimentum mauris tempus ut. Donec fermentum blandit aliquet."
+                        placeholder={userData.address}
+                        defaultValue={userData.address}
                       ></textarea>
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-4.5">
+                  {/* <div className="flex justify-end gap-4.5">
                     <button
                       className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
                       type="submit"
@@ -239,7 +256,7 @@ const Settings = () => {
                     >
                       Save
                     </button>
-                  </div>
+                  </div> */}
                 </form>
               </div>
             </div>
@@ -248,31 +265,42 @@ const Settings = () => {
             <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
               <div className="border-b border-stroke py-4 px-7 dark:border-strokedark">
                 <h3 className="font-medium text-black dark:text-white">
-                  Your Photo
+                  Details
                 </h3>
               </div>
               <div className="p-7">
                 <form action="#">
+                  {' '}
+
                   <div className="mb-4 flex items-center gap-3">
                     <div className="h-14 w-14 rounded-full">
-                      <img src={userThree} alt="User" />
+                      <img src={logo} alt="User" />
                     </div>
                     <div>
                       <span className="mb-1.5 text-black dark:text-white">
-                        Edit your photo
+                        {userData.fullname}
                       </span>
                       <span className="flex gap-2.5">
                         <button className="text-sm hover:text-primary">
-                          Delete
-                        </button>
-                        <button className="text-sm hover:text-primary">
-                          Update
+                          Employee Id - {userData.emp_id}
                         </button>
                       </span>
+                      <span className="flex gap-2.5">
+                        <button className="text-sm hover:text-primary">
+                          Contact Id - {userData.contact_id}
+                        </button>
+                      </span>
+                      <span className="flex gap-2.5">
+                        <button className="text-sm hover:text-primary">
+                        Date Of Joinig - {userData.doj}
+                        </button>
+                      </span>
+                      {/* <label className="mb-4 p-2 text-sm text-black dark:text-white font-normal">
+                        Date Of Joinig - {userData.doj}
+                      </label> */}
                     </div>
                   </div>
-
-                  <div
+                  {/* <div
                     id="FileUpload"
                     className="relative mb-5.5 block w-full cursor-pointer appearance-none rounded border-2 border-dashed border-primary bg-gray py-4 px-4 dark:bg-meta-4 sm:py-7.5"
                   >
@@ -317,9 +345,8 @@ const Settings = () => {
                       <p className="mt-1.5">SVG, PNG, JPG or GIF</p>
                       <p>(max, 800 X 800px)</p>
                     </div>
-                  </div>
-
-                  <div className="flex justify-end gap-4.5">
+                  </div> */}
+                  {/* <div className="flex justify-end gap-4.5">
                     <button
                       className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
                       type="submit"
@@ -332,7 +359,7 @@ const Settings = () => {
                     >
                       Save
                     </button>
-                  </div>
+                  </div> */}
                 </form>
               </div>
             </div>

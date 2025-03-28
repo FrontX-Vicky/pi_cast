@@ -6,6 +6,8 @@ import { MaterialReactTable, useMaterialReactTable, } from 'material-react-table
 import { Box, createTheme, ThemeProvider, IconButton } from '@mui/material';
 import useColorMode from '../hooks/useColorMode';
 import { SearchContext } from './SearchContext';
+
+import { del, get, post, put } from "../helpers/api_helper";
 // import classNames from 'classnames';
 
 function All_Pi() {
@@ -33,13 +35,15 @@ function All_Pi() {
 
     async function fetchRecordingData() {
         try {
-            await axios.get('https://api.tickleright.in/api/allCamRecData').then(response => {
-                if (response.status == 200) {
-                    setCamData(response.data[0]);
+            // await axios.get('https://api.tickleright.in/api/allCamRecData').then(response => {
+                const response = await get("rpi/allCamRecData", {});
+              
+                if (response.error == 0) {
+                    setCamData(response[0]);
                 } else {
                     setCamData([]);
                 }
-            });
+            // });
         } catch (err) {
             setCamData([]);
         }

@@ -3,6 +3,7 @@ import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import rpi from '../images/logo/raspberry-pi-icon-transparent.png';
 import { SearchContext } from './SearchContext';
+import { del, get, post, put } from "../helpers/api_helper";
 const Devices_raspberry_pi = () => {
     const navigate = useNavigate();
     const [raspberry_pi, raspberryData] = useState([]);
@@ -12,19 +13,26 @@ const Devices_raspberry_pi = () => {
         throw new Error('getSearchValue must be used within a SearchProvider');
     }
     const [openDropDown, setOpen] = useState(false);
-
+    const [checkedItems, setCheckedItems] = useState<{ [key: string]: number }>({});
     const [pages, setpages] = useState(1);
     const [pagesLength, setpagesLength] = useState(5);
     const [searchResult, setSearchResult] = useState<string>("");
     async function fetchRaspberryId() {
         try {
-            await axios.get('https://api.tickleright.in/api/respData').then(response => {
-                if (response.status == 200) {
-                    raspberryData(response.data);
+            const response = await get("rpi/respData", {}); // Wa
+         
+                if (response.length>0) {
+                    raspberryData(response);
+                    const initialCheckedState = {};
+                    // debugger;
+                    response.forEach((item) => {
+                        initialCheckedState[item.id] = item.send_mail;
+                    });
+                    setCheckedItems(initialCheckedState);
                 } else {
                     raspberryData([]);
                 }
-            });
+          
         } catch (err) {
             raspberryData([]);
         }
@@ -41,19 +49,34 @@ const Devices_raspberry_pi = () => {
 
     const changePage = (pageIndex) => {
         setpages(pageIndex);
-        // console.log('Updated page:', pageIndex);
     };
     const changePageSize = (pageSize) => {
         setOpen(false);
         setpagesLength(pageSize);
-        // console.log('Updated page:', pageIndex);
     };
 
     const openDD = () => {
         setOpen(true);
     }
 
-    // fetchRaspberryId();
+    const handleCheckboxChange = async (id: string) => {
+        const mailValue = checkedItems[id] === 1 ? 0 : 1;
+        setCheckedItems(prev => ({
+            ...prev,
+            [id]: mailValue
+        }));
+        var payload = {
+            "id": id,
+            "mail": mailValue
+        };
+        console.log('Checkbox clicked for ID:', id);
+        try {
+            const response = await post("rpi/send_mail", payload, {});
+            console.log(response);
+        } catch (error) {
+            console.error("Error fetching batches:", error);
+        }
+    };
     return (
         <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
             <div className='relative flex justify-end pr-7 mb-4'>
@@ -88,10 +111,13 @@ const Devices_raspberry_pi = () => {
                                 Venue Name
                             </th>
                             <th className="min-w-[150px] py-4 font-medium text-black dark:text-white">
-                                ip_address
+                                Ip Address
                             </th>
                             <th className="min-w-[120px] py-4 font-medium text-black dark:text-white">
-                                mac_address
+                                Mac Address
+                            </th>
+                            <th className="min-w-[120px] py-4 font-medium text-black dark:text-white">
+                                Send Mail
                             </th>
                             <th className="py-4 font-medium text-black dark:text-white">
                                 Actions
@@ -118,8 +144,15 @@ const Devices_raspberry_pi = () => {
                                     <td className="py-4 text-sm">{respId['venue']}</td>
                                     <td className="py-4 text-sm">{respId['ip_address']}</td>
                                     <td className="py-4 text-sm">{respId['mac_address']}</td>
+                                    <td className="py-4 text-sm">
+                                        <input
+                                            type="checkbox"
+                                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" value={respId['send_mail']}
+                                            checked={checkedItems[respId['id']] === 1} onChange={() => handleCheckboxChange(respId['id'])}
+                                        />
+                                    </td>
                                     <td className="py-4 flex justify-center">
-                                        {respId['venue_id'] && (
+                                        {((respId['venue_id'] || parseInt(respId['venue_id']) !== 0) && respId['venue']!= null ) && (
                                             <button
                                                 type="button"
                                                 className="p-2.5 bg-slate-500 text-white rounded-full hover:bg-slate-700 focus:ring-4 focus:ring-slate-300"

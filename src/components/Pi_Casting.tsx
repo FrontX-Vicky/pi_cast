@@ -287,7 +287,7 @@ const Pi_Casting = () => {
 
   const getVenues = async () => {
     try {
-      const response = await get("get_venues", {}); // Wait for the response
+      const response = await get("rpi/get_venues", {}); // Wait for the response
       console.log(response);
       setVenues(JSON.parse(response.data));
     } catch (error) {
@@ -297,57 +297,13 @@ const Pi_Casting = () => {
 
   const getBatches = async () => {
     try {
-      const response = await get("get_batches", {}); // Wait for the response
+      const response = await get("rpi/get_batches", {}); // Wait for the response
       setBatches(JSON.parse(response.data));
     } catch (error) {
       console.error("Error fetching batches:", error);
     }
   };
 
-
-  // const api = (data = {}, url, type = 'get') => {
-  //   if(url){
-  //     switch(type){
-  //       case 'get':
-  //         axios.get('https://api.tickleright.in/api/rpi/' + url, data).then((response) => {
-  //           console.log(response);
-  //           try {
-  //             if (response) {
-  //               // setLoading(false);
-  //               console.log('Successfully fetch' + url);
-  //             } else {
-  //               console.log('Something went wrong is Api response');
-  //             }
-  //           } catch (err) {
-  //             console.log('Error Occured while making an API request');
-  //           }
-  //         });
-  //         break;
-
-  //         case 'post':
-  //           axios.post('https://api.tickleright.in/api/rpi/' + url, data).then((response) => {
-  //             console.log(response);
-  //             try {
-  //               if (response) {
-  //                 // setLoading(false);
-  //                 console.log('Successfully fetch' + url);
-  //               } else {
-  //                 console.log('Something went wrong is Api response');
-  //               }
-  //             } catch (err) {
-  //               console.log('Error Occured while making an API request');
-  //             }
-  //           });
-  //           break;
-
-  //     }
-      
-    
-  //   }else{
-  //     console.log("API url error: "+ url)
-  //   }
-
-  // }
 
   const globalFunc = (payload) => {
     axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
