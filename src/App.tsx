@@ -5,19 +5,29 @@ import { Toaster } from 'react-hot-toast';
 import ECommerce from './pages/Dashboard/ECommerce';
 import SignIn from './pages/Authentication/SignIn';
 import SignUp from './pages/Authentication/SignUp';
+import Login from './pages/Authentication/Login';
 import Loader from './common/Loader';
 import routes from './routes';
 import { SearchProvider } from './components/SearchContext';
 
+import { useLocation, useNavigate } from 'react-router-dom';
 const DefaultLayout = lazy(() => import('./layout/DefaultLayout'));
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
-
+  
   useEffect(() => {
     setTimeout(() => setLoading(false), 1000);
   }, []);
-
+  const navigate = useNavigate();
+useEffect(() => {
+  const token = localStorage.getItem('token');
+  const publicRoutes = ['/auth/signin', '/auth/signup'];
+  
+  if (!token && !publicRoutes.includes(location.pathname)) {
+    navigate('/auth/signin');
+  }
+}, [location, navigate]);
   return loading ? (
     <Loader />
   ) : (
@@ -29,6 +39,7 @@ function App() {
       />
       <SearchProvider>
         <Routes>
+          <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/signin" element={<SignIn />} />
           {/* <Route path="/auth/signup" element={<SignUp />} /> */}
           <Route element={<DefaultLayout />}>

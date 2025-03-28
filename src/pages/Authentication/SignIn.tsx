@@ -6,6 +6,7 @@ import Select from 'react-select'
 import countryList from 'react-select-country-list'
 import "react-phone-input-2/lib/bootstrap.css";
 import PhoneInput from "react-phone-input-2";
+import { del, get, post, put } from "../../helpers/api_helper";
 const SignIn = () => {
   // const [pinValue, setPinValue] = useState('')
   const [pinValue, setPinValue] = useState<string>('+91'); // Default to India
@@ -15,25 +16,69 @@ const SignIn = () => {
   const options = useMemo(() => countryList().getData(), [])
   const [showAlertSeverity, setAlertSeverity] = useState('false');
   const [showAlertMsg, setAlertMsg] = useState('false');
+  if(localStorage.getItem('token') != null){
+    window.location.href = '/profile'
+  }
   const changeHandler = (e, stateValue) => {
     var val = e.target == null || e.target == undefined ? e : e.target.value
     stateValue(val)
   }
-
-  const sign_in = () => {
+  const handlePhoneChange = (value: string, data: any) => {
+    setPinValue(data.dialCode);
+    setMobileValue(value.slice(data.dialCode.length));
+  };
+  const sign_in = async () => {
     if (passwordValue == '' || pinValue == '' || mobileValue == '') {
       setAlertSeverity('true');
       setAlertMsg('please enter your password')
     } else {
       const formData = {
-        countryCode: pinValue,
+        country_code: '+' + pinValue,
         mobile: mobileValue,
         password: passwordValue,
       }
-      console.log(formData);
+      try {
+        const response = await post("/sign_in", formData, {});
+        if (response.data.error == '0') {
+          localStorage.clear();
+
+          await Promise.all([
+            localStorage.setItem('token', response.token),
+            localStorage.setItem('user_id', response.data.user_id),
+            localStorage.setItem('contact_id', response.data.contact_id),
+            getUserData()
+          ]);
+          window.location.href = '/profile'
+          // window.location.href = '/pi/pi-casting'
+        }
+        else {
+          setAlertSeverity('true');
+          setAlertMsg(response.data.message)
+          return;
+        }
+        console.log(response);
+      } catch (error) {
+        console.error("Error fetching batches:", error);
+      }
     }
   }
 
+  const getUserData = async () => {
+    var contact_id = localStorage.getItem('contact_id');
+    var user_id = localStorage.getItem('user_id');
+    var payload = {
+      "contact_id": contact_id,
+      "user_id": user_id,
+    };
+    try {
+      const response = await post("get_user_data", payload, {});
+      if (response.error == 0) {
+        localStorage.setItem('contact_data', JSON.stringify(response.data[0]));
+      }
+    } catch (error) {
+      console.error("Error fetching batches:", error);
+    }
+  };
   function dismissAlert() {
     const alert = document.getElementById('alert-border-4');
     if (alert) {
@@ -71,9 +116,7 @@ const SignIn = () => {
                 <img className="dark:hidden" src={LogoDark} alt="Logo" />
               </Link> */}
 
-              <p className="2xl:px-20">
-                Welcome
-              </p>
+
               <img className="pl-50 h-75" src={Logo} alt="Logo" />
               {/* <span className="mt-15 inline-block">
                 <svg
@@ -211,44 +254,45 @@ const SignIn = () => {
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
                     Mobile No
                   </label>
+                  {/* <div className="relative"> */}
                   <div className="rounded-lg border border-stroke bg-transparent grid grid-cols-4 gap-3">
                     <div className="">
                       <div className='py-4 pl-6 pr-10 col-start-2 col-end-1'>
                         <PhoneInput
                           country={"eg"}
                           enableSearch={true}
-                          value={mobileValue}
-                          onChange={(value) => changeHandler(value, setMobileValue)}
+                          value={pinValue + mobileValue}
+                          onChange={(value, data) => handlePhoneChange(value, data)}
+                        // value={mobileValue}
+                        // onChange={(value) => changeHandler(value, setMobileValue)}
                         />
-                        {/* <Select options={options} value={pinValue} placeholder={"Country Code"} onChange={(e) => changeHandler(e, setPinValue)} /> */}
                       </div>
                     </div>
-                    {/* <div className='py-4 pl-6 pr-10 col-start-2 col-span-3'>
-                      <input
+                    {/* <div className='py-4 pl-6 pr-10 col-start-2 col-span-3'> */}
+                    {/* <input
                         type="Mobile No"
                         placeholder="Enter your Mobile No" onChange={(e) => changeHandler(e, setMobileValue)}
                         className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                       />
                       <span className="absolute right-4 top-4">
 
-                      </span>
-                    </div> */}
+                      </span> */}
                     {/* </div> */}
                   </div>
                 </div>
 
                 <div className="mb-6">
-                  <label className="mb-2.5 block font-medium text-black dark:text-white">
+                  {/* <label className="mb-2.5 block font-medium text-black dark:text-white">
                     Password
-                  </label>
+                  </label> */}
+                  <label
+                      className="mb-3 block text-sm font-medium text-black dark:text-white"
+                      htmlFor="emailAddress"
+                    >
+                    Password
+                    </label>
                   <div className="relative">
-                    <input
-                      type="password"
-                      placeholder="Password"
-                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" onChange={(e) => changeHandler(e, setPassword)}
-                    />
-
-                    <span className="absolute right-4 top-4">
+                  <span className="absolute left-4.5 top-4">
                       <svg
                         className="fill-current"
                         width="22"
@@ -269,6 +313,13 @@ const SignIn = () => {
                         </g>
                       </svg>
                     </span>
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-15 pr-10 outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary" onChange={(e) => changeHandler(e, setPassword)}
+                    />
+
+                 
                   </div>
                 </div>
 

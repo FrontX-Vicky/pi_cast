@@ -1,15 +1,35 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-
+import { del, get, post, put } from "../helpers/api_helper";
 import UserOne from '../images/user/user-01.png';
+import Logo from '../images/logo/logo.png';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [contactsData, setcCntactsData] = useState<any>(null);
 
   const trigger = useRef<any>(null);
   const dropdown = useRef<any>(null);
 
-  // close on click outside
+  const logout = async () => {
+
+    try {
+      const response = await get("logout_user", {});
+      if (response.error == 0) {
+        localStorage.clear();
+        window.location.href = '/auth/signin';
+      } else {
+        alert(response.message);
+      }
+      console.log(response);
+    } catch (error) {
+      console.error("Error fetching batches:", error);
+    }
+  }
+  useEffect(() => {
+    setcCntactsData(JSON.parse(localStorage.getItem('contact_data')));
+  }, []);
+
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
       if (!dropdown.current) return;
@@ -34,7 +54,6 @@ const DropdownUser = () => {
     document.addEventListener('keydown', keyHandler);
     return () => document.removeEventListener('keydown', keyHandler);
   });
-
   return (
     <div className="relative">
       <Link
@@ -45,19 +64,25 @@ const DropdownUser = () => {
       >
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
-            Thomas Anree
+            {contactsData?.fname || ''}
           </span>
-          <span className="block text-xs">UX Designer</span>
+          <span className="block text-xs">{contactsData?.position || ''}</span>
         </span>
-
+        {/* 
         <span className="h-12 w-12 rounded-full">
-          <img src={UserOne} alt="User" />
+          <img src={Logo} alt="Logo"  style={height: '40px', width: '40px'}/>
+        </span> */}
+        <span className="h-8 w-8 rounded-full flex items-center justify-center">
+          <img
+            src={Logo}
+            alt="Logo"
+            className="w-full h-full object-contain"
+            style={{ maxWidth: '32px', maxHeight: '32px' }}
+          />
         </span>
-
         <svg
-          className={`hidden fill-current sm:block ${
-            dropdownOpen ? 'rotate-180' : ''
-          }`}
+          className={`hidden fill-current sm:block ${dropdownOpen ? 'rotate-180' : ''
+            }`}
           width="12"
           height="8"
           viewBox="0 0 12 8"
@@ -78,9 +103,8 @@ const DropdownUser = () => {
         ref={dropdown}
         onFocus={() => setDropdownOpen(true)}
         onBlur={() => setDropdownOpen(false)}
-        className={`absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${
-          dropdownOpen === true ? 'block' : 'hidden'
-        }`}
+        className={`absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${dropdownOpen === true ? 'block' : 'hidden'
+          }`}
       >
         <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-7.5 dark:border-strokedark">
           <li>
@@ -108,7 +132,7 @@ const DropdownUser = () => {
               My Profile
             </Link>
           </li>
-          <li>
+          {/* <li>
             <Link
               to="#"
               className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
@@ -128,7 +152,7 @@ const DropdownUser = () => {
               </svg>
               My Contacts
             </Link>
-          </li>
+          </li> */}
           <li>
             <Link
               to="/settings"
@@ -155,7 +179,10 @@ const DropdownUser = () => {
             </Link>
           </li>
         </ul>
-        <button className="flex items-center gap-3.5 py-4 px-6 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+        <button
+          className="flex items-center gap-3.5 py-4 px-6 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+          onClick={() => logout()}
+        >
           <svg
             className="fill-current"
             width="22"

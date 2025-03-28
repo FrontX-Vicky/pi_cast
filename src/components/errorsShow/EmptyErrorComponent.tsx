@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';  // Use react-router-dom for routing
 import { buttonVariants, Empty, EmptyDescription, EmptyImage, EmptyTitle } from 'keep-react';  // Assuming 'keep-react' works for your React app
 
-// debugger;
 export const EmptyErrorComponent = (props) => {
   const [imgUrl , setImageUrl] = useState('');
   useEffect(() => {
@@ -16,7 +15,6 @@ export const EmptyErrorComponent = (props) => {
       setImageUrl('default_image_url'); // Example: replace with an actual default URL
     }
   },[]);
-    // debugger;
   return (
     <Empty>
       <EmptyImage>
