@@ -14,8 +14,9 @@ const Devices_raspberry_pi = () => {
     }
     const [openDropDown, setOpen] = useState(false);
     const [checkedItems, setCheckedItems] = useState<{ [key: string]: number }>({});
+    const [checkedAudio, setCheckedAudio] = useState<{ [key: string]: number }>({});
     const [pages, setpages] = useState(1);
-    const [pagesLength, setpagesLength] = useState(5);
+    const [pagesLength, setpagesLength] = useState(10);
     const [searchResult, setSearchResult] = useState<string>("");
     async function fetchRaspberryId() {
         try {
@@ -24,10 +25,13 @@ const Devices_raspberry_pi = () => {
                 if (response.length>0) {
                     raspberryData(response);
                     const initialCheckedState = {};
+                    const initialCheckedAudio = {};
                     response.forEach((item) => {
                         initialCheckedState[item.id] = item.send_mail;
+                        initialCheckedAudio[item.id] = item.list_song;
                     });
                     setCheckedItems(initialCheckedState);
+                    setCheckedAudio(initialCheckedAudio);
                 } else {
                     raspberryData([]);
                 }
@@ -40,7 +44,7 @@ const Devices_raspberry_pi = () => {
         fetchRaspberryId();
     }, []);
 
-    const pageSize = [5, 10, 20, 50];
+    const pageSize = [10, 20, 50];
     const renderTable = (piId) => {
         navigate(`/Pi-Details/${piId}`);
     }
@@ -70,6 +74,22 @@ const Devices_raspberry_pi = () => {
         };
         try {
             const response = await post("rpi/send_mail", payload, {});
+        } catch (error) {
+            console.error("Error fetching batches:", error);
+        }
+    };
+    const handleCheckboxChangeAudio = async (id: string) => {
+        const audioValue = checkedAudio[id] === 1 ? 0 : 1;
+        setCheckedAudio(prev => ({
+            ...prev,
+            [id]: audioValue
+        }));
+        var payload = {
+            "id": id,
+            "audio": audioValue
+        };
+        try {
+            const response = await post("rpi/stop_audio", payload, {});
         } catch (error) {
             console.error("Error fetching batches:", error);
         }
@@ -116,6 +136,9 @@ const Devices_raspberry_pi = () => {
                             <th className="min-w-[120px] py-4 font-medium text-black dark:text-white">
                                 Send Mail
                             </th>
+                            <th className="min-w-[120px] py-4 font-medium text-black dark:text-white">
+                                Stop Songs
+                            </th>
                             <th className="py-4 font-medium text-black dark:text-white">
                                 Actions
                             </th>
@@ -146,6 +169,13 @@ const Devices_raspberry_pi = () => {
                                             type="checkbox"
                                             className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" value={respId['send_mail']}
                                             checked={checkedItems[respId['id']] === 1} onChange={() => handleCheckboxChange(respId['id'])}
+                                        />
+                                    </td>
+                                    <td className="py-4 text-sm">
+                                        <input
+                                            type="checkbox"
+                                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" value={respId['send_mail']}
+                                            checked={checkedAudio[respId['id']] === 1} onChange={() => handleCheckboxChangeAudio(respId['id'])}
                                         />
                                     </td>
                                     <td className="py-4 flex justify-center">
