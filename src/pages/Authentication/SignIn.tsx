@@ -254,10 +254,19 @@ const SignIn = () => {
                     Mobile No
                   </label>
                   {/* <div className="relative"> */}
-                  <div className="rounded-lg border border-stroke bg-transparent grid grid-cols-4 gap-3">
+                  {/* <div className="rounded-lg border border-stroke bg-transparent grid grid-cols-4 gap-3"> */}
                     <div className="">
-                      <div className='py-4 pl-6 pr-10 col-start-2 col-end-1'>
+                      <div className='py-2 col-start-2 col-end-1'>
                         <PhoneInput
+                       inputStyle={{
+                        width: '100%',
+                        height: '45px',
+                        fontSize: '16px',
+                        paddingLeft: '48px',
+                        borderRadius: '8px',
+                        border: '1px solid #E2E8F0',
+                        backgroundColor: 'transparent'
+                      }}
                           country={"eg"}
                           enableSearch={true}
                           value={pinValue + mobileValue}
@@ -266,7 +275,7 @@ const SignIn = () => {
                         // onChange={(value) => changeHandler(value, setMobileValue)}
                         />
                       </div>
-                    </div>
+                    {/* </div> */}
                     {/* <div className='py-4 pl-6 pr-10 col-start-2 col-span-3'> */}
                     {/* <input
                         type="Mobile No"
