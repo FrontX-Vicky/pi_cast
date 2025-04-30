@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { del, get, post, put } from "../helpers/api_helper";
 import Pusher from 'pusher-js';
-import React, { useContext, useEffect, useRef, useState , Fragment} from 'react';
+import React, { useContext, useEffect, useRef, useState, Fragment } from 'react';
 import Loader from '../common/Loader';
 import rpi from '../images/logo/raspberry-pi-icon-transparent.png';
 import { HiVideoCamera } from "react-icons/hi2";
@@ -16,7 +16,7 @@ import { RiShutDownLine } from "react-icons/ri";
 import { BsBootstrapReboot } from "react-icons/bs";
 import { GrPowerReset } from "react-icons/gr";
 import { LuRefreshCcwDot } from "react-icons/lu";
-import { FcCamera  } from "react-icons/fc";
+import { FcCamera } from "react-icons/fc";
 import { MdCleaningServices } from "react-icons/md";
 import { MdOutlineSdStorage } from "react-icons/md";
 import { GrClearOption } from "react-icons/gr";
@@ -24,12 +24,14 @@ import { DateTime } from 'luxon';
 import TypoGraphy from './TypoGraphy';
 import { SearchContext } from './SearchContext';
 import { Dialog, Transition } from "@headlessui/react";
-
 // icons
 
 import { FcStart } from "react-icons/fc";
 import { FaPlay } from "react-icons/fa";
 import { BsRecordCircle } from "react-icons/bs";
+import { ActionMenu } from './ActionMenu';
+import ActionsMenuNew from './ActionMenuNew';
+import { LinearProgress } from '@mui/material';
 
 const Pi_Casting = () => {
   var arrayOfRecording = [];
@@ -152,7 +154,7 @@ const Pi_Casting = () => {
     const interval = setInterval(() => {
       setTimestamp(Date.now());
     }, 500);
- 
+
     // Clear the interval on component unmount to avoid memory leaks
     return () => clearInterval(interval);
   }, []);
@@ -250,7 +252,7 @@ const Pi_Casting = () => {
   const reFresh = (pi_id) => {
     setLoading(true);
     var payload = {
-      "type": "refresh",
+      "type": "device_refresh",
       "id": pi_id
     }
     globalFunc(payload);
@@ -270,7 +272,7 @@ const Pi_Casting = () => {
     setLoading(true);
     var payload = {
       "type": "storage_clear",
-      "days": "1",
+      "days": "5",
       "id": pi_id
     }
     globalFunc(payload);
@@ -319,18 +321,17 @@ const Pi_Casting = () => {
   return (
 
     <>
-      <div className="rounded-sm border border-stroke bg-white px-5 pt-1 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 overflow-hidden">
+      <div className="rounded-lg border border-stroke bg-white px-1 pt-1 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-2.5 xl:pb-1 overflow-hidden text-sm ">
         <div style={{ display: styleLoader }}>
           {/* <Loader /> */}
         </div>
-        <div className="max-w-full overflow-x-auto">
-          <table className="w-full table-auto overflow-hidden">
+        {/* <div className="rounded-lg w-full overflow-x-auto">
+          <table className="w-full table-auto overflow-hidden"> */}
+            <div className="rounded-lg overflow-x-auto overflow-visible">
+          <table className="min-w-full table-fixed">
             <thead>
               <tr className="bg-gray-2 text-center dark:bg-meta-4">
-                {/* <th className="min-w-[110px] max-h-242.5 py-4 px-4 font-medium text-black dark:text-white">
-                  Sr.No
-                </th> */}
-                <th className="min-w-[90px] max-h-242.5 py-2 px-2 font-medium text-black dark:text-white">
+                <th className="min-w-[10px] py-2 px-4 font-medium text-black dark:text-white">
                   #
                 </th>
                 <th className="min-w-[200px] py-2 px-4 font-medium text-black dark:text-white">
@@ -343,43 +344,278 @@ const Pi_Casting = () => {
                   Devices
                 </th>
                 <th className="min-w-[250px] py-2 px-4 font-medium text-black dark:text-white">
-                  Batch Id
-                </th>
-                <th className="min-w-[130px] py-2 px-4 text-black dark:text-white">
-                  Date
-                </th>
-                <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
-                  Video/Audio Size
+                  Recordings<br />
+                  {/* <table>
+                    <thead>
+                      <th className="min-w-[130px] py-2 px-4 text-black dark:text-white">
+                        Batch
+                      </th>
+                      <th className="min-w-[130px] py-2 px-4 text-black dark:text-white">
+                        Date
+                      </th>
+                      <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
+                        Video/Audio Size
+                      </th>
+                      <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
+                        Duration
+                      </th>
+                      <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
+                        Status
+                      </th>
+                      <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
+                        Percentage
+                      </th>
+                      <th className="min-w-[220px] py-2 px-4 font-medium text-black dark:text-white">
+                        Actions
+                      </th>
+                    </thead>
+                  </table> */}
                 </th>
 
-                <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
-                  Duration
-                </th>
-                <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
-                  Status
-                </th>
-                <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
-                  Percentage
-                </th>
-                {/* <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
-                  Upload Percentage
-                </th> */}
-                <th className="min-w-[220px] py-2 px-4 font-medium text-black dark:text-white">
-                  Actions
-                </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className=''>
+              {datas && datas.length > 0 && datas.map((element, indexs) => {
+                return (
+                  <tr
+                    key={element.id}
+                    className="border-b border-[#eee] dark:border-strokedark "
+                  >
+                    <td className=" border-white pt-2 dark:border-strokedark ">
+                      <label htmlFor="">{indexs + 1}</label>
+                    </td>
+                    <td className=" border-white pt-2 dark:border-strokedark ">
+                      <p className="text-sm font-bold dark:border-strokedark text-center">
+                        <span>{element.pi_id}</span>
+                        <br /> {venues[element['venue_id']]}
+                      </p>
+                    </td>
+                    <td className="text-sm text-center  border-white pt-2 dark:border-strokedark">
+                      <span className="text-sm text-center">
+                        <TypoGraphy
+                          percentage={
+                            (element['stats']['storage']['used_storage'] /
+                              element['stats']['storage']['total_storage']) *
+                            100
+                          }
+                          total={element['stats']['storage']['total_storage']}
+                          type="storage"
+                        />
+                      </span>
+                    </td>
+                    <td className="text-sm text-center border-white pt-2 dark:border-strokedark">
+                      {element['devices'].camera == 1 ? (
+                        <HiVideoCamera
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            display: 'block',
+                            margin: '0 auto',
+                            color: '#34e37d',
+                          }}
+                        />
+                      ) : (
+                        <HiVideoCameraSlash
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            display: 'block',
+                            margin: '0 auto',
+                            color: '#d63c49',
+                          }}
+                        />
+                      )}
+                      {element['devices'].mic == 1 ? (
+                        <IoIosMic
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            display: 'block',
+                            margin: '0 auto',
+                            color: '#34e37d',
+                          }}
+                        />
+                      ) : (
+                        <IoIosMicOff
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            display: 'block',
+                            margin: '0 auto',
+                            color: '#d63c49',
+                          }}
+                        />
+                      )}
+                    </td>
+                    <td>
+                      <table>
+                        <tbody>
+                          {element.recordings
+                            .filter((item) =>
+                              Object.values(item).some((value) =>
+                                String(value)
+                                  .toLowerCase()
+                                  .includes(inputValue.toLowerCase()),
+                              ),
+                            )
+                            .map((record, index) => (
+                              <tr>
+                                {/* <td colSpan={2} /> */}
+                                <React.Fragment key={index}>
+                                  <td className="min-w-[300px] py-0 px-4 border-white pt-2 pl-9 dark:border-strokedark">
+                                    <div className="flex items-center justify-evenly">
+                                      <div className="relative flex-shrink-0">
+                                        <span
+                                          className={`animate-ping absolute h-3.5 w-3.5 rounded-full  inline-flex border-2 border-white ${record.pi_id != 0 &&
+                                              record.status == 0
+                                              ? 'bg-meta-7'
+                                              : record.status == 1
+                                                ? 'bg-primary'
+                                                : record.status == 2
+                                                  ? 'bg-meta-6'
+                                                  : 'bg-meta-3'
+                                            }`}
+                                        />
+                                        <span
+                                          className={`relative  h-3.5 w-3.5  inline-flex rounded-full border-2 border-white ${record.pi_id != 0 &&
+                                              record.status == 0
+                                              ? 'bg-meta-7'
+                                              : record.status == 1
+                                                ? 'bg-primary'
+                                                : record.status == 2
+                                                  ? 'bg-meta-6'
+                                                  : 'bg-meta-3'
+                                            }`}
+                                        ></span>
+                                      </div>
+                                      <label
+                                        className="text-sm text-center truncate w-48"
+                                        data-twe-toggle="tooltip"
+                                        data-twe-placement="top"
+                                        data-twe-ripple-init
+                                        data-twe-ripple-color="light"
+                                        title={batches[record.batch_id]}
+                                      >
+                                        {batches[record.batch_id]}
+                                      </label>
+                                    </div>
+                                  </td>
+                                  <td className="w-[350px] py-0 px-4">
+                                    <p className="text-sm text-center">
+                                      {record.date &&
+                                        DateTime.fromFormat(
+                                          record.date,
+                                          'yyyy-MM-dd HH:mm:ss',
+                                        ).toFormat('d LLLL h:mm a')}
+                                    </p>
+                                  </td>
+                                  <td className="w-[300px] py-0 px-4">
+                                    <p className="text-sm text-center">
+                                      {record.video_size}/{record.audio_size}
+                                    </p>
+                                  </td>
+                                  <td className="w-[300px] py-0 px-4">
+                                    <p className="text-sm text-center">
+                                      {' '}
+                                      {record.duration}
+                                    </p>
+                                  </td>
+                                  <td className="w-[300px] py-0 px-4">
+                                    <p className="text-sm text-center">
+                                      {' '}
+                                      {record.id == 0
+                                        ? 'Idle'
+                                        : record.status == 1
+                                          ? 'Merging'
+                                          : record.status == 2
+                                            ? 'Uploading'
+                                            : record.status == 0
+                                              ? 'Recording'
+                                              : 'Completed'}
+                                    </p>
+                                  </td>
+                                  <td className="w-[300px] py-0 px-4">
+                                    {/* {record.status != 0 ? record.status == 1 ? <span className="text-sm text-center"> <TypoGraphy percentage={record.merge_percentage} total={record.merge_percentage} type='upload' />
+                            </span> : <span className="text-sm text-center"> <TypoGraphy percentage={record.upload_percentage} total={record.upload_percentage} type='upload' /></span> : <span></span>} */}
+                                    {record.status !== 0 && (
+                                      <span className="flex items-center text-sm space-x-2">
+                                        <LinearProgress
+                                          variant="determinate"
+                                          value={record.status === 1 ? record.merge_percentage : record.upload_percentage}
+                                          className="w-24 h-2 inline-block rounded bg-blue-200 dark:bg-white"   sx={{
+                                            '& .MuiLinearProgress-bar': { backgroundColor: '#4ade80' }, // e.g. Tailwind green-400
+                                          }}
+                                        />
+                                        <span>
+                                          {record.status === 1 ? record.merge_percentage : record.upload_percentage}%
+                                        </span>
+                                      </span>
+                                    )}
+
+                                  </td>
+                                  <td className="min-w-[100px] py-0 px-4">
+                                    <ActionsMenuNew
+                                      isLast={
+                                        index >= element.recordings.length - 3
+                                      }
+                                      // isLast={indexs >= datas.length - 1}
+                                      record={record}
+                                      isLoading={isLoading}
+                                      loaderIcon={loaderIcon}
+                                      stopRecord={stopRecord}
+                                      openModal={openModal}
+                                      startRecord={startRecord}
+                                      clearRecord={clearRecord}
+                                      reboot={reboot}
+                                      shutDown={shutDown}
+                                      reFresh={reFresh}
+                                      storageClear={storageClear}
+                                      startReMerging={startReMerging}
+                                      trash={trash}
+                                    />
+                                    {/* <ActionMenu   
+                                      isLast={index >= element.recordings.length - 3}
+                                      // isLast={indexs >= datas.length - 1}
+                                      record={record}
+                                      isLoading={isLoading}
+                                      loaderIcon={loaderIcon}
+                                      stopRecord={stopRecord}
+                                      openModal={openModal}
+                                      startRecord={startRecord}
+                                      clearRecord={clearRecord}
+                                      reboot={reboot}
+                                      shutDown={shutDown}
+                                      reFresh={reFresh}
+                                      storageClear={storageClear}
+                                      startReMerging={startReMerging}
+                                      trash={trash}
+                                    /> */}
+                                  </td>
+                                </React.Fragment>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+
+
+
+            {/* <tbody>
               {datas && datas.length > 0 && datas.map((element, indexs) => (
+                
                 element.recordings.filter((item) =>
                   Object.values(item).some((value) =>
                     String(value).toLowerCase().includes(inputValue.toLowerCase())
                   )
                 ).map((record, index) => (
                   <tr key={record.id}>
-                    {/* <td className="border-b border-[#eee] py-2 dark:border-strokedark ">
+                    <td className="border-b border-[#eee] py-2 dark:border-strokedark ">
                       <p className="text-sm text-center"> {indexs + 1}</p>
-                    </td> */}
+                    </td>
                     <td className="border-b relative rounded-full border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
                       <div className='h-10 relative'>
                         <img src={rpi} alt="User" style={{ height: '40px', width: '38px' }} />
@@ -388,17 +624,17 @@ const Pi_Casting = () => {
                       </div>
                     </td>
                     <td className="border-b border-[#eee] pt-2 dark:border-strokedark ">
-                      <p className="text-md font-bold text-white text-center"> <span>{record.pi_id}</span><br/> {venues[element['venue_id']]}</p>
+                      <p className="text-md font-bold dark:border-strokedark text-center"> <span>{record.pi_id}</span><br/> {venues[element['venue_id']]}</p>
                     </td>
                     <td className="text-sm text-center border-b border-[#eee] pt-2 dark:border-strokedark">
                       <span className="text-sm text-center">
                         <TypoGraphy percentage={((element['stats']['storage']['used_storage'] / element['stats']['storage']['total_storage']) * 100)} total={element['stats']['storage']['total_storage']} type='storage' />
                       </span>
-                    {/* </td>
-                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark"> */}
-                      {/* <span className="text-sm text-center">
+                    </td>
+                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
+                      <span className="text-sm text-center">
                         <TypoGraphy percentage={((element['stats']['ram']['used_ram'] / element['stats']['ram']['total_ram']) * 100)} total={element['stats']['ram']['total_ram']} type='storage' />
-                      </span> */}
+                      </span>
                     </td>
                     <td className="text-sm text-center align-middle border-b border-[#eee] pt-2 dark:border-strokedark">
                       {element['devices'].camera == 1 ? (
@@ -439,9 +675,9 @@ const Pi_Casting = () => {
 
                    
                     </td>
-                    {/* <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
+                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
                       
-                    </td> */}
+                    </td>
                     <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
                         {record.status == 0 ?
                           <button
@@ -461,7 +697,7 @@ const Pi_Casting = () => {
                           <div>
                             <button
                               type="button"
-                              className={`text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white  rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white  rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               data-twe-toggle="tooltip"  onClick={() => openModal(record.pi_id)}
                               disabled={isLoading}
                               data-twe-placement="top"
@@ -476,7 +712,7 @@ const Pi_Casting = () => {
                             </button>
                             <button
                             type="button"
-                            className={`text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                            className={`text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white font-medium rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                             data-twe-toggle="tooltip" onClick={() => startRecord(record.pi_id)} disabled={isLoading}
                             data-twe-placement="top"
                             data-twe-ripple-init
@@ -490,7 +726,7 @@ const Pi_Casting = () => {
                             </button>
                             <button
                             type="button"
-                            className={`text-black bg-orange-400 border-b-orange-900 border-b-2 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                            className={`text-black bg-orange-400 border-b-orange-900 border-b-2 dark:text-white font-medium rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                             onClick={() => clearRecord(record.pi_id)} disabled={isLoading}
                             data-twe-toggle="tooltip"
                             data-twe-placement="top"
@@ -505,7 +741,7 @@ const Pi_Casting = () => {
                             </button> 
                             <button
                               type="button"
-                              className={`text-black bg-cyan-500 border-b-cyan-800 border-b-2 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-1 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`text-black bg-cyan-500 border-b-cyan-800 border-b-2 dark:text-white font-medium rounded-lg px-1 py-1 text-center me-1 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => reboot(record.pi_id)} disabled={isLoading}
                               data-twe-toggle="tooltip"
                               data-twe-placement="top"
@@ -520,7 +756,7 @@ const Pi_Casting = () => {
                             </button>
                             <button
                               type="button"
-                              className={`bg-red-400 border-b-red-900 text-black border-b-2 dark:text-white font-bold rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`bg-red-400 border-b-red-900 text-black border-b-2 dark:text-white font-bold rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => shutDown(record.pi_id)} disabled={isLoading}
                               data-twe-toggle="tooltip"
                               data-twe-placement="top"
@@ -535,13 +771,13 @@ const Pi_Casting = () => {
                             </button> 
                             <button
                               type="button"
-                              className={`border-b-2 bg-blue-200 border-b-blue-700 dark:text-white rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`border-b-2 bg-blue-200 border-b-blue-700 dark:text-white rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => reFresh(record.pi_id)} disabled={isLoading}
                               data-twe-toggle="tooltip"
                               data-twe-placement="top"
                               data-twe-ripple-init
                               data-twe-ripple-color="light"
-                              title="Refresh">
+                              title="Device Refresh">
                               {isLoading ? (
                                 loaderIcon
                               ) : (
@@ -550,7 +786,7 @@ const Pi_Casting = () => {
                             </button> 
                             <button
                               type="button"
-                              className={`border-b-2 bg-pink-200 border-b-pink-900 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`border-b-2 bg-pink-200 border-b-pink-900 dark:text-white font-medium rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => storageClear(record.pi_id)} disabled={isLoading}
                               data-twe-toggle="tooltip"
                               data-twe-placement="top"
@@ -560,14 +796,14 @@ const Pi_Casting = () => {
                               {isLoading ? (
                                 loaderIcon
                               ) : (
-                                // <MdOutlineSdStorage />
+                          
                                 <GrClearOption />
                               )}
                             </button> 
                           </div> : record.status != 0 ? <div>
                             <button
                               type="button"
-                              className={`text-black bg-blue-400 border-blue-900 border-b-2 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`text-black bg-blue-400 border-blue-900 border-b-2 dark:text-white font-medium rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => startReMerging(record.pi_id, record.filename)} disabled={isLoading}
                               data-twe-toggle="tooltip"
                               data-twe-placement="top"
@@ -582,7 +818,7 @@ const Pi_Casting = () => {
                             </button> <br />
                             <button
                               type="button"
-                              className={`border-b-2 bg-red-400 border-b-red-900 dark:text-white font-medium rounded-lg px-2 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                              className={`border-b-2 bg-red-400 border-b-red-900 dark:text-white font-medium rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                               onClick={() => trash(record.pi_id, record.filename)} disabled={isLoading}
                               data-twe-toggle="tooltip"
                               data-twe-placement="top"
@@ -600,7 +836,9 @@ const Pi_Casting = () => {
                   </tr>
                 ))
               ))}
-            </tbody>
+            </tbody> */}
+
+
           </table>
         </div>
 
@@ -636,7 +874,7 @@ const Pi_Casting = () => {
                     Preview
                   </Dialog.Title>
                   <div className="mt-4">
-                  <img
+                    <img
                       src={`https://api.tickleright.in/cam_image/image_${selectedId}.jpg?t=${timestamp}`}
                       alt="Dynamic"
                     />
