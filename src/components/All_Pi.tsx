@@ -114,7 +114,7 @@ function All_Pi() {
         initialState: {
             showColumnFilters: true,
             density: 'compact',
-            pagination: { pageSize: 10, pageIndex: 0 },
+            pagination: { pageSize: 15, pageIndex: 0 },
             showGlobalFilter: true,
         },
         muiPaginationProps: {
