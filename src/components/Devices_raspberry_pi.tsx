@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useContext} from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import rpi from '../images/logo/raspberry-pi-icon-transparent.png';
 import { SearchContext } from './SearchContext';
 import { del, get, post, put } from "../helpers/api_helper";
@@ -21,21 +21,21 @@ const Devices_raspberry_pi = () => {
     async function fetchRaspberryId() {
         try {
             const response = await get("rpi/respData", {}); // Wa
-         
-                if (response.length>0) {
-                    raspberryData(response);
-                    const initialCheckedState = {};
-                    const initialCheckedAudio = {};
-                    response.forEach((item) => {
-                        initialCheckedState[item.id] = item.send_mail;
-                        initialCheckedAudio[item.id] = item.list_song;
-                    });
-                    setCheckedItems(initialCheckedState);
-                    setCheckedAudio(initialCheckedAudio);
-                } else {
-                    raspberryData([]);
-                }
-          
+
+            if (response.length > 0) {
+                raspberryData(response);
+                const initialCheckedState = {};
+                const initialCheckedAudio = {};
+                response.forEach((item) => {
+                    initialCheckedState[item.id] = item.send_mail;
+                    initialCheckedAudio[item.id] = item.list_song;
+                });
+                setCheckedItems(initialCheckedState);
+                setCheckedAudio(initialCheckedAudio);
+            } else {
+                raspberryData([]);
+            }
+
         } catch (err) {
             raspberryData([]);
         }
@@ -127,17 +127,15 @@ const Devices_raspberry_pi = () => {
                             <th className="min-w-[150px] py-4 font-medium text-black dark:text-white">
                                 Venue Name
                             </th>
-                            <th className="min-w-[150px] py-4 font-medium text-black dark:text-white">
-                                Ip Address
-                            </th>
-                            <th className="min-w-[120px] py-4 font-medium text-black dark:text-white">
-                                Mac Address
-                            </th>
+
                             <th className="min-w-[120px] py-4 font-medium text-black dark:text-white">
                                 Send Mail
                             </th>
                             <th className="min-w-[120px] py-4 font-medium text-black dark:text-white">
                                 Stop Songs
+                            </th>
+                            <th className="py-4 font-medium text-black dark:text-white">
+                                Assign Class Rooms
                             </th>
                             <th className="py-4 font-medium text-black dark:text-white">
                                 Actions
@@ -162,8 +160,6 @@ const Devices_raspberry_pi = () => {
                                     <td className="py-4 text-sm">{respId['id']}</td>
                                     <td className="py-4 text-sm">{respId['name']}</td>
                                     <td className="py-4 text-sm">{respId['venue']}</td>
-                                    <td className="py-4 text-sm">{respId['ip_address']}</td>
-                                    <td className="py-4 text-sm">{respId['mac_address']}</td>
                                     <td className="py-4 text-sm">
                                         <input
                                             type="checkbox"
@@ -178,8 +174,16 @@ const Devices_raspberry_pi = () => {
                                             checked={checkedAudio[respId['id']] === 1} onChange={() => handleCheckboxChangeAudio(respId['id'])}
                                         />
                                     </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <button className='p-2.5 bg-slate-500 rounded-lg text-white hover:bg-slate-700 focus:ring-4 focus:ring-slate-300' >
+                                            <Link to={`../Pis/Batches-Venue/${respId['venue_id']}`} state={{
+                                                venue: respId['venue']
+                                            }} className="font-medium text-white hover:underline">Assign</Link>
+                                            {/* <a href={`Batches-Venue/${respId['venue_id']}`} className="font-medium text-white hover:underline">Assign</a> */}
+                                        </button>
+                                    </td>
                                     <td className="py-4 flex justify-center">
-                                        {((respId['venue_id'] || parseInt(respId['venue_id']) !== 0) && respId['venue']!= null ) && (
+                                        {((respId['venue_id'] || parseInt(respId['venue_id']) !== 0) && respId['venue'] != null) && (
                                             <button
                                                 type="button"
                                                 className="p-2.5 bg-slate-500 text-white rounded-full hover:bg-slate-700 focus:ring-4 focus:ring-slate-300"
