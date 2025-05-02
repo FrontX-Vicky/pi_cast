@@ -22,7 +22,7 @@ const DefaultLayout = () => {
 
           {/* <!-- ===== Main Content Start ===== --> */}
           <main>
-            <div className="mx-auto max-w-screen p-2 md:p-4 2xl:p-4">
+            <div className="mx-auto max-w-screen min-h- p-2 md:p-2 2xl:p-2 bg-gray-50 dark:bg-warmGray-950">
               <Outlet />
             </div>
           </main>

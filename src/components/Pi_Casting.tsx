@@ -321,23 +321,23 @@ const Pi_Casting = () => {
   return (
 
     <>
-      <div className="rounded-lg border border-stroke bg-white px-1 pt-1 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-2.5 xl:pb-1 overflow-hidden text-sm ">
+      <div className="rounded-lg border border-stroke bg-warmGray-200 px-1 pt-1 pb-2.5 min-h-fit shadow-default dark:border-strokedark  shadow-sm ring-1 ring-gray-900/5 dark:bg-slate-900 sm:px-2.5 xl:pb-1 overflow-hidden text-sm flex-grow">
         <div style={{ display: styleLoader }}>
           {/* <Loader /> */}
         </div>
         {/* <div className="rounded-lg w-full overflow-x-auto">
           <table className="w-full table-auto overflow-hidden"> */}
-            <div className="rounded-lg overflow-x-auto overflow-visible">
-          <table className="min-w-full table-fixed">
+            <div className="rounded-lg min-h-203">
+          <table className="min-w-full table-fixed rounded">
             <thead>
-              <tr className="bg-gray-2 text-center dark:bg-meta-4">
-                <th className="min-w-[10px] py-2 px-4 font-medium text-black dark:text-white">
+              <tr className="bg-gray-2 text-center dark:bg-slate-800 overflow-hidden">
+                <th className="min-w-[10px] py-2 px-4 font-medium text-black dark:text-warmGray-50">
                   #
                 </th>
                 <th className="min-w-[200px] py-2 px-4 font-medium text-black dark:text-white">
                   Pi Id - Venue
                 </th>
-                <th className="min-w-[90px] py-2 px-4 font-medium text-black dark:text-white">
+                <th className="min-w-[60px] py-2 px-4 font-medium text-black dark:text-white">
                   Storage
                 </th>
                 <th className="min-w-[50px] py-2 px-1 font-medium text-black dark:text-white">
@@ -381,10 +381,10 @@ const Pi_Casting = () => {
                     key={element.id}
                     className="border-b border-[#eee] dark:border-strokedark "
                   >
-                    <td className=" border-white pt-2 dark:border-strokedark ">
+                    <td className=" border-white pt-2 dark:border-strokedark text-center">
                       <label htmlFor="">{indexs + 1}</label>
                     </td>
-                    <td className=" border-white pt-2 dark:border-strokedark ">
+                    <td className="max-w-[200px] border-white pt-2 dark:border-strokedark ">
                       <p className="text-sm font-bold dark:border-strokedark text-center">
                         <span>{element.pi_id}</span>
                         <br /> {venues[element['venue_id']]}
@@ -403,7 +403,7 @@ const Pi_Casting = () => {
                         />
                       </span>
                     </td>
-                    <td className="text-sm text-center border-white pt-2 dark:border-strokedark">
+                    <td className="max-w-[200px]  text-sm text-center border-white pt-2 dark:border-strokedark">
                       {element['devices'].camera == 1 ? (
                         <HiVideoCamera
                           style={{

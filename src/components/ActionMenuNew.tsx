@@ -111,7 +111,7 @@ export default function ActionsMenuNew({ isLast,
                     className="
             w-48
             rounded-lg shadow-lg ring-1 ring-black ring-opacity-5
-            bg-white dark:bg-gray-800
+            bg-white dark:bg-gray
             z-50 overflow-visible
           "
                 >
