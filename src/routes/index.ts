@@ -8,6 +8,8 @@ const Profile = lazy(() => import('../pages/Profile'));
 const Settings = lazy(() => import('../pages/Settings'));
 const Details = lazy(() => import('../pages/Details'));
 const DevicesPi = lazy(() => import('../pages/DevicesPi'));
+const ClsRooms = lazy(() => import('../pages/ClsRooms'));
+const batchVenue = lazy(() => import('../pages/BatchVenue'));
 const Alerts = lazy(() => import('../pages/UiElements/Alerts'));
 const pi_cast = lazy(() => import('../pages/Pi_Cast'));
 const all_pi = lazy(() => import('../pages/AllPis'));
@@ -77,6 +79,16 @@ const coreRoutes = [
     path: 'Pis/All-Pis',
     title: 'All-pi',
     component: all_pi,
+  },
+  {
+    path: 'Pis/Class-Rooms',
+    title: 'Class-Rooms',
+    component: ClsRooms,
+  },
+  {
+    path: 'Pis/Batches-Venue/:id',
+    title: 'Batch-Venue',
+    component: batchVenue,
   },
   {
     path: '/timer',

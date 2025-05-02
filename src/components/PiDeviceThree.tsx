@@ -1,8 +1,9 @@
 import Pusher from 'pusher-js';
-import { lazy, useEffect, useRef, useState, useMemo } from 'react';
+import { lazy, useEffect, useRef,useLayoutEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import Loader from '../common/Loader';
 import axios from 'axios';
+import ScrollToBottomDiv from './ScrollToBottomDiv';
 import ReactPlayer from 'react-player'
 import StorageUsageChart from './StorageUsageChart';
 import rpi from '../images/logo/raspberry-pi-icon-transparent.png';
@@ -43,12 +44,14 @@ const TableThree = () => {
   const [recodStats, setrecodStats] = useState('0');
   const [noStatusZero, setNoStatusZero] = useState('');
   const [cameraRecording, setCameraRecording] = useState('');
+  const [pusherLogs, setPusherLogs] = useState([]);
   const [driveUrl, setDriveUrl] = useState('');
   const [showModal, setShowModal] = useState(false);
   let stats = '';
   let devices = '';
   let filterPi = {};
   const piId = useParams();
+
   // useEffect(() =>{
   //   getCameraRecFunc();
   // })
@@ -84,6 +87,10 @@ const TableThree = () => {
         if (data && data.message.pi_id != '' && data.message.pi_id != null) {
           const filterData = data.message.pi_id == piId['id'] ? data.message : '';
           if (filterData != '') {
+            if(filterData.logs!=''){
+              setPusherLogs(filterData.logs.pusher_client);
+            }
+            console.log(filterData.logs)
             // TimerPiId =  TimerSet(filterData.pi_id)
             // if (TimerPiId != '') {
             //   delete filterPi[TimerPiId];
@@ -142,42 +149,44 @@ const TableThree = () => {
                 });
               }
               filterPi[filterData.pi_id] = filterData;
-              
+
             }
           } else {
             // hideLoader('block');
           }
         }
         recordingData(Object.values(filterPi));
-        if(Object.keys(filterPi).length>0){
+        if (Object.keys(filterPi).length > 0) {
           devices = data['message']['devices'];
           setcamera(devices['camera']);
           setmic(devices['mic']);
-          
+
           stats = data['message']['stats'];
           const storageData = {
             free: stats['storage']['free_storage'],
             total: stats['storage']['total_storage'],
             used: stats['storage']['used_storage'],
           };
-       
+
           const ramData = {
             free: stats['ram']['free_ram'],
             total: stats['ram']['total_ram'],
             used: stats['ram']['used_ram'],
           };
-  
+
           setStorage(storageData);
           setRam(ramData);
         }
-    
+
         // Extract RAM data
-        
+
       }
     });
     getCameraRecFunc();
   }, []);
 
+  const containerRef = useRef(null);
+  const bottomRef = useRef(null);
 
 
   const stopRecord = (pi_id, batch_id) => {
@@ -261,7 +270,7 @@ const TableThree = () => {
 
       try {
         if (response) {
-          // setLoading(false);
+          setLoading(false);
           console.log('Successfully ' + payload.type);
         } else {
           console.log('Something went wrong is Api response');
@@ -438,275 +447,476 @@ const TableThree = () => {
         <div style={{ display: styleLoader }}>
           <Loader />
         </div>
-        <div className='flex flex-row'>
-          <div className='basis-1/4 text-green-800 font-bold'>
-            {storage && storage != '' ?
-              <StorageUsageChart data={storage} type='Storage' />
-              : 'No Data Found'}
+        <div className="flex flex-row">
+          <div className="basis-1/4 text-green-800 font-bold">
+            {storage && storage != '' ? (
+              <StorageUsageChart data={storage} type="Storage" />
+            ) : (
+              'No Data Found'
+            )}
           </div>
-          <div className='basis-1/4 mx-6 text-green-800 font-bold'>
-            {ram && ram != '' ?
-              <StorageUsageChart data={ram} type='Ram' />
-              : 'No Data Found'}</div>
-
-          <div className=''>
-            <div className='box h-28 w-28 p-4 mt-4 shadow-6'>
-              {camera && camera == '1' ?
-                <HiVideoCamera style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#34e37d' }} /> : <HiVideoCameraSlash style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#e7344c' }} />
-              }
-            </div>
-            <div className='box h-28 w-28 p-4 mt-9 shadow-6'>
-              {mic && mic == '1' ?
-                <IoIosMic style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#34e37d' }} /> : <IoIosMicOff style={{ width: '70px', height: '70px', display: 'block', margin: '0 auto', color: '#e7344c' }} />
-              }
-            </div>
-          </div>
-          <div className='basis-2/4 max-h-60 px-4'>
-            <MaterialReactTable table={table} columns={columns} data={cameraRecording} />
+          <div className="basis-1/4 mx-6 text-green-800 font-bold">
+            {ram && ram != '' ? (
+              <StorageUsageChart data={ram} type="Ram" />
+            ) : (
+              'No Data Found'
+            )}
           </div>
 
+          <div className="">
+            <div className="box h-28 w-28 p-4 mt-4 shadow-6">
+              {camera && camera == '1' ? (
+                <HiVideoCamera
+                  style={{
+                    width: '50px',
+                    height: '50px',
+                    display: 'block',
+                    margin: '0 auto',
+                    color: '#34e37d',
+                  }}
+                />
+              ) : (
+                <HiVideoCameraSlash
+                  style={{
+                    width: '50px',
+                    height: '50px',
+                    display: 'block',
+                    margin: '0 auto',
+                    color: '#e7344c',
+                  }}
+                />
+              )}
+            </div>
+            <div className="box h-28 w-28 p-4 mt-9 shadow-6">
+              {mic && mic == '1' ? (
+                <IoIosMic
+                  style={{
+                    width: '50px',
+                    height: '50px',
+                    display: 'block',
+                    margin: '0 auto',
+                    color: '#34e37d',
+                  }}
+                />
+              ) : (
+                <IoIosMicOff
+                  style={{
+                    width: '50px',
+                    height: '50px',
+                    display: 'block',
+                    margin: '0 auto',
+                    color: '#e7344c',
+                  }}
+                />
+              )}
+            </div>
+          </div>
+          <div className="basis-2/4 max-h-60 px-4">
+            <MaterialReactTable
+              table={table}
+              columns={columns}
+              data={cameraRecording}
+            />
+          </div>
         </div>
-        {driveUrl != '' && (<GdriveModal
-          showModal={showModal}
-          handleCloseModal={handleCloseModal}
-          handleOpenModal={handleOpenModal}
-          file_id={driveUrl}
-        />)}
+        {driveUrl != '' && (
+          <GdriveModal
+            showModal={showModal}
+            handleCloseModal={handleCloseModal}
+            handleOpenModal={handleOpenModal}
+            file_id={driveUrl}
+          />
+        )}
 
         <div className="flex py-4">
-          <div className='basis-1/2 text-sm text-center'>
-            {recodStats && <table className="w-100 table-auto shadow-6">
-              <thead className=''>
-                <tr className="bg-gray-2 text-center dark:bg-meta-4">
-                  <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                    Rec Status
-                  </th>
-                  <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                    Batch Id
-                  </th>
-                  <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                    Date
-                  </th>
-                  <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {datas && datas.map((record) => (
-                  record.recordings.map((element) => (
-                    element['id'] == 0 && <tr key={element['id']}>
-                      <td className="border-b relative rounded-full border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                        <div className='h-10'>
-                          <img src={rpi} alt="User" style={{ height: '48px', width: '40px' }} />
-                          <span className={`animate-ping absolute right-10 bottom-6 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0 ? 'bg-meta-3' : record.status == 1 ? 'bg-primary' : record.status == 2 ? 'bg-meta-6' : 'bg-meta-7'}`} />
-                          <span className={`absolute right-10 bottom-6 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0 ? 'bg-meta-3' : record.status == 1 ? 'bg-primary' : record.status == 2 ? 'bg-meta-6' : 'bg-meta-7'}`} />
-                        </div>
-                      </td>
-                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                        <h5 className="font-medium text-black dark:text-white">
-                        </h5>
-                        <p className="text-sm text-center"> {element.batch_id}</p>
-                      </td>
-                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                        <h5 className="font-medium text-black dark:text-white">
-                        </h5>
-                        <p className="text-sm text-center">
-                          {element.date && DateTime.fromFormat(element.date, 'yyyy-MM-dd HH:mm:ss').toFormat('dd-MM-yyyy HH:mm:ss a')}
-                        </p>
-                      </td>
-                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                        <h5 className="font-medium text-black dark:text-white">
-                          <button
-                            type="button"
-                            className={`text-sm text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                            onClick={() => startRecord(record.pi_id)} disabled={isLoading}
-                          >
-                            {isLoading ? (
-                              loaderIcon
-                            ) : (
-                              <FaRegPlayCircle />
-                            )}
-                          </button>
-                        </h5>
-                      </td>
-                    </tr>
-                  ))
-                ))}
-              </tbody>
-            </table>}
+          <div className="basis-1/2 text-sm text-center">
+            {recodStats && (
+              <table className="w-100 table-auto shadow-6">
+                <thead className="">
+                  <tr className="bg-gray-2 text-center dark:bg-meta-4">
+                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                      Rec Status
+                    </th>
+                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                      Batch Id
+                    </th>
+                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                      Date
+                    </th>
+                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {datas &&
+                    datas.map((record) =>
+                      record.recordings.map(
+                        (element) =>
+                          element['id'] == 0 && (
+                            <tr key={element['id']}>
+                              <td className="border-b relative rounded-full border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                                <div className="h-10">
+                                  <img
+                                    src={rpi}
+                                    alt="User"
+                                    style={{ height: '48px', width: '40px' }}
+                                  />
+                                  <span
+                                    className={`animate-ping absolute right-10 bottom-6 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0
+                                        ? 'bg-meta-3'
+                                        : record.status == 1
+                                          ? 'bg-primary'
+                                          : record.status == 2
+                                            ? 'bg-meta-6'
+                                            : 'bg-meta-7'
+                                      }`}
+                                  />
+                                  <span
+                                    className={`absolute right-10 bottom-6 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0
+                                        ? 'bg-meta-3'
+                                        : record.status == 1
+                                          ? 'bg-primary'
+                                          : record.status == 2
+                                            ? 'bg-meta-6'
+                                            : 'bg-meta-7'
+                                      }`}
+                                  />
+                                </div>
+                              </td>
+                              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                                <h5 className="font-medium text-black dark:text-white"></h5>
+                                <p className="text-sm text-center">
+                                  {' '}
+                                  {element.batch_id}
+                                </p>
+                              </td>
+                              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                                <h5 className="font-medium text-black dark:text-white"></h5>
+                                <p className="text-sm text-center">
+                                  {element.date &&
+                                    DateTime.fromFormat(
+                                      element.date,
+                                      'yyyy-MM-dd HH:mm:ss',
+                                    ).toFormat('dd-MM-yyyy HH:mm:ss a')}
+                                </p>
+                              </td>
+                              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                                <h5 className="font-medium text-black dark:text-white">
+                                  <button
+                                    type="button"
+                                    className={`text-sm text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading
+                                        ? 'opacity-50 cursor-not-allowed'
+                                        : ''
+                                      }`}
+                                    onClick={() => startRecord(record.pi_id)}
+                                    disabled={isLoading}
+                                  >
+                                    {isLoading ? (
+                                      loaderIcon
+                                    ) : (
+                                      <FaRegPlayCircle />
+                                    )}
+                                  </button>
+                                </h5>
+                              </td>
+                            </tr>
+                          ),
+                      ),
+                    )}
+                </tbody>
+              </table>
+            )}
           </div>
-          <div className='basis-1/2'>
-            {recodStats && <table className="w-125 table-auto shadow-6">
-              <thead>
-                <tr className="bg-gray-2 text-center dark:bg-meta-4">
-                  <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                    Rec Status
-                  </th>
-                  <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                    Batch Id
-                  </th>
-                  <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                    Date
-                  </th>
-                  <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                    Audio Size
-                  </th>
-                  <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                    Video Size
-                  </th>
-                  <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                    Duration
-                  </th>
-                  <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                    Merge Percentage
-                  </th>
-                  <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                    Upload Percentage
-                  </th>
-                  <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {datas && datas.map((record) => (
-                  record.recordings.map((element) => (
-                    record.status != 0 && element['id'] != 0 &&
-                    <tr key={element['id']}>
-                      <td className="border-b relative rounded-full border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                        <div className='h-10'>
-                          <img src={rpi} alt="User" style={{ height: '48px', width: '40px' }} />
-                          <span className={`animate-ping absolute right-10 bottom-6 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0 ? 'bg-meta-3' : record.status == 1 ? 'bg-primary' : record.status == 2 ? 'bg-meta-6' : 'bg-meta-7'}`} />
-                          <span className={`absolute right-10 bottom-6 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0 ? 'bg-meta-3' : record.status == 1 ? 'bg-primary' : record.status == 2 ? 'bg-meta-6' : 'bg-meta-7'}`} />
-                        </div>
-                      </td>
-                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                        <h5 className="font-medium text-black dark:text-white">
-                        </h5>
-                        <p className="text-sm text-center"> {element.batch_id}</p>
-                      </td>
-                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                        <h5 className="font-medium text-black dark:text-white">
-                        </h5>
-                        <p className="text-sm text-center">
-                          {element.date && DateTime.fromFormat(element.date, 'yyyy-MM-dd HH:mm:ss').toFormat('dd-MM-yyyy HH:mm:ss a')}
-                        </p>
-                      </td>
-                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                        <h5 className="font-medium text-black dark:text-white">
-                        </h5>
-                        <p className="text-sm text-center"> {element.audio_size}</p>
-                      </td>
-                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                        <h5 className="font-medium text-black dark:text-white">
-                        </h5>
-                        <p className="text-sm text-center"> {element.video_size}</p>
-                      </td>
-                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                        <h5 className="font-medium text-black dark:text-white">
-                        </h5>
-                        <p className="text-sm text-center"> {element.duration}</p>
-                      </td>
-                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                        <span className="text-sm text-center"> <TypoGraphy percentage={element.merge_percentage} total={element.merge_percentage} type='upload' />
-                        </span>
-                      </td>
-                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                        <span className="text-sm text-center"> <TypoGraphy percentage={element.upload_percentage} total={element.upload_percentage} type='upload' /></span>
-                      </td>
-                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
-                        <h5 className="font-medium text-black dark:text-white">
-                          {element.status == 0 ?
-                            <button
-                              type="button"
-                              className={`text-sm text-black bg-orange-300 border-b-2 border-orange-800 text-center dark:text-white font-medium rounded-lg px-4 py-2 me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-
-                              onClick={() => stopRecord(element.pi_id, element.batch_id)} disabled={isLoading}
-                            >{isLoading ? (
-                              loaderIcon
-                            ) : (
-                              <FaRegCircleStop />
-                            )}
-                            </button> : element.id == 0 ? <div><button
-                              type="button"
-                              className={`text-sm text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                              onClick={() => startRecord(element.pi_id)} disabled={isLoading}
-                            >
-                              {isLoading ? (
-                                loaderIcon
-                              ) : (
-                                <FaRegPlayCircle />
-                              )}
-                            </button><button
-                              type="button"
-                              className={`text-sm text-black bg-orange-400 border-b-orange-900 border-b-2 w-12 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                              onClick={() => clearRecord(element.pi_id)} disabled={isLoading}
-                            >
-                                {isLoading ? (
-                                  loaderIcon
-                                ) : (
-                                  <MdCleaningServices />
-                                )}
-
-                              </button><button
-                                type="button"
-                                className={`text-sm text-black bg-cyan-500 border-b-cyan-800 border-b-2 w-12 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                                onClick={() => reboot(element.pi_id)} disabled={isLoading}>
-                                {isLoading ? (
-                                  loaderIcon
-                                ) : (
-                                  <BsBootstrapReboot />
-                                )}
-                              </button>
-                              <button
-                                type="button"
-                                className={`text-sm bg-red-400 border-b-red-900 text-black border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                                onClick={() => shutDown(element.pi_id)} disabled={isLoading}
-                              >
-                                {isLoading ? (
-                                  loaderIcon
-                                ) : (
-                                  <RiShutDownLine />
-                                )}
-                              </button><button
-                                type="button"
-                                className={`text-sm border-b-2 bg-blue-200 border-b-blue-700 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                                onClick={() => reFresh(element.pi_id)} disabled={isLoading}
-                              >
-                                {isLoading ? (
-                                  loaderIcon
-                                ) : (
-                                  <LuRefreshCcwDot />
-                                )}
-                              </button></div> : element.status != 0 ? <div><button
-                                type="button"
-                                className={`text-sm text-black bg-blue-400 border-blue-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                                onClick={() => startReMerging(element.pi_id, element.filename)} disabled={isLoading}
-                              >
-                                {isLoading ? (
-                                  loaderIcon
-                                ) : (
-                                  <TbArrowMerge />
-                                )}
-                              </button><br /><button
-                                type="button"
-                                className={`text-sm border-b-2 bg-red-400 border-b-red-900 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                                onClick={() => trash(element.pi_id, element.filename)} disabled={isLoading}
-                              >
-                                  {isLoading ? (
-                                    loaderIcon
+          <div className="basis-1/2">
+            {recodStats && (
+              <table className="w-125 table-auto shadow-6">
+                <thead>
+                  <tr className="bg-gray-2 text-center dark:bg-meta-4">
+                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                      Rec Status
+                    </th>
+                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                      Batch Id
+                    </th>
+                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                      Date
+                    </th>
+                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                      Audio Size
+                    </th>
+                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                      Video Size
+                    </th>
+                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                      Duration
+                    </th>
+                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                      Merge Percentage
+                    </th>
+                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                      Upload Percentage
+                    </th>
+                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {datas &&
+                    datas.map((record) =>
+                      record.recordings.map(
+                        (element) =>
+                          record.status != 0 &&
+                          element['id'] != 0 && (
+                            <tr key={element['id']}>
+                              <td className="border-b relative rounded-full border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                                <div className="h-10">
+                                  <img
+                                    src={rpi}
+                                    alt="User"
+                                    style={{ height: '48px', width: '40px' }}
+                                  />
+                                  <span
+                                    className={`animate-ping absolute right-10 bottom-6 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0
+                                        ? 'bg-meta-3'
+                                        : record.status == 1
+                                          ? 'bg-primary'
+                                          : record.status == 2
+                                            ? 'bg-meta-6'
+                                            : 'bg-meta-7'
+                                      }`}
+                                  />
+                                  <span
+                                    className={`absolute right-10 bottom-6 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0
+                                        ? 'bg-meta-3'
+                                        : record.status == 1
+                                          ? 'bg-primary'
+                                          : record.status == 2
+                                            ? 'bg-meta-6'
+                                            : 'bg-meta-7'
+                                      }`}
+                                  />
+                                </div>
+                              </td>
+                              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                                <h5 className="font-medium text-black dark:text-white"></h5>
+                                <p className="text-sm text-center">
+                                  {' '}
+                                  {element.batch_id}
+                                </p>
+                              </td>
+                              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                                <h5 className="font-medium text-black dark:text-white"></h5>
+                                <p className="text-sm text-center">
+                                  {element.date &&
+                                    DateTime.fromFormat(
+                                      element.date,
+                                      'yyyy-MM-dd HH:mm:ss',
+                                    ).toFormat('dd-MM-yyyy HH:mm:ss a')}
+                                </p>
+                              </td>
+                              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                                <h5 className="font-medium text-black dark:text-white"></h5>
+                                <p className="text-sm text-center">
+                                  {' '}
+                                  {element.audio_size}
+                                </p>
+                              </td>
+                              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                                <h5 className="font-medium text-black dark:text-white"></h5>
+                                <p className="text-sm text-center">
+                                  {' '}
+                                  {element.video_size}
+                                </p>
+                              </td>
+                              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                                <h5 className="font-medium text-black dark:text-white"></h5>
+                                <p className="text-sm text-center">
+                                  {' '}
+                                  {element.duration}
+                                </p>
+                              </td>
+                              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                                <span className="text-sm text-center">
+                                  {' '}
+                                  <TypoGraphy
+                                    percentage={element.merge_percentage}
+                                    total={element.merge_percentage}
+                                    type="upload"
+                                  />
+                                </span>
+                              </td>
+                              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                                <span className="text-sm text-center">
+                                  {' '}
+                                  <TypoGraphy
+                                    percentage={element.upload_percentage}
+                                    total={element.upload_percentage}
+                                    type="upload"
+                                  />
+                                </span>
+                              </td>
+                              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark">
+                                <h5 className="font-medium text-black dark:text-white">
+                                  {element.status == 0 ? (
+                                    <button
+                                      type="button"
+                                      className={`text-sm text-black bg-orange-300 border-b-2 border-orange-800 text-center dark:text-white font-medium rounded-lg px-4 py-2 me-2 mb-2 ${isLoading
+                                          ? 'opacity-50 cursor-not-allowed'
+                                          : ''
+                                        }`}
+                                      onClick={() =>
+                                        stopRecord(
+                                          element.pi_id,
+                                          element.batch_id,
+                                        )
+                                      }
+                                      disabled={isLoading}
+                                    >
+                                      {isLoading ? (
+                                        loaderIcon
+                                      ) : (
+                                        <FaRegCircleStop />
+                                      )}
+                                    </button>
+                                  ) : element.id == 0 ? (
+                                    <div>
+                                      <button
+                                        type="button"
+                                        className={`text-sm text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading
+                                            ? 'opacity-50 cursor-not-allowed'
+                                            : ''
+                                          }`}
+                                        onClick={() =>
+                                          startRecord(element.pi_id)
+                                        }
+                                        disabled={isLoading}
+                                      >
+                                        {isLoading ? (
+                                          loaderIcon
+                                        ) : (
+                                          <FaRegPlayCircle />
+                                        )}
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className={`text-sm text-black bg-orange-400 border-b-orange-900 border-b-2 w-12 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading
+                                            ? 'opacity-50 cursor-not-allowed'
+                                            : ''
+                                          }`}
+                                        onClick={() =>
+                                          clearRecord(element.pi_id)
+                                        }
+                                        disabled={isLoading}
+                                      >
+                                        {isLoading ? (
+                                          loaderIcon
+                                        ) : (
+                                          <MdCleaningServices />
+                                        )}
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className={`text-sm text-black bg-cyan-500 border-b-cyan-800 border-b-2 w-12 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading
+                                            ? 'opacity-50 cursor-not-allowed'
+                                            : ''
+                                          }`}
+                                        onClick={() => reboot(element.pi_id)}
+                                        disabled={isLoading}
+                                      >
+                                        {isLoading ? (
+                                          loaderIcon
+                                        ) : (
+                                          <BsBootstrapReboot />
+                                        )}
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className={`text-sm bg-red-400 border-b-red-900 text-black border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading
+                                            ? 'opacity-50 cursor-not-allowed'
+                                            : ''
+                                          }`}
+                                        onClick={() => shutDown(element.pi_id)}
+                                        disabled={isLoading}
+                                      >
+                                        {isLoading ? (
+                                          loaderIcon
+                                        ) : (
+                                          <RiShutDownLine />
+                                        )}
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className={`text-sm border-b-2 bg-blue-200 border-b-blue-700 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading
+                                            ? 'opacity-50 cursor-not-allowed'
+                                            : ''
+                                          }`}
+                                        onClick={() => reFresh(element.pi_id)}
+                                        disabled={isLoading}
+                                      >
+                                        {isLoading ? (
+                                          loaderIcon
+                                        ) : (
+                                          <LuRefreshCcwDot />
+                                        )}
+                                      </button>
+                                    </div>
+                                  ) : element.status != 0 ? (
+                                    <div>
+                                      <button
+                                        type="button"
+                                        className={`text-sm text-black bg-blue-400 border-blue-900 border-b-2 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading
+                                            ? 'opacity-50 cursor-not-allowed'
+                                            : ''
+                                          }`}
+                                        onClick={() =>
+                                          startReMerging(
+                                            element.pi_id,
+                                            element.filename,
+                                          )
+                                        }
+                                        disabled={isLoading}
+                                      >
+                                        {isLoading ? (
+                                          loaderIcon
+                                        ) : (
+                                          <TbArrowMerge />
+                                        )}
+                                      </button>
+                                      <br />
+                                      <button
+                                        type="button"
+                                        className={`text-sm border-b-2 bg-red-400 border-b-red-900 dark:text-white font-medium rounded-lg px-4 py-2 text-center me-2 mb-2 ${isLoading
+                                            ? 'opacity-50 cursor-not-allowed'
+                                            : ''
+                                          }`}
+                                        onClick={() =>
+                                          trash(element.pi_id, element.filename)
+                                        }
+                                        disabled={isLoading}
+                                      >
+                                        {isLoading ? (
+                                          loaderIcon
+                                        ) : (
+                                          <RiDeleteBin6Fill />
+                                        )}
+                                      </button>
+                                    </div>
+                                  ) : element.status == 1 ? (
+                                    ''
                                   ) : (
-                                    <RiDeleteBin6Fill />
+                                    ''
                                   )}
-                                </button></div> : element.status == 1 ? '' : ''}
-                        </h5>
-                      </td>
-                    </tr>
-                  ))
-                ))}
-              </tbody>
-            </table>}
+                                </h5>
+                              </td>
+                            </tr>
+                          ),
+                      ),
+                    )}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
         {/* <div className="max-w-full overflow-x-auto">
@@ -895,6 +1105,20 @@ const TableThree = () => {
             </tbody>
           </table>
         </div> */}
+        <div className="container bg-black color-white ">
+          <div className="pl-8">
+            <h4 className="text-xl text-green-600">Pusher Client</h4>
+          </div>
+          <div className='row pl-8'>
+            <div className='col-12 '> <ScrollToBottomDiv items={pusherLogs} height={250} />
+              {/* {pusherLogs && pusherLogs.map((record, index) => (
+                <div key={index}>
+                  <p className='text-left text-warmGray-300'>{record}</p>
+                </div>
+              ))} */}
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );
