@@ -10,6 +10,7 @@ import { SiRaspberrypi } from "react-icons/si";
 import { RxDashboard } from "react-icons/rx";
 import { BiUserPin } from "react-icons/bi";
 import { MdOutlinePermMedia } from "react-icons/md";
+import { TbHomeHeart } from "react-icons/tb";
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
@@ -358,6 +359,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               }
                             ><MdOutlinePermMedia />
                               All Recordings
+                            </NavLink>
+                          </li>
+                          <li>
+                            <NavLink
+                              to="Pis/Class-Rooms"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white')
+                              }
+                            ><TbHomeHeart  />
+                              Class Rooms
                             </NavLink>
                           </li>
                         </ul>
