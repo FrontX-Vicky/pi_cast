@@ -321,7 +321,7 @@ const Pi_Casting = () => {
   return (
 
     <>
-      <div className="rounded-lg border border-stroke bg-warmGray-200 px-1 pt-1 pb-2.5 min-h-fit shadow-default dark:border-strokedark  shadow-sm ring-1 ring-gray-900/5 dark:bg-slate-900 sm:px-2.5 xl:pb-1 overflow-hidden text-sm flex-grow">
+      <div className="rounded-lg border border-stroke bg-warmGray-200 px-1 pt-1 pb-2.5 min-h-fit shadow-default dark:border-strokedark  shadow-sm ring-1 ring-gray-900/5 dark:bg-slate-900 sm:px-2.5 xl:pb-1 text-sm flex-grow">
         <div style={{ display: styleLoader }}>
           {/* <Loader /> */}
         </div>
