@@ -1,34 +1,40 @@
 import axios from 'axios';
-import { del, get, post, put } from "../helpers/api_helper";
+import { del, get, post, put } from '../helpers/api_helper';
 import Pusher from 'pusher-js';
-import React, { useContext, useEffect, useRef, useState, Fragment } from 'react';
+import React, {
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  Fragment,
+} from 'react';
 import Loader from '../common/Loader';
 import rpi from '../images/logo/raspberry-pi-icon-transparent.png';
-import { HiVideoCamera } from "react-icons/hi2";
-import { HiVideoCameraSlash } from "react-icons/hi2";
-import { IoIosMic } from "react-icons/io";
-import { IoIosMicOff } from "react-icons/io";
-import { FaRegPlayCircle } from "react-icons/fa";
-import { RiDeleteBin6Fill } from "react-icons/ri";
-import { TbArrowMerge } from "react-icons/tb";
-import { FaRegCircleStop } from "react-icons/fa6";
-import { RiShutDownLine } from "react-icons/ri";
-import { BsBootstrapReboot } from "react-icons/bs";
-import { GrPowerReset } from "react-icons/gr";
-import { LuRefreshCcwDot } from "react-icons/lu";
-import { FcCamera } from "react-icons/fc";
-import { MdCleaningServices } from "react-icons/md";
-import { MdOutlineSdStorage } from "react-icons/md";
-import { GrClearOption } from "react-icons/gr";
+import { HiVideoCamera } from 'react-icons/hi2';
+import { HiVideoCameraSlash } from 'react-icons/hi2';
+import { IoIosMic } from 'react-icons/io';
+import { IoIosMicOff } from 'react-icons/io';
+import { FaRegPlayCircle } from 'react-icons/fa';
+import { RiDeleteBin6Fill } from 'react-icons/ri';
+import { TbArrowMerge } from 'react-icons/tb';
+import { FaRegCircleStop } from 'react-icons/fa6';
+import { RiShutDownLine } from 'react-icons/ri';
+import { BsBootstrapReboot } from 'react-icons/bs';
+import { GrPowerReset } from 'react-icons/gr';
+import { LuRefreshCcwDot } from 'react-icons/lu';
+import { FcCamera } from 'react-icons/fc';
+import { MdCleaningServices } from 'react-icons/md';
+import { MdOutlineSdStorage } from 'react-icons/md';
+import { GrClearOption } from 'react-icons/gr';
 import { DateTime } from 'luxon';
 import TypoGraphy from './TypoGraphy';
 import { SearchContext } from './SearchContext';
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog, Transition } from '@headlessui/react';
 // icons
 
-import { FcStart } from "react-icons/fc";
-import { FaPlay } from "react-icons/fa";
-import { BsRecordCircle } from "react-icons/bs";
+import { FcStart } from 'react-icons/fc';
+import { FaPlay } from 'react-icons/fa';
+import { BsRecordCircle } from 'react-icons/bs';
 import { ActionMenu } from './ActionMenu';
 import ActionsMenuNew from './ActionMenuNew';
 import { LinearProgress } from '@mui/material';
@@ -63,14 +69,13 @@ const Pi_Casting = () => {
       wsPort: 443,
       wssPort: 443,
       enabledTransports: ['ws', 'wss'],
-      forceTLS: true
+      forceTLS: true,
     });
     // Subscribe to a channel and log incoming events
     var channel = pusher.subscribe('pi_cast');
     // Log all events to the console
     channel.bind_global(function (eventName, data) {
       if (data.message) {
-
         if (timerRefs.current[data.message.pi_id]) {
           clearTimeout(timerRefs.current[data.message.pi_id]);
         }
@@ -83,59 +88,61 @@ const Pi_Casting = () => {
           setDatas(Object.values(allPis));
         }, 30000); //!wait 10 seconds
 
-
         if (data.message && data.message.recordings.length == 0) {
-          let recordings = [{
-            "id": 0,
-            "pi_id": data.message.pi_id,
-            "camera": data.message.devices.camera,
-            "mic": data.message.devices.mic,
-            "batch_id": 0,
-            "date": "",
-            "filename": "",
-            "video_size": "",
-            "audio_size": "",
-            "duration": "",
-            "file_id": null,
-            "recording": 0,
-            "merge": 0,
-            "merge_percentage": 0,
-            "upload": 0,
-            "upload_percentage": 0,
-            "sync": 0,
-            "created_at": "",
-            "modified_at": "",
-          }];
+          let recordings = [
+            {
+              id: 0,
+              pi_id: data.message.pi_id,
+              camera: data.message.devices.camera,
+              mic: data.message.devices.mic,
+              batch_id: 0,
+              date: '',
+              filename: '',
+              video_size: '',
+              audio_size: '',
+              duration: '',
+              file_id: null,
+              recording: 0,
+              merge: 0,
+              merge_percentage: 0,
+              upload: 0,
+              upload_percentage: 0,
+              sync: 0,
+              created_at: '',
+              modified_at: '',
+            },
+          ];
           data.message.recordings = recordings;
           allPis[data.message.pi_id] = data.message;
         } else {
-          const noStatusZero = data.message.recordings.every(recording => recording.status !== 0);
+          const noStatusZero = data.message.recordings.every(
+            (recording) => recording.status !== 0,
+          );
           if (noStatusZero) {
             // Add default recording
             data.message.recordings.push({
-              "id": 0,
-              "pi_id": data.message.pi_id,
-              "camera": data.message.devices.camera,
-              "mic": data.message.devices.mic,
-              "batch_id": 0,
-              "date": "",
-              "filename": "",
-              "video_size": "",
-              "audio_size": "",
-              "duration": "",
-              "file_id": null,
-              "recording": 0,
-              "merge": 0,
-              "merge_percentage": 0,
-              "upload": 0,
-              "upload_percentage": 0,
-              "sync": 0,
-              "created_at": "",
-              "modified_at": "",
+              id: 0,
+              pi_id: data.message.pi_id,
+              camera: data.message.devices.camera,
+              mic: data.message.devices.mic,
+              batch_id: 0,
+              date: '',
+              filename: '',
+              video_size: '',
+              audio_size: '',
+              duration: '',
+              file_id: null,
+              recording: 0,
+              merge: 0,
+              merge_percentage: 0,
+              upload: 0,
+              upload_percentage: 0,
+              sync: 0,
+              created_at: '',
+              modified_at: '',
             });
           }
           allPis[data.message.pi_id] = data.message;
-
         }
       }
       setDatas(Object.values(allPis));
@@ -164,25 +171,28 @@ const Pi_Casting = () => {
     setIsOpen(true);
   };
 
-  const loaderIcon = <svg
-    className="animate-spin h-5 w-5 text-white"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-  >
-    <circle
-      className="opacity-25"
-      cx="12"
-      cy="12"
-      r="10"
-      stroke="currentColor"
-      strokeWidth="4"
-    ></circle>
-    <path
-      className="opacity-75"
-      fill="currentColor"
-      d="M4 12a8 8 0 018-8v8H4z"
-    ></path></svg>
+  const loaderIcon = (
+    <svg
+      className="animate-spin h-5 w-5 text-white"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      ></circle>
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8v8H4z"
+      ></path>
+    </svg>
+  );
 
   useEffect(() => {
     return () => {
@@ -191,143 +201,140 @@ const Pi_Casting = () => {
     };
   }, []);
 
-
   const stopRecord = (pi_id, batch_id) => {
     setLoading(true);
     var payload = {
-      "type": "rec_stop",
-      "id": pi_id,
-      "batch_id": batch_id
-    }
+      type: 'rec_stop',
+      id: pi_id,
+      batch_id: batch_id,
+    };
     globalFunc(payload);
   };
 
   const startRecord = (pi_id) => {
     setLoading(true);
     var payload = {
-      "type": "rec_start",
-      "id": pi_id,
-      "batch_id": '1234'
-    }
+      type: 'rec_start',
+      id: pi_id,
+      batch_id: '1234',
+    };
     globalFunc(payload);
   };
 
   const clearRecord = (pi_id) => {
     setLoading(true);
     var payload = {
-      "type": "clear_recordings",
-      "id": pi_id
-    }
+      type: 'clear_recordings',
+      id: pi_id,
+    };
     globalFunc(payload);
-  }
+  };
 
   const startReMerging = (pi_id, filename) => {
     setLoading(true);
     var payload = {
-      "type": "merge",
-      "id": pi_id,
-      "filename": filename,
-    }
+      type: 'merge',
+      id: pi_id,
+      filename: filename,
+    };
     globalFunc(payload);
-  }
+  };
 
   const reboot = (pi_id) => {
     setLoading(true);
     var payload = {
-      "type": "reboot",
-      "id": pi_id
-    }
+      type: 'reboot',
+      id: pi_id,
+    };
     globalFunc(payload);
-  }
+  };
 
   const shutDown = (pi_id) => {
     setLoading(true);
     var payload = {
-      "type": "shutdown",
-      "id": pi_id
-    }
+      type: 'shutdown',
+      id: pi_id,
+    };
     globalFunc(payload);
-  }
+  };
 
   const reFresh = (pi_id) => {
     setLoading(true);
     var payload = {
-      "type": "device_refresh",
-      "id": pi_id
-    }
+      type: 'device_refresh',
+      id: pi_id,
+    };
     globalFunc(payload);
-  }
+  };
 
   const trash = (pi_id, filename) => {
     setLoading(true);
     var payload = {
-      "type": "trash",
-      "id": pi_id,
-      "filename": filename,
-    }
+      type: 'trash',
+      id: pi_id,
+      filename: filename,
+    };
     globalFunc(payload);
-  }
+  };
 
   const storageClear = (pi_id) => {
     setLoading(true);
     var payload = {
-      "type": "storage_clear",
-      "days": "5",
-      "id": pi_id
-    }
+      type: 'storage_clear',
+      days: '5',
+      id: pi_id,
+    };
     globalFunc(payload);
-  }
+  };
 
   const getClassrooms = () => {
-    var payload = {}
+    var payload = {};
     var url = 'get_classrooms';
     // api(payload,url);
-  }
+  };
 
   const getVenues = async () => {
     try {
-      const response = await get("rpi/get_venues", {});
+      const response = await get('rpi/get_venues', {});
       setVenues(JSON.parse(response.data));
     } catch (error) {
-      console.error("Error fetching batches:", error);
-    }
-  }
-
-  const getBatches = async () => {
-    try {
-      const response = await get("rpi/get_batches", {}); // Wait for the response
-      setBatches(JSON.parse(response.data));
-    } catch (error) {
-      console.error("Error fetching batches:", error);
+      console.error('Error fetching batches:', error);
     }
   };
 
+  const getBatches = async () => {
+    try {
+      const response = await get('rpi/get_batches', {}); // Wait for the response
+      setBatches(JSON.parse(response.data));
+    } catch (error) {
+      console.error('Error fetching batches:', error);
+    }
+  };
 
   const globalFunc = (payload) => {
-    axios.post('https://api.tickleright.in/api/rpi/actions', payload).then((response) => {
-      try {
-        if (response) {
-          // setLoading(false);
-          console.log('Successfully Going To ' + payload.type);
-        } else {
-          console.log('Something went wrong is Api response');
+    axios
+      .post('https://api.tickleright.in/api/rpi/actions', payload)
+      .then((response) => {
+        try {
+          if (response) {
+            // setLoading(false);
+            console.log('Successfully Going To ' + payload.type);
+          } else {
+            console.log('Something went wrong is Api response');
+          }
+        } catch (err) {
+          console.log('Error Occured while making an API request');
         }
-      } catch (err) {
-        console.log('Error Occured while making an API request');
-      }
-    });
-  }
+      });
+  };
 
   return (
-
     <>
-      <div className="rounded-lg border border-stroke bg-warmGray-200 px-1 pt-1 pb-2.5 min-h-fit shadow-default dark:border-strokedark  shadow-sm ring-1 ring-gray-900/5 dark:bg-slate-900 sm:px-2.5 xl:pb-1 text-sm flex-grow overflow-auto">
-        <div style={{ display: styleLoader }}>
-          {/* <Loader /> */}
-        </div>
+      <div className="h-full flex-1 rounded-lg border border-stroke bg-warmGray-200 px-1 pt-1 pb-2.5 shadow-default dark:border-strokedark shadow-sm ring-1 ring-gray-900/5 dark:bg-slate-900 sm:px-2.5 xl:pb-1 text-sm overflow-auto">
+        <div style={{ display: styleLoader }}>{/* <Loader /> */}</div>
         {/* <div className="rounded-lg w-full overflow-x-auto">
           <table className="w-full table-auto overflow-hidden"> */}
-            <div className="rounded-lg min-h-203">
+        <div className="rounded-lg min-h-203">
           <table className="min-w-full table-fixed rounded">
             <thead>
               <tr className="bg-gray-2 text-center dark:bg-slate-800 overflow-hidden">
@@ -344,7 +351,8 @@ const Pi_Casting = () => {
                   Devices
                 </th>
                 <th className="min-w-[250px] py-2 px-4 font-medium text-black dark:text-white">
-                  Recordings<br />
+                  Recordings
+                  <br />
                   {/* <table>
                     <thead>
                       <th className="min-w-[130px] py-2 px-4 text-black dark:text-white">
@@ -371,209 +379,224 @@ const Pi_Casting = () => {
                     </thead>
                   </table> */}
                 </th>
-
               </tr>
             </thead>
-            <tbody className=''>
-              {datas && datas.length > 0 && datas.map((element, indexs) => {
-                return (
-                  <tr
-                    key={element.id}
-                    className="border-b border-[#eee] dark:border-strokedark "
-                  >
-                    <td className=" border-white pt-2 dark:border-strokedark text-center">
-                      <label htmlFor="">{indexs + 1}</label>
-                    </td>
-                    <td className="max-w-[200px] border-white pt-2 dark:border-strokedark ">
-                      <p className="text-sm font-bold dark:border-strokedark text-center">
-                        <span>{element.pi_id}</span>
-                        <br /> {venues[element['venue_id']]}
-                      </p>
-                    </td>
-                    <td className="text-sm text-center  border-white pt-2 dark:border-strokedark">
-                      <span className="text-sm text-center">
-                        <TypoGraphy
-                          percentage={
-                            (element['stats']['storage']['used_storage'] /
-                              element['stats']['storage']['total_storage']) *
-                            100
-                          }
-                          total={element['stats']['storage']['total_storage']}
-                          type="storage"
-                        />
-                      </span>
-                    </td>
-                    <td className="max-w-[200px]  text-sm text-center border-white pt-2 dark:border-strokedark">
-                      {element['devices'].camera == 1 ? (
-                        <HiVideoCamera
-                          style={{
-                            width: '18px',
-                            height: '18px',
-                            display: 'block',
-                            margin: '0 auto',
-                            color: '#34e37d',
-                          }}
-                        />
-                      ) : (
-                        <HiVideoCameraSlash
-                          style={{
-                            width: '18px',
-                            height: '18px',
-                            display: 'block',
-                            margin: '0 auto',
-                            color: '#d63c49',
-                          }}
-                        />
-                      )}
-                      {element['devices'].mic == 1 ? (
-                        <IoIosMic
-                          style={{
-                            width: '18px',
-                            height: '18px',
-                            display: 'block',
-                            margin: '0 auto',
-                            color: '#34e37d',
-                          }}
-                        />
-                      ) : (
-                        <IoIosMicOff
-                          style={{
-                            width: '18px',
-                            height: '18px',
-                            display: 'block',
-                            margin: '0 auto',
-                            color: '#d63c49',
-                          }}
-                        />
-                      )}
-                    </td>
-                    <td>
-                      <table>
-                        <tbody>
-                          {element.recordings
-                            .filter((item) =>
-                              Object.values(item).some((value) =>
-                                String(value)
-                                  .toLowerCase()
-                                  .includes(inputValue.toLowerCase()),
-                              ),
-                            )
-                            .map((record, index) => (
-                              <tr>
-                                {/* <td colSpan={2} /> */}
-                                <React.Fragment key={index}>
-                                  <td className="max-w-[400px] py-0 px-4 border-white pt-2 pl-9 dark:border-strokedark">
-                                    <div className="flex items-center justify-evenly">
-                                      <div className="relative flex-shrink-0 me-2">
-                                        <span
-                                          className={`animate-ping absolute h-3.5 w-3.5 rounded-full  inline-flex border-2 border-white ${record.pi_id != 0 &&
+            <tbody className="">
+              {datas &&
+                datas.length > 0 &&
+                datas.map((element, indexs) => {
+                  return (
+                    <tr
+                      key={element.id}
+                      className="border-b border-[#eee] dark:border-strokedark "
+                    >
+                      <td className=" border-white pt-2 dark:border-strokedark text-center">
+                        <label htmlFor="">{indexs + 1}</label>
+                      </td>
+                      <td className="max-w-[200px] border-white pt-2 dark:border-strokedark ">
+                        <p className="text-sm font-bold dark:border-strokedark text-center">
+                          <span>{element.pi_id}</span>
+                          <br /> {venues[element['venue_id']]}
+                        </p>
+                      </td>
+                      <td className="text-sm text-center  border-white pt-2 dark:border-strokedark">
+                        <span className="text-sm text-center">
+                          <TypoGraphy
+                            percentage={
+                              (element['stats']['storage']['used_storage'] /
+                                element['stats']['storage']['total_storage']) *
+                              100
+                            }
+                            total={element['stats']['storage']['total_storage']}
+                            type="storage"
+                          />
+                        </span>
+                      </td>
+                      <td className="max-w-[200px]  text-sm text-center border-white pt-2 dark:border-strokedark">
+                        {element['devices'].camera == 1 ? (
+                          <HiVideoCamera
+                            style={{
+                              width: '18px',
+                              height: '18px',
+                              display: 'block',
+                              margin: '0 auto',
+                              color: '#34e37d',
+                            }}
+                          />
+                        ) : (
+                          <HiVideoCameraSlash
+                            style={{
+                              width: '18px',
+                              height: '18px',
+                              display: 'block',
+                              margin: '0 auto',
+                              color: '#d63c49',
+                            }}
+                          />
+                        )}
+                        {element['devices'].mic == 1 ? (
+                          <IoIosMic
+                            style={{
+                              width: '18px',
+                              height: '18px',
+                              display: 'block',
+                              margin: '0 auto',
+                              color: '#34e37d',
+                            }}
+                          />
+                        ) : (
+                          <IoIosMicOff
+                            style={{
+                              width: '18px',
+                              height: '18px',
+                              display: 'block',
+                              margin: '0 auto',
+                              color: '#d63c49',
+                            }}
+                          />
+                        )}
+                      </td>
+                      <td>
+                        <table>
+                          <tbody>
+                            {element.recordings
+                              .filter((item) =>
+                                Object.values(item).some((value) =>
+                                  String(value)
+                                    .toLowerCase()
+                                    .includes(inputValue.toLowerCase()),
+                                ),
+                              )
+                              .map((record, index) => (
+                                <tr>
+                                  {/* <td colSpan={2} /> */}
+                                  <React.Fragment key={index}>
+                                    <td className="max-w-[400px] py-0 px-4 border-white pt-2 pl-9 dark:border-strokedark">
+                                      <div className="flex items-center justify-evenly">
+                                        <div className="relative flex-shrink-0 me-2">
+                                          <span
+                                            className={`animate-ping absolute h-3.5 w-3.5 rounded-full  inline-flex border-2 border-white ${
+                                              record.pi_id != 0 &&
                                               record.status == 0
-                                              ? 'bg-meta-7'
-                                              : record.status == 1
+                                                ? 'bg-meta-7'
+                                                : record.status == 1
                                                 ? 'bg-primary'
                                                 : record.status == 2
-                                                  ? 'bg-meta-6'
-                                                  : 'bg-meta-3'
+                                                ? 'bg-meta-6'
+                                                : 'bg-meta-3'
                                             }`}
-                                        />
-                                        <span
-                                          className={`relative  h-3.5 w-3.5  inline-flex rounded-full border-2 border-white ${record.pi_id != 0 &&
+                                          />
+                                          <span
+                                            className={`relative  h-3.5 w-3.5  inline-flex rounded-full border-2 border-white ${
+                                              record.pi_id != 0 &&
                                               record.status == 0
-                                              ? 'bg-meta-7'
-                                              : record.status == 1
+                                                ? 'bg-meta-7'
+                                                : record.status == 1
                                                 ? 'bg-primary'
                                                 : record.status == 2
-                                                  ? 'bg-meta-6'
-                                                  : 'bg-meta-3'
+                                                ? 'bg-meta-6'
+                                                : 'bg-meta-3'
                                             }`}
-                                        ></span>
+                                          ></span>
+                                        </div>
+                                        <div
+                                          className="text-sm text-center truncate w-50 mb-1"
+                                          data-twe-toggle="tooltip"
+                                          data-twe-placement="top"
+                                          data-twe-ripple-init
+                                          data-twe-ripple-color="light"
+                                          title={batches[record.batch_id]}
+                                        >
+                                          {batches[record.batch_id]}
+                                        </div>
                                       </div>
-                                      <div
-                                        className="text-sm text-center truncate w-50 mb-1"
-                                        data-twe-toggle="tooltip"
-                                        data-twe-placement="top"
-                                        data-twe-ripple-init
-                                        data-twe-ripple-color="light"
-                                        title={batches[record.batch_id]}
-                                      >
-                                        {batches[record.batch_id]}
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td className="min-w-35 py-0 px-4">
-                                    <p className="text-sm text-left">
-                                      {record.date &&
-                                        DateTime.fromFormat(
-                                          record.date,
-                                          'yyyy-MM-dd HH:mm:ss',
-                                        ).toFormat('d LLLL h:mm a')}
-                                    </p>
-                                  </td>
-                                  <td className="w-[200px] py-0 px-4">
-                                    <p className="text-sm text-left">
-                                      {record.video_size}/{record.audio_size}
-                                    </p>
-                                  </td>
-                                  <td className="w-[300px] py-0 px-4">
-                                    <p className="text-sm text-center">
-                                      {' '}
-                                      {record.duration}
-                                    </p>
-                                  </td>
-                                  <td className="w-[300px] py-0 px-4">
-                                    <p className="text-sm text-center">
-                                      {' '}
-                                      {record.id == 0
-                                        ? 'Idle'
-                                        : record.status == 1
+                                    </td>
+                                    <td className="min-w-35 py-0 px-4">
+                                      <p className="text-sm text-left">
+                                        {record.date &&
+                                          DateTime.fromFormat(
+                                            record.date,
+                                            'yyyy-MM-dd HH:mm:ss',
+                                          ).toFormat('d LLLL h:mm a')}
+                                      </p>
+                                    </td>
+                                    <td className="w-[200px] py-0 px-4">
+                                      <p className="text-sm text-left">
+                                        {record.video_size}/{record.audio_size}
+                                      </p>
+                                    </td>
+                                    <td className="w-[300px] py-0 px-4">
+                                      <p className="text-sm text-center">
+                                        {' '}
+                                        {record.duration}
+                                      </p>
+                                    </td>
+                                    <td className="w-[300px] py-0 px-4">
+                                      <p className="text-sm text-center">
+                                        {' '}
+                                        {record.id == 0
+                                          ? 'Idle'
+                                          : record.status == 1
                                           ? 'Merging'
                                           : record.status == 2
-                                            ? 'Uploading'
-                                            : record.status == 0
-                                              ? 'Recording'
-                                              : 'Completed'}
-                                    </p>
-                                  </td>
-                                  <td className="min-w-[250px] py-0 px-4">
-                                    {/* {record.status != 0 ? record.status == 1 ? <span className="text-sm text-center"> <TypoGraphy percentage={record.merge_percentage} total={record.merge_percentage} type='upload' />
+                                          ? 'Uploading'
+                                          : record.status == 0
+                                          ? 'Recording'
+                                          : 'Completed'}
+                                      </p>
+                                    </td>
+                                    <td className="min-w-[250px] py-0 px-4">
+                                      {/* {record.status != 0 ? record.status == 1 ? <span className="text-sm text-center"> <TypoGraphy percentage={record.merge_percentage} total={record.merge_percentage} type='upload' />
                             </span> : <span className="text-sm text-center"> <TypoGraphy percentage={record.upload_percentage} total={record.upload_percentage} type='upload' /></span> : <span></span>} */}
-                                    {record.status !== 0 && record.status !== undefined && (
-                                      <span className="flex items-center text-sm space-x-2">
-                                        <LinearProgress
-                                          variant="determinate"
-                                          value={record.status === 1 ? record.merge_percentage : record.upload_percentage}
-                                          className="w-24 h-2 inline-block rounded bg-blue-200 dark:bg-white"   sx={{
-                                            '& .MuiLinearProgress-bar': { backgroundColor: '#4ade80' }, // e.g. Tailwind green-400
-                                          }}
-                                        />
-                                        <span>
-                                          {record.status === 1 ? record.merge_percentage : (record.upload_percentage)? record.upload_percentage: ''}%
-                                        </span>
-                                      </span>
-                                    )}
-
-                                  </td>
-                                  <td className="min-w-[100px] py-0 px-4">
-                                    <ActionsMenuNew
-                                      isLast={
-                                        index >= element.recordings.length - 3
-                                      }
-                                      // isLast={indexs >= datas.length - 1}
-                                      record={record}
-                                      isLoading={isLoading}
-                                      loaderIcon={loaderIcon}
-                                      stopRecord={stopRecord}
-                                      openModal={openModal}
-                                      startRecord={startRecord}
-                                      clearRecord={clearRecord}
-                                      reboot={reboot}
-                                      shutDown={shutDown}
-                                      reFresh={reFresh}
-                                      storageClear={storageClear}
-                                      startReMerging={startReMerging}
-                                      trash={trash}
-                                    />
-                                    {/* <ActionMenu   
+                                      {record.status !== 0 &&
+                                        record.status !== undefined && (
+                                          <span className="flex items-center text-sm space-x-2">
+                                            <LinearProgress
+                                              variant="determinate"
+                                              value={
+                                                record.status === 1
+                                                  ? record.merge_percentage
+                                                  : record.upload_percentage
+                                              }
+                                              className="w-24 h-2 inline-block rounded bg-blue-200 dark:bg-white"
+                                              sx={{
+                                                '& .MuiLinearProgress-bar': {
+                                                  backgroundColor: '#4ade80',
+                                                }, // e.g. Tailwind green-400
+                                              }}
+                                            />
+                                            <span>
+                                              {record.status === 1
+                                                ? record.merge_percentage
+                                                : record.upload_percentage
+                                                ? record.upload_percentage
+                                                : ''}
+                                              %
+                                            </span>
+                                          </span>
+                                        )}
+                                    </td>
+                                    <td className="min-w-[100px] py-0 px-4">
+                                      <ActionsMenuNew
+                                        isLast={
+                                          index >= element.recordings.length - 3
+                                        }
+                                        // isLast={indexs >= datas.length - 1}
+                                        record={record}
+                                        isLoading={isLoading}
+                                        loaderIcon={loaderIcon}
+                                        stopRecord={stopRecord}
+                                        openModal={openModal}
+                                        startRecord={startRecord}
+                                        clearRecord={clearRecord}
+                                        reboot={reboot}
+                                        shutDown={shutDown}
+                                        reFresh={reFresh}
+                                        storageClear={storageClear}
+                                        startReMerging={startReMerging}
+                                        trash={trash}
+                                      />
+                                      {/* <ActionMenu   
                                       isLast={index >= element.recordings.length - 3}
                                       // isLast={indexs >= datas.length - 1}
                                       record={record}
@@ -590,19 +613,17 @@ const Pi_Casting = () => {
                                       startReMerging={startReMerging}
                                       trash={trash}
                                     /> */}
-                                  </td>
-                                </React.Fragment>
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
-                    </td>
-                  </tr>
-                );
-              })}
+                                    </td>
+                                  </React.Fragment>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
-
-
 
             {/* <tbody>
               {datas && datas.length > 0 && datas.map((element, indexs) => (
@@ -837,8 +858,6 @@ const Pi_Casting = () => {
                 ))
               ))}
             </tbody> */}
-
-
           </table>
         </div>
 
@@ -894,7 +913,6 @@ const Pi_Casting = () => {
           </Dialog>
         </Transition>
       </div>
-
     </>
   );
 };

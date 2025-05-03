@@ -15,14 +15,14 @@ const DefaultLayout = () => {
         {/* <!-- ===== Sidebar End ===== --> */}
 
         {/* <!-- ===== Content Area Start ===== --> */}
-        <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-          {/* <!-- ===== Header Start ===== --> */}
+        <div className="relative flex flex-1 flex-col overflow-hidden">
+        {/* <!-- ===== Header Start ===== --> */}
           <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
           {/* <!-- ===== Header End ===== --> */}
 
           {/* <!-- ===== Main Content Start ===== --> */}
-          <main>
-            <div className="mx-auto max-w-screen min-h- p-2 md:p-2 2xl:p-2 bg-gray-50 dark:bg-warmGray-950 overflow-hidden">
+          <main className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 overflow-auto p-2 md:p-2 2xl:p-2 bg-gray-50 dark:bg-warmGray-950">
               <Outlet />
             </div>
           </main>
