@@ -462,9 +462,9 @@ const Pi_Casting = () => {
                               <tr>
                                 {/* <td colSpan={2} /> */}
                                 <React.Fragment key={index}>
-                                  <td className="min-w-[300px] py-0 px-4 border-white pt-2 pl-9 dark:border-strokedark">
+                                  <td className="max-w-[400px] py-0 px-4 border-white pt-2 pl-9 dark:border-strokedark">
                                     <div className="flex items-center justify-evenly">
-                                      <div className="relative flex-shrink-0">
+                                      <div className="relative flex-shrink-0 me-2">
                                         <span
                                           className={`animate-ping absolute h-3.5 w-3.5 rounded-full  inline-flex border-2 border-white ${record.pi_id != 0 &&
                                               record.status == 0
@@ -488,8 +488,8 @@ const Pi_Casting = () => {
                                             }`}
                                         ></span>
                                       </div>
-                                      <label
-                                        className="text-sm text-center truncate w-48"
+                                      <div
+                                        className="text-sm text-center truncate w-50 mb-1"
                                         data-twe-toggle="tooltip"
                                         data-twe-placement="top"
                                         data-twe-ripple-init
@@ -497,7 +497,7 @@ const Pi_Casting = () => {
                                         title={batches[record.batch_id]}
                                       >
                                         {batches[record.batch_id]}
-                                      </label>
+                                      </div>
                                     </div>
                                   </td>
                                   <td className="min-w-35 py-0 px-4">
@@ -509,8 +509,8 @@ const Pi_Casting = () => {
                                         ).toFormat('d LLLL h:mm a')}
                                     </p>
                                   </td>
-                                  <td className="w-[300px] py-0 px-4">
-                                    <p className="text-sm text-center">
+                                  <td className="w-[200px] py-0 px-4">
+                                    <p className="text-sm text-left">
                                       {record.video_size}/{record.audio_size}
                                     </p>
                                   </td>
@@ -534,10 +534,10 @@ const Pi_Casting = () => {
                                               : 'Completed'}
                                     </p>
                                   </td>
-                                  <td className="w-[300px] py-0 px-4">
+                                  <td className="min-w-[250px] py-0 px-4">
                                     {/* {record.status != 0 ? record.status == 1 ? <span className="text-sm text-center"> <TypoGraphy percentage={record.merge_percentage} total={record.merge_percentage} type='upload' />
                             </span> : <span className="text-sm text-center"> <TypoGraphy percentage={record.upload_percentage} total={record.upload_percentage} type='upload' /></span> : <span></span>} */}
-                                    {record.status !== 0 && (
+                                    {record.status !== 0 && record.status !== undefined && (
                                       <span className="flex items-center text-sm space-x-2">
                                         <LinearProgress
                                           variant="determinate"
@@ -547,7 +547,7 @@ const Pi_Casting = () => {
                                           }}
                                         />
                                         <span>
-                                          {record.status === 1 ? record.merge_percentage : record.upload_percentage}%
+                                          {record.status === 1 ? record.merge_percentage : (record.upload_percentage)? record.upload_percentage: ''}%
                                         </span>
                                       </span>
                                     )}
