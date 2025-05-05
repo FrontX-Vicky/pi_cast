@@ -32,6 +32,10 @@ function All_Pi() {
     const [pagesLength, setpagesLength] = useState(5);
     const [searchResult, setSearchResult] = useState<string>("");
 
+    useEffect(() => {
+        document.documentElement.classList.toggle('dark', cleanedMode === 'dark');
+      }, [cleanedMode]);
+
     async function fetchRecordingData() {
         try {
             // await axios.get('https://api.tickleright.in/api/allCamRecData').then(response => {
@@ -127,7 +131,6 @@ function All_Pi() {
         },
         paginationDisplayMode: 'pages',
 
-
         muiTableBodyCellProps: ({ table }) => {
 
             if (typeof document !== 'undefined') {
@@ -149,15 +152,14 @@ function All_Pi() {
             };
         },
 
-        muiTableFooterCellProps: ({ table }) => {
-
-            const isDarkMode = cleanedMode === 'dark';
-
-            return {
-                className: "dark:text-white dark:border-strokedark dark:bg-slate-900"
-            };
-        }
-
+        muiTableFooterCellProps: () => ({
+            className:
+              // base (light) state:
+              "bg-white text-gray-800 border-t border-stroke px-5 py-3 " +
+              // dark state:
+              "dark:bg-slate-900 dark:text-white dark:border-strokedark",
+          }),
+     
     });
 
     return (
