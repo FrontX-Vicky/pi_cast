@@ -133,7 +133,7 @@ function BatchesVenue(props: any) {
                                 ).map((item, i) => (
                                     <tr
                                         key={i}
-                                        className="bg-white dark:bg-slate-900 border-b dark:border-blueGray-700 border-gray-200 "
+                                        className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-blueGray-700 "
                                     >
                                         <td className="px-6 py-4 whitespace-nowrap text-black dark:text-white">
                                             {item['batch']}
