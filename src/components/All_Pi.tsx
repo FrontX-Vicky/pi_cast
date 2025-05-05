@@ -17,7 +17,9 @@ function All_Pi() {
     if (!context) {
         throw new Error('getSearchValue must be used within a SearchProvider');
     }
-
+    
+    const localMode = localStorage.getItem('color-theme');
+    const cleanedMode = localMode?.replace(/^"|"$/g, "") || 'light';
 
     const [openDropDown, setOpen] = useState(false);
 
@@ -33,13 +35,13 @@ function All_Pi() {
     async function fetchRecordingData() {
         try {
             // await axios.get('https://api.tickleright.in/api/allCamRecData').then(response => {
-            const response = await get("rpi/allCamRecData", {});
-
-            if (response.error == 0) {
-                setCamData(response[0]);
-            } else {
-                setCamData([]);
-            }
+                const response = await get("rpi/allCamRecData", {});
+              
+                if (response.error == 0) {
+                    setCamData(response[0]);
+                } else {
+                    setCamData([]);
+                }
             // });
         } catch (err) {
             setCamData([]);
@@ -66,7 +68,7 @@ function All_Pi() {
 
     const columns = useMemo(
         () => [
-
+            
             // {
             //     accessorKey: sr_no+1,
             //     header: "Sr.No",
@@ -75,18 +77,18 @@ function All_Pi() {
             {
                 accessorKey: "batch_id", //simple recommended way to define a column
                 header: "Batch Id",
-                Header: <b style={{ color: "green" }}>Batch Id</b> //optional custom markup
+                Header: <b style={{ color: "gray" }}>Batch Id</b> //optional custom markup
             },
             {
                 accessorKey: "batch", //simple recommended way to define a column
                 header: "Batch Name",
-                Header: <b style={{ color: "green" }}>Batch Name</b> //optional custom markup
+                Header: <b style={{ color: "gray" }}>Batch Name</b> //optional custom markup
             },
             {
                 accessorFn: (row) => row.date, //alternate way
                 id: "date", //id required if you use accessorFn instead of accessorKey
                 header: "Date",
-                Header: <b style={{ color: "blue" }}>Date</b> //optional custom markup
+                Header: <b style={{ color: "gray" }}>Date</b> //optional custom markup
             }
         ],
         []
@@ -127,19 +129,15 @@ function All_Pi() {
 
 
         muiTableBodyCellProps: ({ table }) => {
-            const localMode = localStorage.getItem('color-theme');
-            const cleanedMode = localMode?.replace(/^"|"$/g, "") || 'light';
-         
+
             if (typeof document !== 'undefined') {
                 document.documentElement.classList.toggle('dark', cleanedMode === 'dark');
             }
             return {
-                className: "border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:text-white dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1",
+                className: "border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:text-white dark:border-strokedark dark:bg-slate-900 sm:px-7.5 xl:pb-1",
             };
         },
         muiTableHeadCellProps: ({ table }) => {
-            const localMode = localStorage.getItem('color-theme');
-            const cleanedMode = localMode?.replace(/^"|"$/g, "") || 'light';
 
             const isDarkMode = cleanedMode === 'dark';
 
@@ -147,18 +145,16 @@ function All_Pi() {
                 document.documentElement.classList.toggle('dark', cleanedMode === 'dark');
             }
             return {
-                className: "dark:text-white dark:border-strokedark dark:bg-boxdark"
+                className: "dark:text-white dark:border-strokedark dark:bg-slate-900"
             };
         },
 
         muiTableFooterCellProps: ({ table }) => {
-            const localMode = localStorage.getItem('color-theme');
-            const cleanedMode = localMode?.replace(/^"|"$/g, "") || 'light';
 
             const isDarkMode = cleanedMode === 'dark';
 
             return {
-                className: "dark:text-white dark:border-strokedark dark:bg-boxdark"
+                className: "dark:text-white dark:border-strokedark dark:bg-slate-900"
             };
         }
 
@@ -166,15 +162,15 @@ function All_Pi() {
 
     return (
         <>
-            <div className="p-2 overflow-x-auto shadow-md sm:rounded-lg ring-1 ring-gray-900/5 bg-white dark:bg-slate-900">
-                <MaterialReactTable table={table} columns={columns} data={camData} />
-                {driveUrl != '' && (<GdriveModal
-                    showModal={showModal}
-                    handleCloseModal={handleCloseModal}
-                    handleOpenModal={handleOpenModal}
-                    file_id={driveUrl}
-                />)}
-            </div>
+            <MaterialReactTable table={table} columns={columns} data={camData} />
+            {driveUrl != '' && (<GdriveModal
+                showModal={showModal}
+                handleCloseModal={handleCloseModal}
+                handleOpenModal={handleOpenModal}
+                file_id={driveUrl}
+            />)}
+
+
 
         </>
     )
