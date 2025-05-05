@@ -33,13 +33,13 @@ function All_Pi() {
     async function fetchRecordingData() {
         try {
             // await axios.get('https://api.tickleright.in/api/allCamRecData').then(response => {
-                const response = await get("rpi/allCamRecData", {});
-              
-                if (response.error == 0) {
-                    setCamData(response[0]);
-                } else {
-                    setCamData([]);
-                }
+            const response = await get("rpi/allCamRecData", {});
+
+            if (response.error == 0) {
+                setCamData(response[0]);
+            } else {
+                setCamData([]);
+            }
             // });
         } catch (err) {
             setCamData([]);
@@ -66,7 +66,7 @@ function All_Pi() {
 
     const columns = useMemo(
         () => [
-            
+
             // {
             //     accessorKey: sr_no+1,
             //     header: "Sr.No",
@@ -129,7 +129,7 @@ function All_Pi() {
         muiTableBodyCellProps: ({ table }) => {
             const localMode = localStorage.getItem('color-theme');
             const cleanedMode = localMode?.replace(/^"|"$/g, "") || 'light';
-
+         
             if (typeof document !== 'undefined') {
                 document.documentElement.classList.toggle('dark', cleanedMode === 'dark');
             }
@@ -166,15 +166,15 @@ function All_Pi() {
 
     return (
         <>
-            <MaterialReactTable table={table} columns={columns} data={camData} />
-            {driveUrl != '' && (<GdriveModal
-                showModal={showModal}
-                handleCloseModal={handleCloseModal}
-                handleOpenModal={handleOpenModal}
-                file_id={driveUrl}
-            />)}
-
-
+            <div className="p-2 overflow-x-auto shadow-md sm:rounded-lg ring-1 ring-gray-900/5 bg-white dark:bg-slate-900">
+                <MaterialReactTable table={table} columns={columns} data={camData} />
+                {driveUrl != '' && (<GdriveModal
+                    showModal={showModal}
+                    handleCloseModal={handleCloseModal}
+                    handleOpenModal={handleOpenModal}
+                    file_id={driveUrl}
+                />)}
+            </div>
 
         </>
     )
