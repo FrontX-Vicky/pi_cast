@@ -65,7 +65,7 @@ function CreateClassRoom({ open, details, onClose }:any) {
         ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
             >
                 {/* Modal box */}
-                <div className="bg-white dark:bg-black  border-white border-2 rounded-lg shadow-lg max-w-2xl w-full p-6">
+                <div className="bg-white dark:bg-black ring-2 ring-gray-900/5 rounded-lg shadow-lg max-w-2xl w-full p-6">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-xl font-semibold">Create a Classroom</h3> <button onClick={onClose} className="text-gray-600 hover:text-gray-900">
                             ×
@@ -97,7 +97,7 @@ function CreateClassRoom({ open, details, onClose }:any) {
                         >
                             Cancel
                         </button>
-                        <button className="px-4 py-2 bg-warmGray-500 border-white border-2 text-white rounded hover:bg-gray-700" onClick={() => handleAssignClassRoom()}>
+                        <button className="px-4 py-2 bg-slate-500 ring-1 ring-gray-900/5 text-white rounded hover:bg-gray-700" onClick={() => handleAssignClassRoom()}>
                             Assign
                         </button>
                     </div>
