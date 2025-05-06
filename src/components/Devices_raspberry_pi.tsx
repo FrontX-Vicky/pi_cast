@@ -96,7 +96,7 @@ const Devices_raspberry_pi = () => {
     };
     return (
       <>
-        <div className="rounded-lg border-1 border-stroke dark:border-strokedark ring-1 ring-gray-900/5 bg-white px-5 pt-6 pb-2.5 shadow-default dark:bg-slate-900  sm:px-7.5 xl:pb-1">
+        <div className="rounded-lg border-1 border-stroke dark:border-blueGray-700 ring-1 ring-gray-900/5 bg-white px-5 pt-6 pb-2.5 shadow-default dark:bg-slate-900  sm:px-7.5 xl:pb-1">
           <div className="relative flex justify-end pr-7 mb-4">
             <button
               id="dropdownDefaultButton"
@@ -181,17 +181,17 @@ const Devices_raspberry_pi = () => {
                   .map((respId) => (
                     <tr
                       key={respId['id']}
-                      className="border-b border-slate-200 dark:border-strokedark bg-white dark:bg-slate-900  text-black dark:text-gray"
+                      className="border-b border-slate-200 dark:border-blueGray-700 bg-white dark:bg-slate-900  text-black dark:text-gray"
                     >
-                      <td className="py-4">
+                      <td className="py-1">
                         <div className="flex justify-center">
-                          <img src={rpi} alt="User" className="h-12 w-10" />
+                          <img src={rpi} alt="User" className="h-9 w-8" />
                         </div>
                       </td>
-                      <td className="py-4 text-sm">{respId['id']}</td>
-                      <td className="py-4 text-sm">{respId['name']}</td>
-                      <td className="py-4 text-sm">{respId['venue']}</td>
-                      <td className="py-4 text-sm">
+                      <td className="py-1 text-sm">{respId['id']}</td>
+                      <td className="py-1 text-sm">{respId['name']}</td>
+                      <td className="py-1 text-sm">{respId['venue']}</td>
+                      <td className="py-1 text-sm">
                         <input
                           type="checkbox"
                           className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
@@ -200,7 +200,7 @@ const Devices_raspberry_pi = () => {
                           onChange={() => handleCheckboxChange(respId['id'])}
                         />
                       </td>
-                      <td className="py-4 text-sm">
+                      <td className="py-1 text-sm">
                         <input
                           type="checkbox"
                           className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
@@ -211,7 +211,7 @@ const Devices_raspberry_pi = () => {
                           }
                         />
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-6 py-1 text-center">
                         <button className="p-2.5 rounded-lg text-black dark:text-white hover:bg-slate-700 focus:ring-4 focus:ring-slate-300 bg-slate-500 dark:bg-slate-800">
                           <Link
                             to={`../Pis/Batches-Venue/${respId['venue_id']}`}
@@ -224,7 +224,7 @@ const Devices_raspberry_pi = () => {
                           </Link>
                         </button>
                       </td>
-                      <td className="py-4 flex justify-center">
+                      <td className="py-1 flex justify-center">
                         {(respId['venue_id'] ||
                           parseInt(respId['venue_id']) !== 0) &&
                           respId['venue'] != null && (
