@@ -10,7 +10,10 @@ function ClassRooms() {
         getClassRooms();
     }, [])
     const context = useContext(SearchContext);
-    const { inputValue } = context;
+    const { inputValue, setSharedProcessedValue }: any = context;
+    useEffect(() => {
+        setSharedProcessedValue('');   // safe place to clear it once
+    }, []);
     const getClassRooms = async () => {
         try {
             const response = await get("rpi/get_classrooms", {}); // Wait for the response
