@@ -141,9 +141,9 @@ const Devices_raspberry_pi = () => {
             <table className="w-full table-auto">
               <thead>
                 <tr className="bg-slate-100 text-center dark:bg-slate-800">
-                  <th className="min-w-[100px] py-4 font-medium text-black dark:text-white">
+                  {/* <th className="min-w-[100px] py-4 font-medium text-black dark:text-white">
                     Status
-                  </th>
+                  </th> */}
                   <th className="min-w-[150px] py-4 font-medium text-black dark:text-white">
                     ID
                   </th>
@@ -183,11 +183,11 @@ const Devices_raspberry_pi = () => {
                       key={respId['id']}
                       className="border-b border-slate-200 dark:border-blueGray-700 bg-white dark:bg-slate-900  text-black dark:text-gray"
                     >
-                      <td className="py-1">
+                      {/* <td className="py-1">
                         <div className="flex justify-center">
                           <img src={rpi} alt="User" className="h-9 w-8" />
                         </div>
-                      </td>
+                      </td> */}
                       <td className="py-1 text-sm">{respId['id']}</td>
                       <td className="py-1 text-sm">{respId['name']}</td>
                       <td className="py-1 text-sm">{respId['venue']}</td>
@@ -211,14 +211,14 @@ const Devices_raspberry_pi = () => {
                           }
                         />
                       </td>
-                      <td className="px-6 py-1 text-center">
-                        <button className="p-2.5 rounded-lg text-black dark:text-white hover:bg-slate-700 focus:ring-4 focus:ring-slate-300 bg-slate-500 dark:bg-slate-800">
+                      <td className="text-center">
+                        <button className="px-4 py-1 rounded-lg text-black dark:text-white hover:bg-slate-700 focus:ring-4 focus:ring-slate-300 bg-slate-500 dark:bg-slate-800">
                           <Link
                             to={`../Pis/Batches-Venue/${respId['venue_id']}`}
                             state={{
                               venue: respId['venue'],
                             }}
-                            className="font-medium text-white hover:underline "
+                            className="text-sm text-white hover:underline "
                           >
                             Assign
                           </Link>
