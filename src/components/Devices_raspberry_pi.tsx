@@ -188,10 +188,10 @@ const Devices_raspberry_pi = () => {
                           <img src={rpi} alt="User" className="h-9 w-8" />
                         </div>
                       </td> */}
-                      <td className="py-1 text-sm">{respId['id']}</td>
-                      <td className="py-1 text-sm">{respId['name']}</td>
-                      <td className="py-1 text-sm">{respId['venue']}</td>
-                      <td className="py-1 text-sm">
+                      <td className="py-2 text-sm">{respId['id']}</td>
+                      <td className="py-2 text-sm">{respId['name']}</td>
+                      <td className="py-2 text-sm">{respId['venue']}</td>
+                      <td className="py-2 text-sm">
                         <input
                           type="checkbox"
                           className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
@@ -200,7 +200,7 @@ const Devices_raspberry_pi = () => {
                           onChange={() => handleCheckboxChange(respId['id'])}
                         />
                       </td>
-                      <td className="py-1 text-sm">
+                      <td className="py-2 text-sm">
                         <input
                           type="checkbox"
                           className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
@@ -212,7 +212,7 @@ const Devices_raspberry_pi = () => {
                         />
                       </td>
                       <td className="text-center">
-                        <button className="px-4 py-1 rounded-lg text-black dark:text-white hover:bg-slate-700 focus:ring-4 focus:ring-slate-300 bg-slate-500 dark:bg-slate-800">
+                        <button className="px-4 py-2 rounded-lg text-black dark:text-white hover:bg-slate-700 focus:ring-4 focus:ring-slate-300 bg-slate-500 dark:bg-slate-800">
                           <Link
                             to={`../Pis/Batches-Venue/${respId['venue_id']}`}
                             state={{
@@ -224,7 +224,7 @@ const Devices_raspberry_pi = () => {
                           </Link>
                         </button>
                       </td>
-                      <td className="py-1 flex justify-center">
+                      <td className="py-2 flex justify-center">
                         {(respId['venue_id'] ||
                           parseInt(respId['venue_id']) !== 0) &&
                           respId['venue'] != null && (
