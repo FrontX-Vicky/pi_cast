@@ -19,7 +19,11 @@ function BatchesVenue(props: any) {
         getClassRooms();
     }, [])
     const context = useContext(SearchContext);
-    const { inputValue }: any = context;
+    const { inputValue, setSharedProcessedValue }: any = context;
+    useEffect(() => {
+        setSharedProcessedValue('');   // safe place to clear it once
+    }, []);
+
     const getClassRooms = async () => {
         try {
             const response = await post(`rpi/get_classrooms_batches/${id}`, {}); // Wait for the response
