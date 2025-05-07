@@ -3,7 +3,7 @@ import { get, post } from '../../helpers/api_helper';
 import { useParams } from 'react-router-dom';
 import ResponseError from '../errorsShow/ResponseError';
 
-function CreateClassRoom({ open, details, onClose }:any) {
+function CreateClassRoom({ open, details, onClose }: any) {
     const id = useParams().id;
     const [UnasssignedPi, setUnasssignedPi] = useState([]);
     const [apiResponse, setApiResponse] = useState(null);
@@ -39,9 +39,15 @@ function CreateClassRoom({ open, details, onClose }:any) {
                 setApiResponse(response);
                 setTimeout(() => {
                     onClose();
-                }, 1000)
+                    setApiResponse(null);
+                    fetchRaspberryId();
+                }, 3000)
             } else {
+
                 setApiResponse(response);
+                setTimeout(() => {
+                    setApiResponse(null);
+                }, 4000)
 
             }
         } catch (err) {
@@ -51,7 +57,7 @@ function CreateClassRoom({ open, details, onClose }:any) {
 
     return (
         <>
-            {apiResponse && (
+            {apiResponse!=null && apiResponse && (
                 <div className="fixed bottom-0 right-0 z-50">
                     <ResponseError
                         error={apiResponse['error']}
