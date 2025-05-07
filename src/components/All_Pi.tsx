@@ -18,6 +18,8 @@ function All_Pi() {
         throw new Error('getSearchValue must be used within a SearchProvider');
     }
 
+    const localMode = localStorage.getItem('color-theme');
+    const cleanedMode = localMode?.replace(/^"|"$/g, "") || 'light';
 
     const [openDropDown, setOpen] = useState(false);
 
@@ -30,16 +32,20 @@ function All_Pi() {
     const [pagesLength, setpagesLength] = useState(5);
     const [searchResult, setSearchResult] = useState<string>("");
 
+    useEffect(() => {
+        document.documentElement.classList.toggle('dark', cleanedMode === 'dark');
+    }, [cleanedMode]);
+
     async function fetchRecordingData() {
         try {
             // await axios.get('https://api.tickleright.in/api/allCamRecData').then(response => {
-                const response = await get("rpi/allCamRecData", {});
-              
-                if (response.error == 0) {
-                    setCamData(response[0]);
-                } else {
-                    setCamData([]);
-                }
+            const response = await get("rpi/allCamRecData", {});
+
+            if (response.error == 0) {
+                setCamData(response[0]);
+            } else {
+                setCamData([]);
+            }
             // });
         } catch (err) {
             setCamData([]);
@@ -66,7 +72,7 @@ function All_Pi() {
 
     const columns = useMemo(
         () => [
-            
+
             // {
             //     accessorKey: sr_no+1,
             //     header: "Sr.No",
@@ -75,18 +81,18 @@ function All_Pi() {
             {
                 accessorKey: "batch_id", //simple recommended way to define a column
                 header: "Batch Id",
-                Header: <b style={{ color: "green" }}>Batch Id</b> //optional custom markup
+                Header: <b style={{ color: "gray" }}>Batch Id</b> //optional custom markup
             },
             {
                 accessorKey: "batch", //simple recommended way to define a column
                 header: "Batch Name",
-                Header: <b style={{ color: "green" }}>Batch Name</b> //optional custom markup
+                Header: <b style={{ color: "gray" }}>Batch Name</b> //optional custom markup
             },
             {
                 accessorFn: (row) => row.date, //alternate way
                 id: "date", //id required if you use accessorFn instead of accessorKey
                 header: "Date",
-                Header: <b style={{ color: "blue" }}>Date</b> //optional custom markup
+                Header: <b style={{ color: "gray" }}>Date</b> //optional custom markup
             }
         ],
         []
@@ -97,7 +103,7 @@ function All_Pi() {
         enableFullScreenToggle: false,
         enableDensityToggle: false,
         enableColumnActions: false,
-        enableRowNumbers : true,
+        enableRowNumbers: true,
         enableHiding: false,
         positionGlobalFilter: 'right',
         positionPagination: 'bottom',
@@ -125,21 +131,24 @@ function All_Pi() {
         },
         paginationDisplayMode: 'pages',
 
-
+        muiBottomToolbarProps: ({ table }) => {
+            if (typeof document !== "undefined") {
+                document.documentElement.classList.toggle("dark", cleanedMode === "dark");
+            }
+            return {
+                className: "bg-white dark:bg-slate-800 text-black dark:text-white",
+            };
+        },
         muiTableBodyCellProps: ({ table }) => {
-            const localMode = localStorage.getItem('color-theme');
-            const cleanedMode = localMode?.replace(/^"|"$/g, "") || 'light';
 
             if (typeof document !== 'undefined') {
                 document.documentElement.classList.toggle('dark', cleanedMode === 'dark');
             }
             return {
-                className: "border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:text-white dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1",
+                className: "border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:text-white dark:border-strokedark dark:bg-slate-900 sm:px-7.5 xl:pb-1",
             };
         },
         muiTableHeadCellProps: ({ table }) => {
-            const localMode = localStorage.getItem('color-theme');
-            const cleanedMode = localMode?.replace(/^"|"$/g, "") || 'light';
 
             const isDarkMode = cleanedMode === 'dark';
 
@@ -147,25 +156,23 @@ function All_Pi() {
                 document.documentElement.classList.toggle('dark', cleanedMode === 'dark');
             }
             return {
-                className: "dark:text-white dark:border-strokedark dark:bg-boxdark"
+                className: "dark:text-white dark:border-strokedark dark:bg-slate-900"
             };
         },
 
-        muiTableFooterCellProps: ({ table }) => {
-            const localMode = localStorage.getItem('color-theme');
-            const cleanedMode = localMode?.replace(/^"|"$/g, "") || 'light';
-
-            const isDarkMode = cleanedMode === 'dark';
-
-            return {
-                className: "dark:text-white dark:border-strokedark dark:bg-boxdark"
-            };
-        }
+        muiTableFooterCellProps: () => ({
+            className:
+                // base (light) state:
+                "bg-white text-gray-800 border-t border-stroke px-5 py-3 " +
+                // dark state:
+                "dark:bg-slate-900 dark:text-white dark:border-strokedark",
+        }),
 
     });
 
     return (
         <>
+        <div className="rounded-lg border-1 border-stroke dark:border-strokedark ring-1 ring-gray-900/5 bg-white px-5 pt-6 pb-6 shadow-default dark:bg-slate-900  sm:px-7.5 xl:pb-1">
             <MaterialReactTable table={table} columns={columns} data={camData} />
             {driveUrl != '' && (<GdriveModal
                 showModal={showModal}
@@ -173,7 +180,8 @@ function All_Pi() {
                 handleOpenModal={handleOpenModal}
                 file_id={driveUrl}
             />)}
-
+            
+        </div>
 
 
         </>
