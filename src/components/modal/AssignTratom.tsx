@@ -44,10 +44,15 @@ function AssignTratom({ open, details, onClose }: any) {
             if (res.error == 0) {
                 setApiResponse(res);
                 setTimeout(() => {
+                    setApiResponse(null);
+                    fetchRaspberryId();
                     onClose();
-                }, 1000)
+                }, 4000)
             } else {
                 setApiResponse(res);
+                setTimeout(() => {
+                    setApiResponse(null);
+                }, 4000)
             }
         } catch (err) {
             console.log(err)
@@ -57,7 +62,7 @@ function AssignTratom({ open, details, onClose }: any) {
 
     return (
         <>
-            {apiResponse && (
+            {apiResponse!=null && apiResponse && (
                 <div className="fixed bottom-0 right-0 z-50">
                     <ResponseError
                         error={apiResponse['error']}
