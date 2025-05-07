@@ -42,6 +42,10 @@ function BatchesVenue(props: any) {
         try {
             const resp = await post('rpi/update_classrooms_batches', payload); // Wait for the response
             setApiResponse(resp);
+            setTimeout(() => {
+                setApiResponse(null);
+                getClassRooms();
+            }, 3000)
         } catch (error) {
             console.error("Error fetching batches:", error);
         }
@@ -57,11 +61,11 @@ function BatchesVenue(props: any) {
 
     return (
         <>
-            {apiResponse && (
+            {apiResponse!=null && apiResponse && (
                 <div className="fixed bottom-0 right-0 z-50 mx-8">
                     <ResponseError
                         error={apiResponse['error']}
-                        message={apiResponse['message'] + 'kindly refersh'}
+                        message={apiResponse['message']}
                     />
                 </div>
             )}
