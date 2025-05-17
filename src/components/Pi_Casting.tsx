@@ -646,7 +646,7 @@ const Pi_Casting = () => {
                                                     ? record.merge_percentage
                                                     : record.upload_percentage
                                                     ? record.upload_percentage
-                                                    : ''}
+                                                    : '0'}
                                                   %
                                                 </motion.span>
                                               </span>
