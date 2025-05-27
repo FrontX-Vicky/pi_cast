@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { get, post } from '../helpers/api_helper';
 import { SearchContext } from './SearchContext';
 import { Link, useParams } from 'react-router-dom';
@@ -15,9 +15,13 @@ function BatchesVenue(props: any) {
     const [openClassModaltr, setOpenClassModaltr] = useState(false);
     const [totalClsRoom, settotalClsRoom] = useState(false);
 
+    const prevStateClassModal = useRef(openClassModal);
+    const prevStateClassModaltr = useRef(openClassModaltr);
+
     useEffect(() => {
         getClassRooms();
-    }, [])
+    }, [openClassModal, openClassModaltr]);
+
     const context = useContext(SearchContext);
     const { inputValue, setSharedProcessedValue }: any = context;
     useEffect(() => {
@@ -61,7 +65,7 @@ function BatchesVenue(props: any) {
 
     return (
         <>
-            {apiResponse!=null && apiResponse && (
+            {apiResponse != null && apiResponse && (
                 <div className="fixed bottom-0 right-0 z-50 mx-8">
                     <ResponseError
                         error={apiResponse['error']}

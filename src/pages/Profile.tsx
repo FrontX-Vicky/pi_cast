@@ -7,6 +7,11 @@ import logo from '../images/logo/logo.png';
 const Profile = () => {
   
   const userData = JSON.parse(localStorage.getItem('contact_data') || '{}');
+  // debugger
+  // console.log(localStorage.getItem('contact_data'));
+  if(localStorage.getItem('contact_data') == null){
+    window.location.href = '/auth/signin';
+  }
   return (
     <>
       <Breadcrumb pageName="Profile" />

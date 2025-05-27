@@ -3,12 +3,61 @@ const defaultColors = require('tailwindcss/colors');
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  safelist: [
+    // ORANGE
+    'text-orange-500',
+    'bg-orange-100',
+    'dark:text-orange-200',
+    'dark:bg-orange-800',
+    'border-orange-300',
+    'hover:text-orange-900',
+    'focus:ring-orange-300',
+    'hover:bg-orange-100',
+    'dark:hover:bg-orange-700',
+    'dark:hover:text-white',
   
+    // GREEN
+    'text-green-500',
+    'bg-green-100',
+    'dark:text-green-200',
+    'dark:bg-green-800',
+    'border-green-300',
+    'hover:text-green-900',
+    'focus:ring-green-300',
+    'hover:bg-green-100',
+    'dark:hover:bg-green-700',
+    'dark:hover:text-white',
+  
+    // RED
+    'text-red-500',
+    'bg-red-100',
+    'dark:text-red-200',
+    'dark:bg-red-800',
+    'border-red-300',
+    'hover:text-red-900',
+    'focus:ring-red-300',
+    'hover:bg-red-100',
+    'dark:hover:bg-red-700',
+    'dark:hover:text-white',
+
+    //blue
+    'text-blue-500',
+    'bg-blue-100',
+    'dark:text-blue-200',
+    'dark:bg-blue-800',
+    'border-blue-300',
+    'hover:text-blue-900',
+    'focus:ring-blue-300',
+    'hover:bg-blue-100',
+    'dark:hover:bg-blue-700',
+    'dark:hover:text-white',
+  ],  
   darkMode: 'class',
   theme: {
     fontFamily: {
       satoshi: ['Satoshi', 'sans-serif'],
     },
+    
     colors: {
       ...defaultColors,
       ...defaultTheme.colors,

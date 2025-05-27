@@ -1,32 +1,16 @@
-const CardThree = () => {
+const CardThree = (props: any) => {
   return (
     <div className="rounded-sm border border-stroke bg-white py-6 px-7.5 shadow-default dark:border-strokedark dark:bg-boxdark">
       <div className="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-meta-2 dark:bg-meta-4">
-        <svg
-          className="fill-primary dark:fill-white"
-          width="22"
-          height="22"
-          viewBox="0 0 22 22"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M21.1063 18.0469L19.3875 3.23126C19.2157 1.71876 17.9438 0.584381 16.3969 0.584381H5.56878C4.05628 0.584381 2.78441 1.71876 2.57816 3.23126L0.859406 18.0469C0.756281 18.9063 1.03128 19.7313 1.61566 20.3844C2.20003 21.0375 2.99066 21.3813 3.85003 21.3813H18.1157C18.975 21.3813 19.8 21.0031 20.35 20.3844C20.9 19.7656 21.2094 18.9063 21.1063 18.0469ZM19.2157 19.3531C18.9407 19.6625 18.5625 19.8344 18.15 19.8344H3.85003C3.43753 19.8344 3.05941 19.6625 2.78441 19.3531C2.50941 19.0438 2.37191 18.6313 2.44066 18.2188L4.12503 3.43751C4.19378 2.71563 4.81253 2.16563 5.56878 2.16563H16.4313C17.1532 2.16563 17.7719 2.71563 17.875 3.43751L19.5938 18.2531C19.6282 18.6656 19.4907 19.0438 19.2157 19.3531Z"
-            fill=""
-          />
-          <path
-            d="M14.3345 5.29375C13.922 5.39688 13.647 5.80938 13.7501 6.22188C13.7845 6.42813 13.8189 6.63438 13.8189 6.80625C13.8189 8.35313 12.547 9.625 11.0001 9.625C9.45327 9.625 8.1814 8.35313 8.1814 6.80625C8.1814 6.6 8.21577 6.42813 8.25015 6.22188C8.35327 5.80938 8.07827 5.39688 7.66577 5.29375C7.25327 5.19063 6.84077 5.46563 6.73765 5.87813C6.6689 6.1875 6.63452 6.49688 6.63452 6.80625C6.63452 9.2125 8.5939 11.1719 11.0001 11.1719C13.4064 11.1719 15.3658 9.2125 15.3658 6.80625C15.3658 6.49688 15.3314 6.1875 15.2626 5.87813C15.1595 5.46563 14.747 5.225 14.3345 5.29375Z"
-            fill=""
-          />
-        </svg>
+      <svg viewBox="0 -2 22 22" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" fill="#586edf" stroke="#586edf"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>camera_minus [#586edf]</title> <desc>Created with Sketch.</desc> <defs> </defs> <g id="Page-1" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd"> <g id="Dribbble-Light-Preview" transform="translate(-258.000000, -3999.000000)" fill="#586edf"> <g id="icons" transform="translate(56.000000, 160.000000)"> <path d="M202,3857 L208,3857 L208,3855 L202,3855 L202,3857 Z M214,3854.5 C212.897,3854.5 212,3853.603 212,3852.5 C212,3851.397 212.897,3850.5 214,3850.5 C215.103,3850.5 216,3851.397 216,3852.5 C216,3853.603 215.103,3854.5 214,3854.5 L214,3854.5 Z M214,3848.5 C211.791,3848.5 210,3850.291 210,3852.5 C210,3854.709 211.791,3856.5 214,3856.5 C216.209,3856.5 218,3854.709 218,3852.5 C218,3850.291 216.209,3848.5 214,3848.5 L214,3848.5 Z M211,3843 L217,3843 L217,3841 L211,3841 L211,3843 Z M223,3843 L223,3841 L221,3841 L221,3843 L219,3843 L219,3839 L209,3839 L209,3843 L204,3843 L204,3851 L206,3851 L206,3845 L222,3845 L222,3855 L220,3855 L220,3857 L224,3857 L224,3843 L223,3843 Z" id="camera_minus-[#586edf]"> </path> </g> </g> </g> </g></svg>
       </div>
 
       <div className="mt-4 flex items-end justify-between">
         <div>
-          <h4 className="text-title-md font-bold text-black dark:text-white">
-            2.450
-          </h4>
-          <span className="text-sm font-medium">Total Product</span>
+          {props.count != '' && <h4 className="text-title-md font-bold text-black dark:text-white">
+            {props.count.total_recordings}
+          </h4>}
+          <span className="text-sm font-medium">Total Recordings</span>
         </div>
 
         <span className="flex items-center gap-1 text-sm font-medium text-meta-3">

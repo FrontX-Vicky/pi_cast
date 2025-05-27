@@ -17,7 +17,7 @@ function TypoGraphy(props) {
     }
     return (
         <>
-            <Box sx={{ width: '80%', textAlign: 'center' }}>
+            <Box sx={{ width: '60%', textAlign: 'center' }}>
                 <Typography variant="body1" gutterBottom>
                 </Typography>
                 <Box sx={{ position: 'relative', display: 'inline-flex' }}>
