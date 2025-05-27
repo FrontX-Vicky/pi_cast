@@ -17,7 +17,7 @@ class Maps extends React.Component {
         iconUrl: '../images/error/red_marker.png',
       }),
       showNotificatins: 'false',
-      notificationMessage: '',
+      notificationMessage: [],
       greenIcon: new L.Icon({
         iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
         iconSize: [25, 41],
@@ -31,7 +31,8 @@ class Maps extends React.Component {
   }
 
   componentDidMount(): void {
-    this.fetchVenues()
+    this.fetchVenues();
+      this.availablePis();
   }
 
 
@@ -64,9 +65,9 @@ class Maps extends React.Component {
   }
 
   componentDidUpdate(prevProps: any, prevState: any) {
-    if (prevState.positions !== this.state.positions) {
-      this.availablePis();
-    }
+    // if (prevState.positions !== this.state.positions) {
+    //   this.availablePis();
+    // }
 
     if (prevState.activePis !== this.state.activePis) {
       this.markerChange();
@@ -74,6 +75,7 @@ class Maps extends React.Component {
   }
 
   async availablePis() {
+    // console.log('function call websocket')
     var pusher = new Pusher('i0fxppvqjbvvfcrxzwhz', {
       cluster: 'mt1',
       wsHost: 'api.tickleright.in',
@@ -96,12 +98,20 @@ class Maps extends React.Component {
   }
 
   async markerChange() {
+    console.log(this.state.positions)
     if (this.state.positions.length > 0) {
       const updatedPositions = this.state.positions.map((item: any) => {
         if (this.state.activePis.includes(item[3])) {
           if (item[4] != 1) {
             this.setState({ showNotificatins: 'true' });
-            this.setState({ notificationMessage: 'New TRATOM ' + item[3] + ' came online ' });
+            this.setState({
+              notificationMessage : [
+                'New TRATOM came online',
+                item[0]
+              ]
+            });
+            // this.setState({ venue: item[0] });
+            // console.log(this.state.notificationMessage)
           }
           // this.setState({showNotificatins:  'false'});
 
@@ -109,6 +119,7 @@ class Maps extends React.Component {
         }
         return item;
       });
+
       this.setState({ positions: updatedPositions });
 
     } else {
