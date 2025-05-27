@@ -8,6 +8,7 @@ import React, {
   useState,
   Fragment,
 } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import Loader from '../common/Loader';
 import rpi from '../images/logo/raspberry-pi-icon-transparent.png';
 import { HiVideoCamera } from 'react-icons/hi2';
@@ -51,7 +52,8 @@ const Pi_Casting = () => {
   const [venues, setVenues] = useState<string[]>([]);
   const [batches, setBatches] = useState<string[]>([]);
   const [classrooms, setClassrooms] = useState<string[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isPreviewModalOpen, setisPreviewModalOpen] = useState(false);
+  const [isShellModalOpen, setisShellModalOpen] = useState(false);
   const [timestamp, setTimestamp] = useState(Date.now());
   const [selectedId, setSelectedId] = useState(null);
   const timerRefs = useRef({});
@@ -62,6 +64,29 @@ const Pi_Casting = () => {
   const [recordings, setRecordings] = useState<{ [key: string]: any }>({});
   const [styleLoader, hideLoader] = useState('block');
   const [isLoading, setLoading] = useState(false);
+  // const rowVariants = {
+  //   hidden: { opacity: 0, y: 10 },
+  //   visible: { opacity: 1, y: 0 },
+  //   exit: { opacity: 0, y: -10 },
+  // };
+
+  const textVariants = {
+    initial: { opacity: 0, scale: 0.9 },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        opacity: { duration: 0.2, ease: "easeInOut" },
+        scale: { duration: 0.2, ease: "easeInOut" },
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 1.1,
+      transition: { duration: 0.15, ease: "easeInOut" },
+    },
+  };
+  
   useEffect(() => {
     var pusher = new Pusher('i0fxppvqjbvvfcrxzwhz', {
       cluster: 'mt1',
@@ -166,9 +191,14 @@ const Pi_Casting = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const openModal = (id) => {
+  const openPreviewModal = (id) => {
     setSelectedId(id);
-    setIsOpen(true);
+    setisPreviewModalOpen(true);
+  };
+
+  const openShellModal = (id) => {
+    setSelectedId(id);
+    setisShellModalOpen(true);
   };
 
   const loaderIcon = (
@@ -337,7 +367,7 @@ const Pi_Casting = () => {
         <div className="rounded-lg min-h-203">
           <table className="min-w-full table-fixed rounded">
             <thead>
-              <tr className="bg-gray-2 text-center dark:bg-slate-800 overflow-hidden">
+              <tr className="bg-gray-200 text-center dark:bg-slate-800 overflow-hidden sticky top-0 z-10 rounded-t-lg">
                 <th className="min-w-[10px] py-2 px-4 font-medium text-black dark:text-warmGray-50">
                   #
                 </th>
@@ -382,228 +412,277 @@ const Pi_Casting = () => {
               </tr>
             </thead>
             <tbody className="">
-              {datas &&
-                datas.length > 0 &&
-                datas.map((element, indexs) => {
-                  return (
-                    <tr
-                      key={element.id}
-                      className="border-b border-[#eee] dark:border-strokedark "
-                    >
-                      <td className=" border-white pt-2 dark:border-strokedark text-center">
-                        <label htmlFor="">{indexs + 1}</label>
-                      </td>
-                      <td className="max-w-[200px] border-white pt-2 dark:border-strokedark ">
-                        <p className="text-sm font-bold dark:border-strokedark text-center">
-                          <span>{element.pi_id}</span>
-                          <br /> {venues[element['venue_id']]}
-                        </p>
-                      </td>
-                      <td className="text-sm text-center  border-white pt-2 dark:border-strokedark">
-                        <span className="text-sm text-center">
-                          <TypoGraphy
-                            percentage={
-                              (element['stats']['storage']['used_storage'] /
-                                element['stats']['storage']['total_storage']) *
-                              100
-                            }
-                            total={element['stats']['storage']['total_storage']}
-                            type="storage"
-                          />
-                        </span>
-                      </td>
-                      <td className="max-w-[200px]  text-sm text-center border-white pt-2 dark:border-strokedark">
-                        {element['devices'].camera == 1 ? (
-                          <HiVideoCamera
-                            style={{
-                              width: '18px',
-                              height: '18px',
-                              display: 'block',
-                              margin: '0 auto',
-                              color: '#34e37d',
-                            }}
-                          />
-                        ) : (
-                          <HiVideoCameraSlash
-                            style={{
-                              width: '18px',
-                              height: '18px',
-                              display: 'block',
-                              margin: '0 auto',
-                              color: '#d63c49',
-                            }}
-                          />
-                        )}
-                        {element['devices'].mic == 1 ? (
-                          <IoIosMic
-                            style={{
-                              width: '18px',
-                              height: '18px',
-                              display: 'block',
-                              margin: '0 auto',
-                              color: '#34e37d',
-                            }}
-                          />
-                        ) : (
-                          <IoIosMicOff
-                            style={{
-                              width: '18px',
-                              height: '18px',
-                              display: 'block',
-                              margin: '0 auto',
-                              color: '#d63c49',
-                            }}
-                          />
-                        )}
-                      </td>
-                      <td>
-                        <table>
-                          <tbody>
-                            {element.recordings
-                              .filter((item) =>
-                                Object.values(item).some((value) =>
-                                  String(value)
-                                    .toLowerCase()
-                                    .includes(inputValue.toLowerCase()),
-                                ),
-                              )
-                              .map((record, index) => (
-                                <tr>
-                                  {/* <td colSpan={2} /> */}
-                                  <React.Fragment key={index}>
-                                    <td className="max-w-[400px] py-0 px-4 border-white pt-2 pl-9 dark:border-strokedark">
-                                      <div className="flex items-center justify-evenly">
-                                        <div className="relative flex-shrink-0 me-2">
-                                          <span
-                                            className={`animate-ping absolute h-3.5 w-3.5 rounded-full  inline-flex border-2 border-white ${
-                                              record.pi_id != 0 &&
-                                              record.status == 0
-                                                ? 'bg-meta-7'
-                                                : record.status == 1
-                                                ? 'bg-primary'
-                                                : record.status == 2
-                                                ? 'bg-meta-6'
-                                                : 'bg-meta-3'
-                                            }`}
-                                          />
-                                          <span
-                                            className={`relative  h-3.5 w-3.5  inline-flex rounded-full border-2 border-white ${
-                                              record.pi_id != 0 &&
-                                              record.status == 0
-                                                ? 'bg-meta-7'
-                                                : record.status == 1
-                                                ? 'bg-primary'
-                                                : record.status == 2
-                                                ? 'bg-meta-6'
-                                                : 'bg-meta-3'
-                                            }`}
-                                          ></span>
-                                        </div>
-                                        <div
-                                          className="text-sm text-center truncate w-50 mb-1"
-                                          data-twe-toggle="tooltip"
-                                          data-twe-placement="top"
-                                          data-twe-ripple-init
-                                          data-twe-ripple-color="light"
-                                          title={batches[record.batch_id]}
-                                        >
-                                          {batches[record.batch_id]}
-                                        </div>
-                                      </div>
-                                    </td>
-                                    <td className="min-w-35 py-0 px-4">
-                                      <p className="text-sm text-left">
-                                        {record.date &&
-                                          DateTime.fromFormat(
-                                            record.date,
-                                            'yyyy-MM-dd HH:mm:ss',
-                                          ).toFormat('d LLLL h:mm a')}
-                                      </p>
-                                    </td>
-                                    <td className="w-[200px] py-0 px-4">
-                                      <p className="text-sm text-left">
-                                        {record.video_size}/{record.audio_size}
-                                      </p>
-                                    </td>
-                                    <td className="w-[300px] py-0 px-4">
-                                      <p className="text-sm text-center">
-                                        {' '}
-                                        {record.duration}
-                                      </p>
-                                    </td>
-                                    <td className="w-[300px] py-0 px-4">
-                                      <p className="text-sm text-center">
-                                        {' '}
-                                        {record.id == 0
-                                          ? 'Idle'
-                                          : record.status == 1
-                                          ? 'Merging'
-                                          : record.status == 2
-                                          ? 'Uploading'
-                                          : record.status == 0
-                                          ? 'Recording'
-                                          : 'Completed'}
-                                      </p>
-                                    </td>
-                                    <td className="min-w-[250px] py-0 px-4">
-                                      {/* {record.status != 0 ? record.status == 1 ? <span className="text-sm text-center"> <TypoGraphy percentage={record.merge_percentage} total={record.merge_percentage} type='upload' />
-                            </span> : <span className="text-sm text-center"> <TypoGraphy percentage={record.upload_percentage} total={record.upload_percentage} type='upload' /></span> : <span></span>} */}
-                                      {record.status !== 0 &&
-                                        record.status !== undefined && (
-                                          <span className="flex items-center text-sm space-x-2">
-                                            <LinearProgress
-                                              variant="determinate"
-                                              value={
-                                                record.status === 1
-                                                  ? record.merge_percentage
-                                                  : record.upload_percentage
-                                              }
-                                              className="w-24 h-2 inline-block rounded bg-blue-200 dark:bg-white"
-                                              sx={{
-                                                '& .MuiLinearProgress-bar': {
-                                                  backgroundColor: '#4ade80',
-                                                }, // e.g. Tailwind green-400
-                                              }}
-                                            />
+              <AnimatePresence >
+                {datas &&
+                  datas.length > 0 &&
+                  datas.map((element, indexs) => {
+                    return (
+                      <tr
+                        key={indexs}
+                        className="border-b border-[#eee] dark:border-strokedark"
+                      >
+                        <td className=" border-white pt-2 dark:border-strokedark text-center">
+                          <label htmlFor="">{indexs + 1}</label>
+                        </td>
+                        <td className="max-w-[200px] border-white pt-2 dark:border-strokedark ">
+                          <p className="text-sm font-bold dark:border-strokedark text-center">
+                            <span>{element.pi_id}</span>
+                            <br /> {venues[element['venue_id']]}
+                          </p>
+                        </td>
+                        <td className="text-sm text-center  border-white pt-2 dark:border-strokedark">
+                          <span className="text-sm text-center">
+                            <TypoGraphy
+                              percentage={
+                                (element['stats']['storage']['used_storage'] /
+                                  element['stats']['storage'][
+                                    'total_storage'
+                                  ]) *
+                                100
+                              }
+                              total={
+                                element['stats']['storage']['total_storage']
+                              }
+                              type="storage"
+                            />
+                          </span>
+                        </td>
+                        <td className="max-w-[200px]  text-sm text-center border-white pt-2 dark:border-strokedark">
+                          {element['devices'].camera == 1 ? (
+                            <HiVideoCamera
+                              style={{
+                                width: '16px',
+                                height: '16px',
+                                display: 'block',
+                                margin: '0 auto',
+                                color: '#34e37d',
+                              }}
+                            />
+                          ) : (
+                            <HiVideoCameraSlash
+                              style={{
+                                width: '16px',
+                                height: '16px',
+                                display: 'block',
+                                margin: '0 auto',
+                                color: '#d63c49',
+                              }}
+                            />
+                          )}
+                          {element['devices'].mic == 1 ? (
+                            <IoIosMic
+                              style={{
+                                width: '18px',
+                                height: '18px',
+                                display: 'block',
+                                margin: '0 auto',
+                                color: '#34e37d',
+                              }}
+                            />
+                          ) : (
+                            <IoIosMicOff
+                              style={{
+                                width: '18px',
+                                height: '18px',
+                                display: 'block',
+                                margin: '0 auto',
+                                color: '#d63c49',
+                              }}
+                            />
+                          )}
+                        </td>
+                        <td>
+                          <table>
+                            <tbody>
+                              {element.recordings
+                                .filter((item) =>
+                                  Object.values(item).some((value) =>
+                                    String(value)
+                                      .toLowerCase()
+                                      .includes(inputValue.toLowerCase()),
+                                  ),
+                                )
+                                .map((record, index) => (
+                                    <tr
+                                      key={index}
+                                    >
+                                      {/* <td className="min-w-[130px] py-0 px-4 border-white pt-2 dark:border-strokedark">
+                                    {/* <td colSpan={2} /> */}
+                                      <React.Fragment key={index}>
+                                        <td className="max-w-[400px] py-0 px-4 border-white pt-2 pl-9 dark:border-strokedark">
+                                          <div className="flex items-center justify-evenly">
+                                            <div className="relative flex-shrink-0 me-2">
+                                              <span
+                                                key={index} // force animate on change
+                                              
+                                                className={`animate-ping absolute h-3.5 w-3.5 rounded-full  inline-flex border-2 border-white ${
+                                                  record.pi_id != 0 &&
+                                                  record.status == 0
+                                                    ? 'bg-meta-7'
+                                                    : record.status == 1
+                                                    ? 'bg-primary'
+                                                    : record.status == 2
+                                                    ? 'bg-meta-6'
+                                                    : 'bg-meta-3'
+                                                }`}
+                                              />
+                                              <span
+                                                key={index} // force animate on change
+                                               
+                                                className={`relative  h-3.5 w-3.5  inline-flex rounded-full border-2 border-white ${
+                                                  record.pi_id != 0 &&
+                                                  record.status == 0
+                                                    ? 'bg-meta-7'
+                                                    : record.status == 1
+                                                    ? 'bg-primary'
+                                                    : record.status == 2
+                                                    ? 'bg-meta-6'
+                                                    : 'bg-meta-3'
+                                                }`}
+                                              ></span>
+                                            </div>
+                                            <div
+                                              className="text-sm text-center truncate w-50 mb-1"
+                                              data-twe-toggle="tooltip"
+                                              data-twe-placement="top"
+                                              data-twe-ripple-init
+                                              data-twe-ripple-color="light"
+                                              title={batches[record.batch_id]}
+                                            >
+                                              {batches[record.batch_id]}
+                                            </div>
+                                          </div>
+                                        </td>
+                                        <td className="min-w-35 py-0 px-4">
+                                          <p className="text-sm text-left">
                                             <span>
-                                              {record.status === 1
-                                                ? record.merge_percentage
-                                                : record.upload_percentage
-                                                ? record.upload_percentage
-                                                : ''}
-                                              %
+                                              {record.date &&
+                                                DateTime.fromFormat(
+                                                  record.date,
+                                                  'yyyy-MM-dd HH:mm:ss',
+                                                ).toFormat('d LLLL h:mm a')}
                                             </span>
-                                          </span>
-                                        )}
-                                    </td>
-                                    <td className="min-w-[100px] py-0 px-4">
-                                      <ActionsMenuNew
-                                        isLast={
-                                          index >= element.recordings.length - 3
-                                        }
-                                        // isLast={indexs >= datas.length - 1}
-                                        record={record}
-                                        isLoading={isLoading}
-                                        loaderIcon={loaderIcon}
-                                        stopRecord={stopRecord}
-                                        openModal={openModal}
-                                        startRecord={startRecord}
-                                        clearRecord={clearRecord}
-                                        reboot={reboot}
-                                        shutDown={shutDown}
-                                        reFresh={reFresh}
-                                        storageClear={storageClear}
-                                        startReMerging={startReMerging}
-                                        trash={trash}
-                                      />
-                                      {/* <ActionMenu   
+                                          </p>
+                                        </td>
+                                        <td className="w-[200px] py-0 px-4">
+                                          {(record.video_size ||
+                                            record.audio_size) && (
+                                            // <p className="text-sm text-left">
+                                            <motion.span
+                                              key={record.video_size+record.audio_size} // force animate on change
+                                              variants={textVariants}
+                                              initial="initial"
+                                              animate="animate"
+                                              exit="exit"
+                                              transition={{ duration: 0.5 }}
+                                            >
+                                              {record.video_size}/
+                                              {record.audio_size}
+                                            </motion.span>
+                                            // </p>
+                                          )}
+                                        </td>
+                                        <td className="w-[300px] py-0 px-4">
+                                          {/* <p className="text-sm text-center"> */}
+                                          <motion.span
+                                              key={record.duration} // force animate on change
+                                              variants={textVariants}
+                                              initial="initial"
+                                              animate="animate"
+                                              exit="exit"
+                                              transition={{ duration: 0.5 }}
+                                              className="text-sm text-center"
+                                            >
+                                            {record.duration}
+                                            </motion.span>
+                                          {/* </p> */}
+                                        </td>
+                                        <td className="w-[300px] py-0 px-4">
+                                          <p className="text-sm text-center">
+                                            {' '}
+                                            {record.id == 0
+                                              ? 'Idle'
+                                              : record.status == 1
+                                              ? 'Merging'
+                                              : record.status == 2
+                                              ? 'Uploading'
+                                              : record.status == 0
+                                              ? 'Recording'
+                                              : 'Completed'}
+                                          </p>
+                                        </td>
+                                        <td className="min-w-[250px] py-0 px-4">
+                                          {/* {record.status != 0 ? record.status == 1 ? <span className="text-sm text-center"> <TypoGraphy percentage={record.merge_percentage} total={record.merge_percentage} type='upload' />
+                            </span> : <span className="text-sm text-center"> <TypoGraphy percentage={record.upload_percentage} total={record.upload_percentage} type='upload' /></span> : <span></span>} */}
+                                          {record.status !== 0 &&
+                                            record.status !== undefined && (
+                                              <span className="flex items-center text-sm space-x-2">
+                                                <LinearProgress
+                                                  variant="determinate"
+                                                  value={
+                                                    record.status === 1
+                                                      ? record.merge_percentage
+                                                      : record.upload_percentage
+                                                  }
+                                                  className="w-24 h-2 inline-block rounded bg-blue-200 dark:bg-white"
+                                                  sx={{
+                                                    '& .MuiLinearProgress-bar':
+                                                      {
+                                                        backgroundColor:
+                                                          '#4ade80',
+                                                      }, // e.g. Tailwind green-400
+                                                  }}
+                                                />
+                                                  <motion.span
+                                                    key={record.merge_percentage + record.upload_percentage} // force animate on change
+                                                    variants={textVariants}
+                                                    initial="initial"
+                                                    animate="animate"
+                                                    exit="exit"
+                                                    transition={{ duration: 0.5 }}
+                                                    className="text-sm text-center"
+                                                  >
+                                                  {record.status === 1
+                                                    ? record.merge_percentage
+                                                    : record.upload_percentage
+                                                    ? record.upload_percentage
+                                                    : '0'}
+                                                  %
+                                                </motion.span>
+                                              </span>
+                                            )}
+                                        </td>
+                                        <td className="min-w-[100px] py-0 px-4">
+                                          <ActionsMenuNew
+                                            isLast={
+                                              index >=
+                                              element.recordings.length - 3
+                                            }
+                                            // isLast={indexs >= datas.length - 1}
+                                            record={record}
+                                            isLoading={isLoading}
+                                            loaderIcon={loaderIcon}
+                                            stopRecord={stopRecord}
+                                            openPreviewModal={openPreviewModal}
+                                            openShellModal={openShellModal}
+                                            startRecord={startRecord}
+                                            clearRecord={clearRecord}
+                                            reboot={reboot}
+                                            shutDown={shutDown}
+                                            reFresh={reFresh}
+                                            storageClear={storageClear}
+                                            startReMerging={startReMerging}
+                                            trash={trash}
+                                            shell={element.shell}
+                                          />
+                                          {/* <ActionMenu   
                                       isLast={index >= element.recordings.length - 3}
                                       // isLast={indexs >= datas.length - 1}
                                       record={record}
                                       isLoading={isLoading}
                                       loaderIcon={loaderIcon}
                                       stopRecord={stopRecord}
-                                      openModal={openModal}
+                                      openPreviewModal={openPreviewModal}
                                       startRecord={startRecord}
                                       clearRecord={clearRecord}
                                       reboot={reboot}
@@ -613,257 +692,28 @@ const Pi_Casting = () => {
                                       startReMerging={startReMerging}
                                       trash={trash}
                                     /> */}
-                                    </td>
-                                  </React.Fragment>
-                                </tr>
-                              ))}
-                          </tbody>
-                        </table>
-                      </td>
-                    </tr>
-                  );
-                })}
+                                        </td>
+                                      </React.Fragment>
+                                    </tr>
+                                ))}
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </AnimatePresence>
             </tbody>
-
-            {/* <tbody>
-              {datas && datas.length > 0 && datas.map((element, indexs) => (
-                
-                element.recordings.filter((item) =>
-                  Object.values(item).some((value) =>
-                    String(value).toLowerCase().includes(inputValue.toLowerCase())
-                  )
-                ).map((record, index) => (
-                  <tr key={record.id}>
-                    <td className="border-b border-[#eee] py-2 dark:border-strokedark ">
-                      <p className="text-sm text-center"> {indexs + 1}</p>
-                    </td>
-                    <td className="border-b relative rounded-full border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
-                      <div className='h-10 relative'>
-                        <img src={rpi} alt="User" style={{ height: '40px', width: '38px' }} />
-                        <span className={`animate-ping absolute right-0 bottom-0 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0 ? 'bg-meta-3' : record.status == 1 ? 'bg-primary' : record.status == 2 ? 'bg-meta-6' : 'bg-meta-7'}`} />
-                        <span className={`absolute right-0 bottom-0 h-3.5 w-3.5 rounded-full border-2 border-white ${record.pi_id != 0 && record.status == 0 ? 'bg-meta-3' : record.status == 1 ? 'bg-primary' : record.status == 2 ? 'bg-meta-6' : 'bg-meta-7'}`} />
-                      </div>
-                    </td>
-                    <td className="border-b border-[#eee] pt-2 dark:border-strokedark ">
-                      <p className="text-md font-bold dark:border-strokedark text-center"> <span>{record.pi_id}</span><br/> {venues[element['venue_id']]}</p>
-                    </td>
-                    <td className="text-sm text-center border-b border-[#eee] pt-2 dark:border-strokedark">
-                      <span className="text-sm text-center">
-                        <TypoGraphy percentage={((element['stats']['storage']['used_storage'] / element['stats']['storage']['total_storage']) * 100)} total={element['stats']['storage']['total_storage']} type='storage' />
-                      </span>
-                    </td>
-                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
-                      <span className="text-sm text-center">
-                        <TypoGraphy percentage={((element['stats']['ram']['used_ram'] / element['stats']['ram']['total_ram']) * 100)} total={element['stats']['ram']['total_ram']} type='storage' />
-                      </span>
-                    </td>
-                    <td className="text-sm text-center align-middle border-b border-[#eee] pt-2 dark:border-strokedark">
-                      {element['devices'].camera == 1 ? (
-                        <HiVideoCamera style={{ width: '20px', height: '24px', display: 'block', margin: '0 auto', color: '#34e37d' }} />
-                      ) : (
-                        <HiVideoCameraSlash style={{ width: '20px', height: '24px', display: 'block', margin: '0 auto', color: '#d63c49' }} />
-                      )}
-                      {element['devices'].mic == 1 ? (
-                        <IoIosMic style={{ width: '22px', height: '24px', display: 'block', margin: '0 auto', color: '#34e37d' }} />
-                      ) : (
-                        <IoIosMicOff style={{ width: '22px', height: '24px', display: 'block', margin: '0 auto', color: '#d63c49' }} />
-                      )}
-                    </td>
-
-                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
-                      <p className="text-sm text-center"> {batches[record.batch_id]}</p>
-                    </td>
-                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
-                      <p className="text-sm text-center">
-                        {record.date && DateTime.fromFormat(record.date, 'yyyy-MM-dd HH:mm:ss').toFormat('dd-MM-yyyy HH:mm:ss a')}
-                      </p>
-                    </td>
-                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
-                      <p className="text-sm text-center"> {record.video_size}/{record.audio_size}</p>
-                    </td>
-
-                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
-                      <p className="text-sm text-center"> {record.duration}</p>
-                    </td>
-
-                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
-                      <p className="text-sm text-center"> {record.id == 0 ? 'Idle' : record.status == 1 ? 'Merging' : record.status == 2 ? 'Uploading' : record.status == 0 ? 'Recording' : 'Completed'}</p>
-                    </td>
-                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
-
-                    {record.status != 0 ? record.status == 1? <span className="text-sm text-center"> <TypoGraphy percentage={record.merge_percentage} total={record.merge_percentage} type='upload' />
-                    </span> : <span className="text-sm text-center"> <TypoGraphy percentage={record.upload_percentage} total={record.upload_percentage} type='upload' /></span>:<span></span>}
-
-                   
-                    </td>
-                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
-                      
-                    </td>
-                    <td className="border-b border-[#eee] pt-2 px-4 pl-9 dark:border-strokedark">
-                        {record.status == 0 ?
-                          <button
-                            type="button"
-                            className={`text-black bg-orange-300 border-b-2 border-orange-800 text-center dark:text-white font-medium rounded-lg px-4 py-2 me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                            data-twe-toggle="tooltip" onClick={() => stopRecord(record.pi_id, record.batch_id)} disabled={isLoading}
-                            data-twe-placement="top"
-                            data-twe-ripple-init
-                            data-twe-ripple-color="light"
-                            title="Stop Recording">
-                            {isLoading ? (
-                              loaderIcon
-                            ) : (
-                              <FaRegCircleStop />
-                            )}
-                          </button> : record.id == 0 ? 
-                          <div>
-                            <button
-                              type="button"
-                              className={`text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white  rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                              data-twe-toggle="tooltip"  onClick={() => openModal(record.pi_id)}
-                              disabled={isLoading}
-                              data-twe-placement="top"
-                              data-twe-ripple-init
-                              data-twe-ripple-color="light"
-                              title="Camera Preview">
-                              {isLoading ? (
-                                loaderIcon
-                              ) : (
-                                <FcCamera  />
-                              )}
-                            </button>
-                            <button
-                            type="button"
-                            className={`text-black bg-green-400 border-b-green-900 border-b-2 dark:text-white font-medium rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                            data-twe-toggle="tooltip" onClick={() => startRecord(record.pi_id)} disabled={isLoading}
-                            data-twe-placement="top"
-                            data-twe-ripple-init
-                            data-twe-ripple-color="light"
-                            title="Start Recording">
-                            {isLoading ? (
-                              loaderIcon
-                            ) : (
-                              <BsRecordCircle />
-                            )}
-                            </button>
-                            <button
-                            type="button"
-                            className={`text-black bg-orange-400 border-b-orange-900 border-b-2 dark:text-white font-medium rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                            onClick={() => clearRecord(record.pi_id)} disabled={isLoading}
-                            data-twe-toggle="tooltip"
-                            data-twe-placement="top"
-                            data-twe-ripple-init
-                            data-twe-ripple-color="light"
-                            title="Clean">
-                              {isLoading ? (
-                                loaderIcon
-                              ) : (
-                                <MdCleaningServices />
-                              )}
-                            </button> 
-                            <button
-                              type="button"
-                              className={`text-black bg-cyan-500 border-b-cyan-800 border-b-2 dark:text-white font-medium rounded-lg px-1 py-1 text-center me-1 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                              onClick={() => reboot(record.pi_id)} disabled={isLoading}
-                              data-twe-toggle="tooltip"
-                              data-twe-placement="top"
-                              data-twe-ripple-init
-                              data-twe-ripple-color="light"
-                              title="Reboot">
-                              {isLoading ? (
-                                loaderIcon
-                              ) : (
-                                <BsBootstrapReboot />
-                              )}
-                            </button>
-                            <button
-                              type="button"
-                              className={`bg-red-400 border-b-red-900 text-black border-b-2 dark:text-white font-bold rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                              onClick={() => shutDown(record.pi_id)} disabled={isLoading}
-                              data-twe-toggle="tooltip"
-                              data-twe-placement="top"
-                              data-twe-ripple-init
-                              data-twe-ripple-color="light"
-                              title="Shutdown">
-                              {isLoading ? (
-                                loaderIcon
-                              ) : (
-                                <RiShutDownLine />
-                              )}
-                            </button> 
-                            <button
-                              type="button"
-                              className={`border-b-2 bg-blue-200 border-b-blue-700 dark:text-white rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                              onClick={() => reFresh(record.pi_id)} disabled={isLoading}
-                              data-twe-toggle="tooltip"
-                              data-twe-placement="top"
-                              data-twe-ripple-init
-                              data-twe-ripple-color="light"
-                              title="Device Refresh">
-                              {isLoading ? (
-                                loaderIcon
-                              ) : (
-                                <LuRefreshCcwDot />
-                              )}
-                            </button> 
-                            <button
-                              type="button"
-                              className={`border-b-2 bg-pink-200 border-b-pink-900 dark:text-white font-medium rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                              onClick={() => storageClear(record.pi_id)} disabled={isLoading}
-                              data-twe-toggle="tooltip"
-                              data-twe-placement="top"
-                              data-twe-ripple-init
-                              data-twe-ripple-color="light"
-                              title="Clear Storage">
-                              {isLoading ? (
-                                loaderIcon
-                              ) : (
-                          
-                                <GrClearOption />
-                              )}
-                            </button> 
-                          </div> : record.status != 0 ? <div>
-                            <button
-                              type="button"
-                              className={`text-black bg-blue-400 border-blue-900 border-b-2 dark:text-white font-medium rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                              onClick={() => startReMerging(record.pi_id, record.filename)} disabled={isLoading}
-                              data-twe-toggle="tooltip"
-                              data-twe-placement="top"
-                              data-twe-ripple-init
-                              data-twe-ripple-color="light"
-                              title="ReMerge">
-                              {isLoading ? (
-                                loaderIcon
-                              ) : (
-                                <TbArrowMerge />
-                              )}
-                            </button> <br />
-                            <button
-                              type="button"
-                              className={`border-b-2 bg-red-400 border-b-red-900 dark:text-white font-medium rounded-lg px-1 py-1 text-center me-2 mb-2 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                              onClick={() => trash(record.pi_id, record.filename)} disabled={isLoading}
-                              data-twe-toggle="tooltip"
-                              data-twe-placement="top"
-                              data-twe-ripple-init
-                              data-twe-ripple-color="light"
-                              title="Trash">
-                                {isLoading ? (
-                                  loaderIcon
-                                ) : (
-                                  <RiDeleteBin6Fill />
-                                )}
-                            </button> 
-                          </div> : record.status == 1 ? '' : ''}
-                    </td>
-                  </tr>
-                ))
-              ))}
-            </tbody> */}
           </table>
         </div>
 
         {/* Camera preview modal */}
-        <Transition appear show={isOpen} as={Fragment}>
-          <Dialog as="div" className="relative z-10" onClose={setIsOpen}>
+        <Transition appear show={isPreviewModalOpen} as={Fragment}>
+          <Dialog
+            as="div"
+            className="relative z-10"
+            onClose={setisPreviewModalOpen}
+          >
             {/* Overlay */}
             <Transition.Child
               as={Fragment}
@@ -901,7 +751,57 @@ const Pi_Casting = () => {
 
                   <div className="mt-6 flex justify-end">
                     <button
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => setisPreviewModalOpen(false)}
+                      className="px-4 py-2 bg-blue-500 text-white rounded"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </Dialog>
+        </Transition>
+
+        <Transition appear show={isShellModalOpen} as={Fragment}>
+          <Dialog
+            as="div"
+            className="relative z-10"
+            onClose={setisShellModalOpen}
+          >
+            {/* Overlay */}
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-black bg-opacity-50" />
+            </Transition.Child>
+
+            {/* Modal container */}
+            <div className="fixed inset-0 flex items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="bg-white rounded-lg p-6">
+                  <Dialog.Title className="text-xl font-bold">
+                    Shell
+                  </Dialog.Title>
+                  <div className="mt-4"></div>
+
+                  <div className="mt-6 flex justify-end">
+                    <button
+                      onClick={() => setisShellModalOpen(false)}
                       className="px-4 py-2 bg-blue-500 text-white rounded"
                     >
                       Close

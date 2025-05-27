@@ -16,6 +16,8 @@ import { GrClearOption } from "react-icons/gr";
 import { FcStart } from "react-icons/fc";
 import { FaPlay } from "react-icons/fa";
 import { BsRecordCircle } from "react-icons/bs";
+import { TbBrandPowershell } from "react-icons/tb";
+
 import {
     useFloating,
     offset,
@@ -30,7 +32,8 @@ export default function ActionsMenuNew({ isLast,
     isLoading,
     loaderIcon,
     stopRecord,
-    openModal,
+    openPreviewModal,
+    openShellModal,
     startRecord,
     clearRecord,
     reboot,
@@ -39,6 +42,7 @@ export default function ActionsMenuNew({ isLast,
     storageClear,
     startReMerging,
     trash,
+    shell,
     onEdit = () => { },
     onDeactivate = () => { }
 }) {
@@ -128,12 +132,19 @@ export default function ActionsMenuNew({ isLast,
                             </button>
                         ) : record.id === 0 ? (
                             <>
-                                <button onClick={() => openModal(record.pi_id)} disabled={isLoading} className="
+                                <button onClick={() => openPreviewModal(record.pi_id)} disabled={isLoading} className="
                 flex items-center w-full px-4 py-2 text-sm
               text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
               "> <FcCamera className="mr-3 h-5 w-5" />
                                     {isLoading ? loaderIcon : ' Preview'}
                                 </button>
+                                <a href= {`https://connect.raspberrypi.com/devices/${shell}/remote-shell-session`} target="_blank" rel="noopener noreferrer" disabled={isLoading} className="
+                flex items-center w-full px-4 py-2 text-sm
+              text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
+              ">
+                                    <TbBrandPowershell className="mr-3 h-5 w-5" />
+                                    {isLoading ? loaderIcon : ' Shell'}
+                                </a>
                                 <button onClick={() => startRecord(record.pi_id)} disabled={isLoading} className="
                 flex items-center w-full px-4 py-2 text-sm
               text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
