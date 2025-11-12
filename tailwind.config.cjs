@@ -1,5 +1,13 @@
 const defaultTheme = require('tailwindcss/defaultTheme')
 const defaultColors = require('tailwindcss/colors');
+
+// Remove deprecated color names
+delete defaultColors['lightBlue'];
+delete defaultColors['warmGray'];
+delete defaultColors['trueGray'];
+delete defaultColors['coolGray'];
+delete defaultColors['blueGray'];
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],

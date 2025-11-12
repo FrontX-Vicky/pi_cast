@@ -363,17 +363,11 @@ const TableThree = () => {
     muiTableProps: {
       className: "rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ", // Apply the class to the table
     },
-    muiTableHeadCellProps: {
-      className: "rounded-tl-sm rounded-tr-sm  dark:border-strokedark dark:bg-boxdark", // You can also add specific classes for header cells if needed
-    },
     muiTableBodyRowProps: {
       className: "custom-row-class  dark:border-strokedark dark:bg-boxdark", // Apply custom class to rows
     },
     muiTableFooterRowProps: {
       className: "custom-footer-class  dark:border-strokedark dark:bg-boxdark", // Apply custom class to footer rows
-    },
-    muiTableFooterCellProps: {
-      className: "custom-footer-cell-class  dark:border-strokedark dark:bg-boxdark", // Apply custom class to footer cells
     },
 
     muiTableBodyCellProps: ({ table }) => {
@@ -397,7 +391,7 @@ const TableThree = () => {
         document.documentElement.classList.toggle('dark', cleanedMode === 'dark');
       }
       return {
-        className: "dark:text-white dark:border-strokedark dark:bg-boxdark"
+        className: "rounded-tl-sm rounded-tr-sm dark:text-white dark:border-strokedark dark:bg-boxdark"
       };
     },
 
@@ -408,7 +402,7 @@ const TableThree = () => {
       const isDarkMode = cleanedMode === 'dark';
 
       return {
-        className: "dark:text-white dark:border-strokedark dark:bg-boxdark"
+        className: "custom-footer-cell-class dark:text-white dark:border-strokedark dark:bg-boxdark"
       };
     },
     enableFullScreenToggle: false,
