@@ -452,9 +452,9 @@ const Pi_Casting = () => {
                               type="storage"
                             />
                             <span className="text-sm text-left">
-                              <span style={{ color: element['sw_version'] === '0.0' ? 'red' : 'inherit' }}>
+                              <small style={{ color: element['sw_version'] === '0.0' ? 'red' : 'inherit' }}>
                                 {element['sw_version']}
-                              </span>
+                              </small>
                             </span>
                           </span>
                         </td>
@@ -502,11 +502,11 @@ const Pi_Casting = () => {
                             />
                           )}
                           <span style={{ color: element['network_speed'] === '0' ? 'red' : 'inherit' }}>
-                                {element['network_speed']} <small>MBps</small>
+                                <small>{element['network_speed']} MBps</small>
                               </span>
                         </td>
-                        <td>
-                          <table>
+                        <td className="py-0">
+                          <table className="w-full table-fixed">
                             <tbody>
                               {element.recordings
                                 .filter((item) =>
@@ -519,13 +519,14 @@ const Pi_Casting = () => {
                                 .map((record, index) => (
                                     <tr
                                       key={index}
+                                      className="border-b border-gray-100 dark:border-strokedark/50 last:border-0"
                                     >
                                       {/* <td className="min-w-[130px] py-0 px-4 border-white pt-2 dark:border-strokedark">
                                     {/* <td colSpan={2} /> */}
                                       <React.Fragment key={index}>
-                                        <td className="max-w-[400px] py-0 px-4 border-white pt-2 pl-9 dark:border-strokedark">
-                                          <div className="flex items-center justify-evenly">
-                                            <div className="relative flex-shrink-0 me-2">
+                                        <td className="w-[180px] py-1 px-2">
+                                          <div className="flex items-center gap-2">
+                                            <div className="relative flex-shrink-0">
                                               <span
                                                 key={index} // force animate on change
                                               
@@ -556,7 +557,7 @@ const Pi_Casting = () => {
                                               ></span>
                                             </div>
                                             <div
-                                              className="text-sm text-center truncate w-50 mb-1"
+                                              className="text-sm truncate flex-1"
                                               data-twe-toggle="tooltip"
                                               data-twe-placement="top"
                                               data-twe-ripple-init
@@ -567,52 +568,49 @@ const Pi_Casting = () => {
                                             </div>
                                           </div>
                                         </td>
-                                        <td className="min-w-35 py-0 px-4">
-                                          <p className="text-sm text-left">
+                                        <td className="w-[140px] py-1 px-2">
+                                          <p className="text-xs">
                                             <span>
                                               {record.date &&
                                                 DateTime.fromFormat(
                                                   record.date,
                                                   'yyyy-MM-dd HH:mm:ss',
-                                                ).toFormat('d LLLL h:mm a')}
+                                                ).toFormat('d MMM h:mm a')}
                                             </span>
                                           </p>
                                         </td>
-                                        <td className="w-[200px] py-0 px-4">
+                                        <td className="w-[100px] py-1 px-2">
                                           {(record.video_size ||
                                             record.audio_size) && (
-                                            // <p className="text-sm text-left">
                                             <motion.span
-                                              key={record.video_size+record.audio_size} // force animate on change
+                                              key={record.video_size+record.audio_size}
                                               variants={textVariants}
                                               initial="initial"
                                               animate="animate"
                                               exit="exit"
                                               transition={{ duration: 0.5 }}
+                                              className="text-xs"
                                             >
                                               {record.video_size}/
                                               {record.audio_size}
                                             </motion.span>
-                                            // </p>
                                           )}
                                         </td>
-                                        <td className="w-[300px] py-0 px-4">
-                                          {/* <p className="text-sm text-center"> */}
+                                        <td className="w-[80px] py-1 px-2 text-center">
                                           <motion.span
-                                              key={record.duration} // force animate on change
+                                              key={record.duration}
                                               variants={textVariants}
                                               initial="initial"
                                               animate="animate"
                                               exit="exit"
                                               transition={{ duration: 0.5 }}
-                                              className="text-sm text-center"
+                                              className="text-xs"
                                             >
                                             {record.duration}
                                             </motion.span>
-                                          {/* </p> */}
                                         </td>
-                                        <td className="w-[300px] py-0 px-4">
-                                          <p className="text-sm text-center">
+                                        <td className="w-[90px] py-1 px-2 text-center">
+                                          <p className="text-xs">
                                             {' '}
                                             {record.id == 0
                                               ? 'Idle'
@@ -625,11 +623,11 @@ const Pi_Casting = () => {
                                               : 'Completed'}
                                           </p>
                                         </td>
-                                        <td className="min-w-[250px] py-0 px-4">
+                                        <td className="w-[200px] py-1 px-2">
                                           {record.status !== 0 &&
                                             record.status !== undefined && (
-                                              <div className="flex items-center gap-3 w-full">
-                                                <div className="flex-1 min-w-[120px]">
+                                              <div className="flex items-center gap-2">
+                                                <div className="flex-1 min-w-[100px]">
                                                   <LinearProgress
                                                     variant="determinate"
                                                     value={
@@ -638,7 +636,7 @@ const Pi_Casting = () => {
                                                         : record.upload_percentage || 0
                                                     }
                                                     sx={{
-                                                      height: 8,
+                                                      height: 6,
                                                       borderRadius: 1,
                                                       backgroundColor: 'rgba(0, 0, 0, 0.08)',
                                                       '.dark &': {
@@ -661,7 +659,7 @@ const Pi_Casting = () => {
                                                   animate="animate"
                                                   exit="exit"
                                                   transition={{ duration: 0.5 }}
-                                                  className="text-sm font-medium min-w-[45px] text-right"
+                                                  className="text-xs font-medium min-w-[40px] text-right"
                                                 >
                                                   {record.status === 1
                                                     ? (record.merge_percentage || 0)
@@ -670,7 +668,7 @@ const Pi_Casting = () => {
                                               </div>
                                             )}
                                         </td>
-                                        <td className="min-w-[100px] py-0 px-4">
+                                        <td className="w-[100px] py-1 px-2">
                                           <ActionsMenuNew
                                             isLast={
                                               index >=
