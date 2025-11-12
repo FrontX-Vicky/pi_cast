@@ -431,7 +431,7 @@ const Pi_Casting = () => {
                           </p>
                         </td>
                         <td className="text-sm text-center  border-white pt-2 dark:border-strokedark">
-                          <span className="text-sm text-center">
+                          <span className="text-sm text-center flex flex-col items-center">
                             <TypoGraphy
                               percentage={
                                 (element['stats']['storage']['used_storage'] /
@@ -445,6 +445,11 @@ const Pi_Casting = () => {
                               }
                               type="storage"
                             />
+                            <span className="text-sm text-left">
+                              <span style={{ color: element['sw_version'] === '0.0' ? 'red' : 'inherit' }}>
+                                {element['sw_version']}
+                              </span>
+                            </span>
                           </span>
                         </td>
                         <td className="max-w-[200px]  text-sm text-center border-white pt-2 dark:border-strokedark">
