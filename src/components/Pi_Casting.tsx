@@ -427,7 +427,13 @@ const Pi_Casting = () => {
                         <td className="max-w-[200px] border-white pt-2 dark:border-strokedark ">
                           <p className="text-sm font-bold dark:border-strokedark text-center">
                             <span>{element.pi_id}</span>
-                            <br /> {venues[element['venue_id']]}
+                            <br />
+                            <span className="inline-block w-full overflow-hidden relative">
+                              <span className="inline-block whitespace-nowrap animate-marquee">
+                                {venues[element['venue_id']]}
+                                <span className="ml-8">{venues[element['venue_id']]}</span>
+                              </span>
+                            </span>
                           </p>
                         </td>
                         <td className="text-sm text-center  border-white pt-2 dark:border-strokedark">
@@ -452,7 +458,7 @@ const Pi_Casting = () => {
                             </span>
                           </span>
                         </td>
-                        <td className="max-w-[200px]  text-sm text-center border-white pt-2 dark:border-strokedark">
+                        <td className="max-w-[200px]  text-sm text-center border-white pt-2 dark:border-strokedark display-flex align-items-center">
                           {element['devices'].camera == 1 ? (
                             <HiVideoCamera
                               style={{
@@ -495,6 +501,9 @@ const Pi_Casting = () => {
                               }}
                             />
                           )}
+                          <span style={{ color: element['network_speed'] === '0' ? 'red' : 'inherit' }}>
+                                {element['network_speed']} <small>MBps</small>
+                              </span>
                         </td>
                         <td>
                           <table>
@@ -617,44 +626,48 @@ const Pi_Casting = () => {
                                           </p>
                                         </td>
                                         <td className="min-w-[250px] py-0 px-4">
-                                          {/* {record.status != 0 ? record.status == 1 ? <span className="text-sm text-center"> <TypoGraphy percentage={record.merge_percentage} total={record.merge_percentage} type='upload' />
-                            </span> : <span className="text-sm text-center"> <TypoGraphy percentage={record.upload_percentage} total={record.upload_percentage} type='upload' /></span> : <span></span>} */}
                                           {record.status !== 0 &&
                                             record.status !== undefined && (
-                                              <span className="flex items-center text-sm space-x-2">
-                                                <LinearProgress
-                                                  variant="determinate"
-                                                  value={
-                                                    record.status === 1
-                                                      ? record.merge_percentage
-                                                      : record.upload_percentage
-                                                  }
-                                                  className="w-24 h-2 inline-block rounded bg-blue-200 dark:bg-white"
-                                                  sx={{
-                                                    '& .MuiLinearProgress-bar':
-                                                      {
-                                                        backgroundColor:
-                                                          '#4ade80',
-                                                      }, // e.g. Tailwind green-400
-                                                  }}
-                                                />
-                                                  <motion.span
-                                                    key={record.merge_percentage + record.upload_percentage} // force animate on change
-                                                    variants={textVariants}
-                                                    initial="initial"
-                                                    animate="animate"
-                                                    exit="exit"
-                                                    transition={{ duration: 0.5 }}
-                                                    className="text-sm text-center"
-                                                  >
+                                              <div className="flex items-center gap-3 w-full">
+                                                <div className="flex-1 min-w-[120px]">
+                                                  <LinearProgress
+                                                    variant="determinate"
+                                                    value={
+                                                      record.status === 1
+                                                        ? record.merge_percentage || 0
+                                                        : record.upload_percentage || 0
+                                                    }
+                                                    sx={{
+                                                      height: 8,
+                                                      borderRadius: 1,
+                                                      backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                                                      '.dark &': {
+                                                        backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                                                      },
+                                                      '& .MuiLinearProgress-bar': {
+                                                        borderRadius: 1,
+                                                        backgroundColor: record.status === 1 
+                                                          ? '#3b82f6' // blue for merging
+                                                          : '#10b981', // green for uploading
+                                                        transition: 'transform 0.4s ease',
+                                                      },
+                                                    }}
+                                                  />
+                                                </div>
+                                                <motion.span
+                                                  key={record.merge_percentage + record.upload_percentage}
+                                                  variants={textVariants}
+                                                  initial="initial"
+                                                  animate="animate"
+                                                  exit="exit"
+                                                  transition={{ duration: 0.5 }}
+                                                  className="text-sm font-medium min-w-[45px] text-right"
+                                                >
                                                   {record.status === 1
-                                                    ? record.merge_percentage
-                                                    : record.upload_percentage
-                                                    ? record.upload_percentage
-                                                    : '0'}
-                                                  %
+                                                    ? (record.merge_percentage || 0)
+                                                    : (record.upload_percentage || 0)}%
                                                 </motion.span>
-                                              </span>
+                                              </div>
                                             )}
                                         </td>
                                         <td className="min-w-[100px] py-0 px-4">
