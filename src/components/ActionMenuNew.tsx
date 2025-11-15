@@ -52,6 +52,7 @@ export default function ActionsMenuNew({
 }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<any>(null);
+  const floatingRef = useRef<any>(null);
 
   // Compact menu item styles
   const itemCls =
@@ -76,16 +77,38 @@ export default function ActionsMenuNew({
     containerRef.current = node;
   };
 
+  const setFloatingRef = (node: any) => {
+    refs.setFloating(node);
+    floatingRef.current = node;
+  };
+
   // close on outside click
   useEffect(() => {
     function onClick(e: any) {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
+      if (
+        containerRef.current &&
+        floatingRef.current &&
+        !containerRef.current.contains(e.target) &&
+        !floatingRef.current.contains(e.target)
+      ) {
         setOpen(false);
       }
     }
     document.addEventListener('mousedown', onClick);
     return () => document.removeEventListener('mousedown', onClick);
   }, []);
+
+  // debug: confirm component mounted and record prop
+  useEffect(() => {
+    try {
+      // lightweight info to help debugging in the browser console
+      // show when the menu component mounts and what record it received
+      // eslint-disable-next-line no-console
+      console.log('ActionsMenuNew mounted', { pi: record?.pi_id, status: record?.status });
+    } catch (e) {
+      // ignore
+    }
+  }, [record]);
 
   // reposition whenever we open
   useEffect(() => {
@@ -100,7 +123,13 @@ export default function ActionsMenuNew({
       {/* Trigger */}
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => {
+          try {
+            // eslint-disable-next-line no-console
+            console.log('ActionsMenuNew trigger clicked', { pi: record?.pi_id, status: record?.status });
+          } catch (e) {}
+          setOpen((o) => !o);
+        }}
         className="
           inline-flex items-center px-1.5 py-0.5 mb-1
           bg-blue-600 text-white text-[10px] rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30
@@ -117,7 +146,7 @@ export default function ActionsMenuNew({
       {/* Dropdown */}
       {open && createPortal(
         <div
-          ref={refs.setFloating}
+          ref={setFloatingRef}
           style={{
             position: strategy,
             top: y ?? 0,
@@ -133,7 +162,11 @@ export default function ActionsMenuNew({
             {record.status === 0 ? (
               <>
                 <button
-                  onClick={() => stopRecord(record.pi_id, record.batch_id)}
+                  onClick={() => {
+                    console.log('Stop button clicked');
+                    stopRecord(record.pi_id, record.batch_id);
+                    setOpen(false);
+                  }}
                   disabled={isLoading}
                   className={itemCls}
                 >
@@ -162,7 +195,11 @@ export default function ActionsMenuNew({
             ) : record.id === 0 ? (
               <>
                 <button
-                  onClick={() => openPreviewModal(record.pi_id)}
+                  onClick={() => {
+                    console.log('Preview button clicked');
+                    openPreviewModal(record.pi_id);
+                    setOpen(false);
+                  }}
                   disabled={isLoading}
                   className={itemCls}
                 >
@@ -175,6 +212,7 @@ export default function ActionsMenuNew({
                   target="_blank"
                   rel="noopener noreferrer"
                   className={itemCls}
+                  onClick={() => setOpen(false)}
                 >
                   <TbBrandPowershell className={iconCls} />
                   {isLoading ? loaderIcon : ' Shell'}
@@ -184,13 +222,18 @@ export default function ActionsMenuNew({
                   target="_blank"
                   rel="noopener noreferrer"
                   className={itemCls}
+                  onClick={() => setOpen(false)}
                 >
                   <SiAnydesk className={iconCls} />
                   {isLoading ? loaderIcon : 'Screen'}
                 </a>
                 <div className="my-1" />
                 <button
-                  onClick={() => startRecord(record.pi_id)}
+                  onClick={() => {
+                    console.log('Start Record button clicked');
+                    startRecord(record.pi_id);
+                    setOpen(false);
+                  }}
                   disabled={isLoading}
                   className={itemCls}
                 >
@@ -198,7 +241,11 @@ export default function ActionsMenuNew({
                   {isLoading ? loaderIcon : 'Start'}
                 </button>
                 <button
-                  onClick={() => clearRecord(record.pi_id)}
+                  onClick={() => {
+                    console.log('Clear Record button clicked');
+                    clearRecord(record.pi_id);
+                    setOpen(false);
+                  }}
                   disabled={isLoading}
                   className={itemCls}
                 >
@@ -207,7 +254,11 @@ export default function ActionsMenuNew({
                 </button>
                 <div className="my-1" />
                 <button
-                  onClick={() => reboot(record.pi_id)}
+                  onClick={() => {
+                    console.log('Reboot button clicked');
+                    reboot(record.pi_id);
+                    setOpen(false);
+                  }}
                   disabled={isLoading}
                   className={itemCls}
                 >
@@ -215,7 +266,11 @@ export default function ActionsMenuNew({
                   {isLoading ? loaderIcon : 'Reboot'}
                 </button>
                 <button
-                  onClick={() => shutDown(record.pi_id)}
+                  onClick={() => {
+                    console.log('Shutdown button clicked');
+                    shutDown(record.pi_id);
+                    setOpen(false);
+                  }}
                   disabled={isLoading}
                   className={itemCls}
                 >
@@ -223,7 +278,11 @@ export default function ActionsMenuNew({
                   {isLoading ? loaderIcon : 'Shutdown'}
                 </button>
                 <button
-                  onClick={() => reFresh(record.pi_id)}
+                  onClick={() => {
+                    console.log('Refresh button clicked');
+                    reFresh(record.pi_id);
+                    setOpen(false);
+                  }}
                   disabled={isLoading}
                   className={itemCls}
                 >
@@ -232,7 +291,11 @@ export default function ActionsMenuNew({
                 </button>
                 <div className="my-1" />
                 <button
-                  onClick={() => storageClear(record.pi_id)}
+                  onClick={() => {
+                    console.log('Storage Clear button clicked');
+                    storageClear(record.pi_id);
+                    setOpen(false);
+                  }}
                   disabled={isLoading}
                   className={itemCls}
                 >
@@ -243,7 +306,11 @@ export default function ActionsMenuNew({
             ) : record.status !== 0 ? (
               <>
                 <button
-                  onClick={() => startReMerging(record.pi_id, record.filename)}
+                  onClick={() => {
+                    console.log('ReMerge button clicked');
+                    startReMerging(record.pi_id, record.filename);
+                    setOpen(false);
+                  }}
                   disabled={isLoading}
                   className={itemCls}
                 >
@@ -251,7 +318,11 @@ export default function ActionsMenuNew({
                   {isLoading ? loaderIcon : 'ReMerge'}
                 </button>
                 <button
-                  onClick={() => trash(record.pi_id, record.filename)}
+                  onClick={() => {
+                    console.log('Trash button clicked');
+                    trash(record.pi_id, record.filename);
+                    setOpen(false);
+                  }}
                   disabled={isLoading}
                   className={itemCls}
                 >

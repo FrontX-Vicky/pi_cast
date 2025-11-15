@@ -194,6 +194,8 @@ const Pi_Casting = () => {
   }, []);
 
   const openPreviewModal = (id) => {
+    // ensure modal state change logs for debugging
+    console.log('openPreviewModal triggered for', id);
     setSelectedId(id);
     setisPreviewModalOpen(true);
   };
@@ -234,6 +236,7 @@ const Pi_Casting = () => {
   }, []);
 
   const stopRecord = (pi_id, batch_id) => {
+    console.log('Stop Record clicked:', pi_id, batch_id);
     setLoading(true);
     var payload = {
       type: 'rec_stop',
@@ -244,6 +247,7 @@ const Pi_Casting = () => {
   };
 
   const startRecord = (pi_id) => {
+    console.log('Start Record clicked:', pi_id);
     setLoading(true);
     var payload = {
       type: 'rec_start',
@@ -254,6 +258,7 @@ const Pi_Casting = () => {
   };
 
   const clearRecord = (pi_id) => {
+    console.log('Clear Record clicked:', pi_id);
     setLoading(true);
     var payload = {
       type: 'clear_recordings',
@@ -349,14 +354,20 @@ const Pi_Casting = () => {
       .then((response) => {
         try {
           if (response) {
-            // setLoading(false);
+            setLoading(false);
             console.log('Successfully Going To ' + payload.type);
           } else {
             console.log('Something went wrong is Api response');
+            setLoading(false);
           }
         } catch (err) {
           console.log('Error Occured while making an API request');
+          setLoading(false);
         }
+      })
+      .catch((error) => {
+        console.error('API request failed:', error);
+        setLoading(false);
       });
   };
 
@@ -577,17 +588,16 @@ const Pi_Casting = () => {
                                 )
                                 .map((record, index) => (
                                     <tr
-                                      key={index}
+                                      key={`${element.pi_id}-${record.id || record.batch_id || index}`}
                                       className="border-b border-gray-100 dark:border-strokedark/50 last:border-0"
                                     >
                                       {/* <td className="min-w-[130px] py-0 px-4 border-white pt-2 dark:border-strokedark">
                                     {/* <td colSpan={2} /> */}
-                                      <React.Fragment key={index}>
+                                      <React.Fragment>
                                         <td className="w-[180px] py-0.5 px-2">
                                           <div className="flex items-center gap-2">
                                             <div className="relative flex-shrink-0">
                                               <span
-                                                key={index} // force animate on change
                                               
                                                 className={`animate-ping absolute h-3.5 w-3.5 rounded-full  inline-flex border-2 border-white ${
                                                   record.pi_id != 0 &&
@@ -601,7 +611,6 @@ const Pi_Casting = () => {
                                                 }`}
                                               />
                                               <span
-                                                key={index} // force animate on change
                                                
                                                 className={`relative  h-3.5 w-3.5  inline-flex rounded-full border-2 border-white ${
                                                   record.pi_id != 0 &&
@@ -823,7 +832,6 @@ const Pi_Casting = () => {
                                               index >=
                                               element.recordings.length - 3
                                             }
-                                            // isLast={indexs >= datas.length - 1}
                                             record={record}
                                             isLoading={isLoading}
                                             loaderIcon={loaderIcon}
@@ -840,23 +848,6 @@ const Pi_Casting = () => {
                                             trash={trash}
                                             shell={element.shell}
                                           />
-                                          {/* <ActionMenu   
-                                      isLast={index >= element.recordings.length - 3}
-                                      // isLast={indexs >= datas.length - 1}
-                                      record={record}
-                                      isLoading={isLoading}
-                                      loaderIcon={loaderIcon}
-                                      stopRecord={stopRecord}
-                                      openPreviewModal={openPreviewModal}
-                                      startRecord={startRecord}
-                                      clearRecord={clearRecord}
-                                      reboot={reboot}
-                                      shutDown={shutDown}
-                                      reFresh={reFresh}
-                                      storageClear={storageClear}
-                                      startReMerging={startReMerging}
-                                      trash={trash}
-                                    /> */}
                                         </td>
                                       </React.Fragment>
                                     </tr>
