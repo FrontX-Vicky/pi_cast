@@ -1,5 +1,6 @@
 // ActionsMenuNew.jsx
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { FiEdit2 } from 'react-icons/fi';
 import { SiAnydesk } from 'react-icons/si';
 import { RiDeleteBin6Fill } from 'react-icons/ri';
@@ -50,7 +51,12 @@ export default function ActionsMenuNew({
   onDeactivate = () => {},
 }) {
   const [open, setOpen] = useState(false);
-  const containerRef = useRef(null);
+  const containerRef = useRef<any>(null);
+
+  // Compact menu item styles
+  const itemCls =
+    "flex items-center w-full px-3 py-1.5 text-xs text-slate-700 dark:text-slate-100 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors";
+  const iconCls = "mr-2 h-4 w-4";
 
   // Floating UI setup
   const { x, y, strategy, refs, update } = useFloating({
@@ -65,14 +71,14 @@ export default function ActionsMenuNew({
   });
 
   // Merge Floating UI’s reference ref with our containerRef (for outside-click)
-  const setReference = (node) => {
+  const setReference = (node: any) => {
     refs.setReference(node);
     containerRef.current = node;
   };
 
   // close on outside click
   useEffect(() => {
-    function onClick(e) {
+    function onClick(e: any) {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
         setOpen(false);
       }
@@ -96,18 +102,20 @@ export default function ActionsMenuNew({
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="
-          inline-flex items-center px-2 py-1 mb-1
-          bg-blue-600 text-white text-sm  rounded-md shadow
+          inline-flex items-center px-1.5 py-0.5 mb-1
+          bg-blue-600 text-white text-[10px] rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30
           hover:bg-blue-700 
           dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-offset-gray-800
         "
+        aria-haspopup="menu"
+        aria-expanded={open}
       >
         Actions
-        <HiChevronDown className="ml-2 h-4 w-4" aria-hidden="true" />
+        <HiChevronDown className="ml-1 h-3 w-3" aria-hidden="true" />
       </button>
 
       {/* Dropdown */}
-      {open && (
+      {open && createPortal(
         <div
           ref={refs.setFloating}
           style={{
@@ -116,50 +124,38 @@ export default function ActionsMenuNew({
             left: x ?? 0,
           }}
           className="
-            w-48
-            rounded-lg shadow-lg ring-1 ring-black ring-opacity-5
-            bg-white dark:bg-gray
-            z-50 overflow-visible
+            w-44 rounded-md shadow-lg ring-1 ring-black/10 dark:ring-white/10
+            bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
+            z-[9999] overflow-visible border border-gray-200 dark:border-slate-700
           "
         >
-          <div className="py-1">
+          <div className="py-1 divide-y divide-gray-200 dark:divide-slate-700">
             {record.status === 0 ? (
               <>
                 <button
                   onClick={() => stopRecord(record.pi_id, record.batch_id)}
                   disabled={isLoading}
-                  className="
-                flex items-center w-full px-4 py-2 text-sm
-              text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
-              "
+                  className={itemCls}
                 >
-                  <FaRegCircleStop className="mr-3 h-5 w-5" />
+                  <FaRegCircleStop className={iconCls} />
                   {isLoading ? loaderIcon : 'Stop'}
                 </button>
                 <a
                   href={`https://connect.raspberrypi.com/devices/${shell}/remote-shell-session`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  disabled={isLoading}
-                  className="
-                flex items-center w-full px-4 py-2 text-sm
-              text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
-              "
+                  className={itemCls}
                 >
-                  <TbBrandPowershell className="mr-3 h-5 w-5" />
+                  <TbBrandPowershell className={iconCls} />
                   {isLoading ? loaderIcon : ' Shell'}
                 </a>
                 <a
                   href={`https://connect.raspberrypi.com/devices/${shell}/screen-sharing-session`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  disabled={isLoading}
-                  className="
-                flex items-center w-full px-4 py-2 text-sm
-              text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
-              "
+                  className={itemCls}
                 >
-                  <SiAnydesk className="mr-3 h-5 w-5" />
+                  <SiAnydesk className={iconCls} />
                   {isLoading ? loaderIcon : 'Screen'}
                 </a>
               </>
@@ -168,105 +164,79 @@ export default function ActionsMenuNew({
                 <button
                   onClick={() => openPreviewModal(record.pi_id)}
                   disabled={isLoading}
-                  className="
-                flex items-center w-full px-4 py-2 text-sm
-              text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
-              "
+                  className={itemCls}
                 >
                   {' '}
-                  <FcCamera className="mr-3 h-5 w-5" />
+                  <FcCamera className={iconCls} />
                   {isLoading ? loaderIcon : ' Preview'}
                 </button>
                 <a
                   href={`https://connect.raspberrypi.com/devices/${shell}/remote-shell-session`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  disabled={isLoading}
-                  className="
-                flex items-center w-full px-4 py-2 text-sm
-              text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
-              "
+                  className={itemCls}
                 >
-                  <TbBrandPowershell className="mr-3 h-5 w-5" />
+                  <TbBrandPowershell className={iconCls} />
                   {isLoading ? loaderIcon : ' Shell'}
                 </a>
                 <a
                   href={`https://connect.raspberrypi.com/devices/${shell}/screen-sharing-session`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  disabled={isLoading}
-                  className="
-                flex items-center w-full px-4 py-2 text-sm
-              text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
-              "
+                  className={itemCls}
                 >
-                  <SiAnydesk className="mr-3 h-5 w-5" />
+                  <SiAnydesk className={iconCls} />
                   {isLoading ? loaderIcon : 'Screen'}
                 </a>
+                <div className="my-1" />
                 <button
                   onClick={() => startRecord(record.pi_id)}
                   disabled={isLoading}
-                  className="
-                flex items-center w-full px-4 py-2 text-sm
-              text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
-              "
+                  className={itemCls}
                 >
-                  <BsRecordCircle className="mr-3 h-5 w-5" />
+                  <BsRecordCircle className={iconCls} />
                   {isLoading ? loaderIcon : 'Start'}
                 </button>
                 <button
                   onClick={() => clearRecord(record.pi_id)}
                   disabled={isLoading}
-                  className="
-                flex items-center w-full px-4 py-2 text-sm
-              text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
-              "
+                  className={itemCls}
                 >
-                  <MdCleaningServices className="mr-3 h-5 w-5" />
+                  <MdCleaningServices className={iconCls} />
                   {isLoading ? loaderIcon : 'Clean'}
                 </button>
+                <div className="my-1" />
                 <button
                   onClick={() => reboot(record.pi_id)}
                   disabled={isLoading}
-                  className="
-                flex items-center w-full px-4 py-2 text-sm
-              text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
-              "
+                  className={itemCls}
                 >
-                  <BsBootstrapReboot className="mr-3 h-5 w-5" />
+                  <BsBootstrapReboot className={iconCls} />
                   {isLoading ? loaderIcon : 'Reboot'}
                 </button>
                 <button
                   onClick={() => shutDown(record.pi_id)}
                   disabled={isLoading}
-                  className="
-                flex items-center w-full px-4 py-2 text-sm
-              text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
-              "
+                  className={itemCls}
                 >
-                  <RiShutDownLine className="mr-3 h-5 w-5" />
+                  <RiShutDownLine className={iconCls} />
                   {isLoading ? loaderIcon : 'Shutdown'}
                 </button>
                 <button
                   onClick={() => reFresh(record.pi_id)}
                   disabled={isLoading}
-                  className="
-                flex items-center w-full px-4 py-2 text-sm
-              text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
-              "
+                  className={itemCls}
                 >
-                  <LuRefreshCcwDot className="mr-3 h-5 w-5" />
+                  <LuRefreshCcwDot className={iconCls} />
                   {isLoading ? loaderIcon : ' Refresh'}
                 </button>
+                <div className="my-1" />
                 <button
                   onClick={() => storageClear(record.pi_id)}
                   disabled={isLoading}
-                  className="
-                flex items-center w-full px-4 py-2 text-sm
-              text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
-              "
+                  className={itemCls}
                 >
-                  <GrClearOption className="mr-3 h-5 w-5" />
+                  <GrClearOption className={iconCls} />
                   {isLoading ? loaderIcon : 'Clear '}
                 </button>
               </>
@@ -275,29 +245,24 @@ export default function ActionsMenuNew({
                 <button
                   onClick={() => startReMerging(record.pi_id, record.filename)}
                   disabled={isLoading}
-                  className="
-                flex items-center w-full px-4 py-2 text-sm
-              text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
-              "
+                  className={itemCls}
                 >
-                  <TbArrowMerge className="mr-3 h-5 w-5" />
+                  <TbArrowMerge className={iconCls} />
                   {isLoading ? loaderIcon : 'ReMerge'}
                 </button>
                 <button
                   onClick={() => trash(record.pi_id, record.filename)}
                   disabled={isLoading}
-                  className="
-                flex items-center w-full px-4 py-2 text-sm
-              text-black bg-white hover:text-white dark:hover:text-black hover:bg-black dark:hover:bg-gray
-              "
+                  className={itemCls}
                 >
-                  <RiDeleteBin6Fill className="mr-3 h-5 w-5" />
+                  <RiDeleteBin6Fill className={iconCls} />
                   {isLoading ? loaderIcon : 'Trash'}
                 </button>
               </>
             ) : null}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -58,6 +58,8 @@ const Pi_Casting = () => {
   const [selectedId, setSelectedId] = useState(null);
   const timerRefs = useRef({});
   const [pages, setpages] = useState(1);
+  // Track which rows have their recordings expanded (per main row index)
+  const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
   let allPis = {};
   let piBtnDisabled = {};
   const [datas, setDatas] = useState([]);
@@ -536,9 +538,36 @@ const Pi_Casting = () => {
                           </div>
                         </td>
                         <td className="py-0">
-                          <table className="w-full table-fixed">
-                            <tbody>
-                              {element.recordings
+                          {/* Compact/expand control for recordings (only when merging/uploading) */}
+                          {(() => {
+                            const recs = element.recordings || [];
+                            const mergingCount = recs.filter((r) => r.status === 1).length;
+                            const uploadingCount = recs.filter((r) => r.status === 2).length;
+                            const ongoingCount = mergingCount + uploadingCount;
+                            if (ongoingCount === 0) return null;
+                            return (
+                              <div className="flex items-center gap-2 mb-1">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setExpandedRows((prev) => ({
+                                      ...prev,
+                                      [indexs]: !prev[indexs],
+                                    }))
+                                  }
+                                  className="text-[10px] px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-1"
+                                  title={expandedRows[indexs] ? 'Hide ongoing details' : 'Show ongoing details'}
+                                >
+                                  <span className="px-1 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">M:{mergingCount}</span>
+                                  <span className="px-1 rounded bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">U:{uploadingCount}</span>
+                                </button>
+                              </div>
+                            );
+                          })()}
+                          <div className={expandedRows[indexs] ? 'max-h-40 overflow-y-auto pr-1' : ''}>
+                            <table className="w-full table-fixed">
+                              <tbody>
+                              {(expandedRows[indexs] ? element.recordings : element.recordings.slice(-1))
                                 .filter((item) =>
                                   Object.values(item).some((value) =>
                                     String(value)
@@ -832,8 +861,9 @@ const Pi_Casting = () => {
                                       </React.Fragment>
                                     </tr>
                                 ))}
-                            </tbody>
-                          </table>
+                              </tbody>
+                            </table>
+                          </div>
                         </td>
                       </tr>
                     );
