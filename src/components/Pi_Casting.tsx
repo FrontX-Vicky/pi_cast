@@ -368,19 +368,22 @@ const Pi_Casting = () => {
           <table className="min-w-full table-fixed rounded">
             <thead>
               <tr className="bg-gray-200 text-center dark:bg-slate-800 overflow-hidden sticky top-0 z-10 rounded-t-lg">
-                <th className="min-w-[10px] py-2 px-4 font-medium text-black dark:text-warmGray-50">
+                <th className="min-w-[10px] py-1 px-4 font-medium text-black dark:text-warmGray-50">
                   #
                 </th>
-                <th className="min-w-[200px] py-2 px-4 font-medium text-black dark:text-white">
-                  Pi Id - Venue
+                <th className="min-w-[80px] py-1 px-2 font-medium text-black dark:text-white">
+                  Pi ID
                 </th>
-                <th className="min-w-[60px] py-2 px-4 font-medium text-black dark:text-white">
+                <th className="min-w-[120px] py-1 px-2 font-medium text-black dark:text-white">
+                  Venue
+                </th>
+                <th className="min-w-[60px] py-1 px-4 font-medium text-black dark:text-white">
                   Storage
                 </th>
-                <th className="min-w-[50px] py-2 px-1 font-medium text-black dark:text-white">
+                <th className="min-w-[50px] py-1 px-1 font-medium text-black dark:text-white">
                   Devices
                 </th>
-                <th className="min-w-[250px] py-2 px-4 font-medium text-black dark:text-white">
+                <th className="min-w-[250px] py-1 px-4 font-medium text-black dark:text-white">
                   Recordings
                   <br />
                   {/* <table>
@@ -421,89 +424,116 @@ const Pi_Casting = () => {
                         key={indexs}
                         className="border-b border-[#eee] dark:border-strokedark"
                       >
-                        <td className=" border-white pt-2 dark:border-strokedark text-center">
+                        <td className="border-white py-0.5 px-2 dark:border-strokedark text-center">
                           <label htmlFor="">{indexs + 1}</label>
                         </td>
-                        <td className="max-w-[200px] border-white pt-2 dark:border-strokedark ">
-                          <p className="text-sm font-bold dark:border-strokedark text-center">
-                            <span>{element.pi_id}</span>
-                            <br />
-                            <span className="inline-block w-full overflow-hidden relative">
-                              <span className="inline-block whitespace-nowrap animate-marquee">
-                                {venues[element['venue_id']]}
-                                <span className="ml-8">{venues[element['venue_id']]}</span>
-                              </span>
-                            </span>
-                          </p>
+                        <td className="border-white py-0.5 px-2 dark:border-strokedark text-center">
+                          <span className="text-sm font-bold">{element.pi_id}</span>
                         </td>
-                        <td className="text-sm text-center  border-white pt-2 dark:border-strokedark">
-                          <span className="text-sm text-center flex flex-col items-center">
-                            <TypoGraphy
-                              percentage={
-                                (element['stats']['storage']['used_storage'] /
-                                  element['stats']['storage'][
-                                    'total_storage'
-                                  ]) *
-                                100
-                              }
-                              total={
-                                element['stats']['storage']['total_storage']
-                              }
-                              type="storage"
-                            />
-                            <span className="text-sm text-left">
-                              <small style={{ color: element['sw_version'] === '0.0' ? 'red' : 'inherit' }}>
-                                {element['sw_version']}
-                              </small>
+                        <td className="max-w-[200px] border-white py-0.5 px-2 dark:border-strokedark">
+                          <div className="inline-block w-full overflow-hidden relative">
+                            <span className="inline-block whitespace-nowrap animate-marquee text-sm">
+                              {venues[element['venue_id']]}
+                              <span className="ml-8">{venues[element['venue_id']]}</span>
                             </span>
-                          </span>
+                          </div>
                         </td>
-                        <td className="max-w-[200px]  text-sm text-center border-white pt-2 dark:border-strokedark display-flex align-items-center">
-                          {element['devices'].camera == 1 ? (
-                            <HiVideoCamera
-                              style={{
-                                width: '16px',
-                                height: '16px',
-                                display: 'block',
-                                margin: '0 auto',
-                                color: '#34e37d',
-                              }}
-                            />
-                          ) : (
-                            <HiVideoCameraSlash
-                              style={{
-                                width: '16px',
-                                height: '16px',
-                                display: 'block',
-                                margin: '0 auto',
-                                color: '#d63c49',
-                              }}
-                            />
-                          )}
-                          {element['devices'].mic == 1 ? (
-                            <IoIosMic
-                              style={{
-                                width: '18px',
-                                height: '18px',
-                                display: 'block',
-                                margin: '0 auto',
-                                color: '#34e37d',
-                              }}
-                            />
-                          ) : (
-                            <IoIosMicOff
-                              style={{
-                                width: '18px',
-                                height: '18px',
-                                display: 'block',
-                                margin: '0 auto',
-                                color: '#d63c49',
-                              }}
-                            />
-                          )}
-                          <span style={{ color: element['network_speed'] === '0' ? 'red' : 'inherit' }}>
-                                <small>{element['network_speed']} MBps</small>
+                        <td className="text-sm text-center border-white py-0.5 px-2 dark:border-strokedark w-[100px]">
+                          <div className="flex flex-col items-center gap-0.5">
+                            {/* Compact Storage Display */}
+                            <div className="relative inline-flex items-center justify-center">
+                              <svg className="w-12 h-12 transform -rotate-90">
+                                {/* Background Circle */}
+                                <circle
+                                  cx="24"
+                                  cy="24"
+                                  r="20"
+                                  stroke="currentColor"
+                                  strokeWidth="3"
+                                  fill="none"
+                                  className="text-gray-200 dark:text-gray-700"
+                                />
+                                {/* Progress Circle */}
+                                <circle
+                                  cx="24"
+                                  cy="24"
+                                  r="20"
+                                  stroke="currentColor"
+                                  strokeWidth="3"
+                                  fill="none"
+                                  strokeDasharray={`${2 * Math.PI * 20}`}
+                                  strokeDashoffset={`${
+                                    2 * Math.PI * 20 * (1 - (element['stats']['storage']['used_storage'] / element['stats']['storage']['total_storage']))
+                                  }`}
+                                  className={`transition-all duration-500 ${
+                                    ((element['stats']['storage']['used_storage'] / element['stats']['storage']['total_storage']) * 100) <= 60
+                                      ? 'text-green-500'
+                                      : ((element['stats']['storage']['used_storage'] / element['stats']['storage']['total_storage']) * 100) <= 80
+                                      ? 'text-yellow-500'
+                                      : 'text-red-500'
+                                  }`}
+                                  strokeLinecap="round"
+                                />
+                              </svg>
+                              {/* Center Content */}
+                              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <MdOutlineSdStorage className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+                                <span className="text-[10px] font-bold dark:text-white">
+                                  {Math.round((element['stats']['storage']['used_storage'] / element['stats']['storage']['total_storage']) * 100)}%
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {/* Storage Size */}
+                            <span className="text-[9px] text-gray-600 dark:text-gray-400">
+                              {(element['stats']['storage']['used_storage'] / 1024).toFixed(1)}GB / {(element['stats']['storage']['total_storage'] / 1024).toFixed(0)}GB
+                            </span>
+                          </div>
+                        </td>
+                        <td className="border-white py-0.5 px-2 dark:border-strokedark w-[110px]">
+                          <div className="flex flex-col gap-0.5">
+                            {/* Row 1: Camera & Mic */}
+                            <div className="flex items-center justify-center gap-2.5">
+                              <div className="flex items-center gap-0.5">
+                                {element['devices'].camera == 1 ? (
+                                  <HiVideoCamera className="w-3.5 h-3.5 text-green-500" title="Camera Active" />
+                                ) : (
+                                  <HiVideoCameraSlash className="w-3.5 h-3.5 text-red-500" title="Camera Inactive" />
+                                )}
+                              </div>
+                              <div className="flex items-center gap-0.5">
+                                {element['devices'].mic == 1 ? (
+                                  <IoIosMic className="w-3.5 h-3.5 text-green-500" title="Mic Active" />
+                                ) : (
+                                  <IoIosMicOff className="w-3.5 h-3.5 text-red-500" title="Mic Inactive" />
+                                )}
+                              </div>
+                            </div>
+                            
+                          
+                            {/* Row 3: Version */}
+                            <div className="flex items-center justify-center">
+                              <span 
+                                className="text-[9px] px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 font-medium text-blue-700 dark:text-blue-300"
+                                style={{ color: element['sw_version'] === '0.0' ? '#ef4444' : undefined }}
+                              >
+                                v{element['sw_version']}
                               </span>
+                            </div>
+                              {/* Row 2: Network Speed */}
+                            <div className="flex items-center justify-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800">
+                              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                              </svg>
+                              <span 
+                                className="text-[9px] font-medium"
+                                style={{ color: element['network_speed'] === '0' ? '#ef4444' : 'inherit' }}
+                              >
+                                {element['network_speed']} MBps
+                              </span>
+                            </div>
+                            
+                          </div>
                         </td>
                         <td className="py-0">
                           <table className="w-full table-fixed">
@@ -524,7 +554,7 @@ const Pi_Casting = () => {
                                       {/* <td className="min-w-[130px] py-0 px-4 border-white pt-2 dark:border-strokedark">
                                     {/* <td colSpan={2} /> */}
                                       <React.Fragment key={index}>
-                                        <td className="w-[180px] py-1 px-2">
+                                        <td className="w-[180px] py-0.5 px-2">
                                           <div className="flex items-center gap-2">
                                             <div className="relative flex-shrink-0">
                                               <span
@@ -556,6 +586,27 @@ const Pi_Casting = () => {
                                                 }`}
                                               ></span>
                                             </div>
+                                            {/* Error Indicator */}
+                                            {/* {record.error !== undefined && record.error !== 0 && (
+                                              <div 
+                                                className="relative flex-shrink-0"
+                                                title={
+                                                  record.error === 1 
+                                                    ? 'Video Stalled' 
+                                                    : record.error === 2 
+                                                    ? 'Audio Stalled' 
+                                                    : record.error === 3 
+                                                    ? 'Both Video & Audio Stalled' 
+                                                    : 'Error'
+                                                }
+                                              >
+                                                <span className="relative h-3.5 w-3.5 inline-flex rounded-full border-2 border-white bg-red-500 animate-pulse">
+                                                  <span className="text-white text-[8px] font-bold leading-none flex items-center justify-center w-full h-full">
+                                                    !
+                                                  </span>
+                                                </span>
+                                              </div>
+                                            )} */}
                                             <div
                                               className="text-sm truncate flex-1"
                                               data-twe-toggle="tooltip"
@@ -568,7 +619,7 @@ const Pi_Casting = () => {
                                             </div>
                                           </div>
                                         </td>
-                                        <td className="w-[140px] py-1 px-2">
+                                        <td className="w-[140px] py-0.5 px-2">
                                           <p className="text-xs">
                                             <span>
                                               {record.date &&
@@ -579,24 +630,84 @@ const Pi_Casting = () => {
                                             </span>
                                           </p>
                                         </td>
-                                        <td className="w-[100px] py-1 px-2">
-                                          {(record.video_size ||
-                                            record.audio_size) && (
-                                            <motion.span
-                                              key={record.video_size+record.audio_size}
-                                              variants={textVariants}
-                                              initial="initial"
-                                              animate="animate"
-                                              exit="exit"
-                                              transition={{ duration: 0.5 }}
-                                              className="text-xs"
-                                            >
-                                              {record.video_size}/
-                                              {record.audio_size}
-                                            </motion.span>
+                                        <td className="w-[120px] py-0.5 px-2">
+                                          {(record.video_size || record.audio_size) && (
+                                            <div className="flex flex-col gap-0.5">
+                                              {/* Video Size */}
+                                              <motion.div
+                                                key={record.video_size}
+                                                variants={textVariants}
+                                                initial="initial"
+                                                animate="animate"
+                                                exit="exit"
+                                                transition={{ duration: 0.5 }}
+                                                className="flex items-center gap-1"
+                                              >
+                                                <HiVideoCamera 
+                                                  className={`w-3 h-3 ${
+                                                    record.error === 1 || record.error === 3 
+                                                      ? 'text-red-500' 
+                                                      : 'text-blue-500'
+                                                  }`}
+                                                />
+                                                <span 
+                                                  className={`text-[10px] ${
+                                                    record.error === 1 || record.error === 3 
+                                                      ? 'text-red-500 font-semibold' 
+                                                      : 'text-gray-700 dark:text-gray-300'
+                                                  }`}
+                                                >
+                                                  {record.video_size || '0MB'}
+                                                </span>
+                                                {(record.error === 1 || record.error === 3) && (
+                                                  <span 
+                                                    className="text-red-500 text-[10px] animate-pulse"
+                                                    title="Video Stalled"
+                                                  >
+                                                    ⚠
+                                                  </span>
+                                                )}
+                                              </motion.div>
+                                              
+                                              {/* Audio Size */}
+                                              <motion.div
+                                                key={record.audio_size}
+                                                variants={textVariants}
+                                                initial="initial"
+                                                animate="animate"
+                                                exit="exit"
+                                                transition={{ duration: 0.5 }}
+                                                className="flex items-center gap-1"
+                                              >
+                                                <IoIosMic 
+                                                  className={`w-3 h-3 ${
+                                                    record.error === 2 || record.error === 3 
+                                                      ? 'text-red-500' 
+                                                      : 'text-green-500'
+                                                  }`}
+                                                />
+                                                <span 
+                                                  className={`text-[10px] ${
+                                                    record.error === 2 || record.error === 3 
+                                                      ? 'text-red-500 font-semibold' 
+                                                      : 'text-gray-700 dark:text-gray-300'
+                                                  }`}
+                                                >
+                                                  {record.audio_size || '0MB'}
+                                                </span>
+                                                {(record.error === 2 || record.error === 3) && (
+                                                  <span 
+                                                    className="text-red-500 text-[10px] animate-pulse"
+                                                    title="Audio Stalled"
+                                                  >
+                                                    ⚠
+                                                  </span>
+                                                )}
+                                              </motion.div>
+                                            </div>
                                           )}
                                         </td>
-                                        <td className="w-[80px] py-1 px-2 text-center">
+                                        <td className="w-[80px] py-0.5 px-2 text-center">
                                           <motion.span
                                               key={record.duration}
                                               variants={textVariants}
@@ -609,7 +720,7 @@ const Pi_Casting = () => {
                                             {record.duration}
                                             </motion.span>
                                         </td>
-                                        <td className="w-[90px] py-1 px-2 text-center">
+                                        <td className="w-[90px] py-0.5 px-2 text-center">
                                           <p className="text-xs">
                                             {' '}
                                             {record.id == 0
@@ -623,52 +734,61 @@ const Pi_Casting = () => {
                                               : 'Completed'}
                                           </p>
                                         </td>
-                                        <td className="w-[200px] py-1 px-2">
+                                        <td className="w-[140px] py-0.5 px-1">
                                           {record.status !== 0 &&
                                             record.status !== undefined && (
-                                              <div className="flex items-center gap-2">
-                                                <div className="flex-1 min-w-[100px]">
-                                                  <LinearProgress
-                                                    variant="determinate"
-                                                    value={
-                                                      record.status === 1
-                                                        ? record.merge_percentage || 0
-                                                        : record.upload_percentage || 0
-                                                    }
-                                                    sx={{
-                                                      height: 6,
-                                                      borderRadius: 1,
-                                                      backgroundColor: 'rgba(0, 0, 0, 0.08)',
-                                                      '.dark &': {
-                                                        backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                                                      },
-                                                      '& .MuiLinearProgress-bar': {
-                                                        borderRadius: 1,
-                                                        backgroundColor: record.status === 1 
-                                                          ? '#3b82f6' // blue for merging
-                                                          : '#10b981', // green for uploading
-                                                        transition: 'transform 0.4s ease',
-                                                      },
-                                                    }}
-                                                  />
+                                              <div className="flex flex-col gap-0.5">
+                                                {/* Progress Bar with Label */}
+                                                <div className="flex items-center gap-1">
+                                                  <span className={`text-[9px] font-semibold uppercase tracking-wide ${
+                                                    record.status === 1 ? 'text-blue-600 dark:text-blue-400' : 'text-yellow-600 dark:text-yellow-400'
+                                                  }`}>
+                                                    {record.status === 1 ? 'M' : 'U'}
+                                                  </span>
+                                                  <div className="flex-1 relative">
+                                                    {/* Custom Progress Bar */}
+                                                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
+                                                      <motion.div
+                                                        initial={{ width: 0 }}
+                                                        animate={{ 
+                                                          width: `${record.status === 1 ? (record.merge_percentage || 0) : (record.upload_percentage || 0)}%` 
+                                                        }}
+                                                        transition={{ duration: 0.5, ease: "easeOut" }}
+                                                        className={`h-full rounded-full relative ${
+                                                          record.status === 1 
+                                                            ? 'bg-gradient-to-r from-blue-400 to-blue-600' 
+                                                            : 'bg-gradient-to-r from-yellow-400 to-yellow-600'
+                                                        }`}
+                                                        style={{
+                                                          boxShadow: record.status === 1 
+                                                            ? '0 0 8px rgba(59, 130, 246, 0.5)' 
+                                                            : '0 0 8px rgba(234, 179, 8, 0.5)'
+                                                        }}
+                                                      >
+                                                        {/* Shimmer effect */}
+                                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse" />
+                                                      </motion.div>
+                                                    </div>
+                                                    {/* Percentage inside bar */}
+                                                    <motion.span
+                                                      key={record.merge_percentage + record.upload_percentage}
+                                                      variants={textVariants}
+                                                      initial="initial"
+                                                      animate="animate"
+                                                      exit="exit"
+                                                      transition={{ duration: 0.5 }}
+                                                      className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-gray-700 dark:text-white drop-shadow-sm"
+                                                    >
+                                                      {record.status === 1
+                                                        ? (record.merge_percentage || 0)
+                                                        : (record.upload_percentage || 0)}%
+                                                    </motion.span>
+                                                  </div>
                                                 </div>
-                                                <motion.span
-                                                  key={record.merge_percentage + record.upload_percentage}
-                                                  variants={textVariants}
-                                                  initial="initial"
-                                                  animate="animate"
-                                                  exit="exit"
-                                                  transition={{ duration: 0.5 }}
-                                                  className="text-xs font-medium min-w-[40px] text-right"
-                                                >
-                                                  {record.status === 1
-                                                    ? (record.merge_percentage || 0)
-                                                    : (record.upload_percentage || 0)}%
-                                                </motion.span>
                                               </div>
                                             )}
                                         </td>
-                                        <td className="w-[100px] py-1 px-2">
+                                        <td className="w-[100px] py-0.5 px-2">
                                           <ActionsMenuNew
                                             isLast={
                                               index >=
