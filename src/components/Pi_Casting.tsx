@@ -486,7 +486,7 @@ const Pi_Casting = () => {
                             
                             {/* Storage Size */}
                             <span className="text-[9px] text-gray-600 dark:text-gray-400">
-                              {(element['stats']['storage']['used_storage'] / 1024).toFixed(1)}GB / {(element['stats']['storage']['total_storage'] / 1024).toFixed(0)}GB
+                              {element['stats']['storage']['used_storage'].toFixed(1)}GB / {element['stats']['storage']['total_storage'].toFixed(0)}GB
                             </span>
                           </div>
                         </td>
