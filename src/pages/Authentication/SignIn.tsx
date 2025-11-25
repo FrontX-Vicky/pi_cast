@@ -17,7 +17,7 @@ const SignIn = () => {
   const [showAlertSeverity, setAlertSeverity] = useState('false');
   const [showAlertMsg, setAlertMsg] = useState('false');
   if (localStorage.getItem('token') != null) {
-    window.location.href = '/profile'
+    window.location.href = '/Pis/Pi-Casting'
   }
   const changeHandler = (e, stateValue) => {
     var val = e.target == null || e.target == undefined ? e : e.target.value
@@ -48,8 +48,7 @@ const SignIn = () => {
             localStorage.setItem('contact_id', response.data.contact_id),
             getUserData()
           ]);
-          window.location.href = '/profile'
-          // window.location.href = '/pi/pi-casting'
+          window.location.href = '/Pis/Pi-Casting'
         }
         else {
           setAlertSeverity('true');
