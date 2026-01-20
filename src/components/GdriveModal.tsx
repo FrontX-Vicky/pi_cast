@@ -25,6 +25,7 @@ function GdriveModal(props) {
                 className="absolute top-0 left-0 w-full h-full"
                 frameBorder="0"
                 allowFullScreen
+                sandbox="allow-scripts allow-same-origin allow-presentation allow-popups "
               ></iframe>
             </div>
           </div>

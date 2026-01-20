@@ -15,7 +15,7 @@ import { HiVideoCamera } from 'react-icons/hi2';
 import { HiVideoCameraSlash } from 'react-icons/hi2';
 import { IoIosMic } from 'react-icons/io';
 import { IoIosMicOff } from 'react-icons/io';
-import { FaRegPlayCircle } from 'react-icons/fa';
+import { FaRegPlayCircle, FaCloudUploadAlt } from 'react-icons/fa';
 import { RiDeleteBin6Fill } from 'react-icons/ri';
 import { TbArrowMerge } from 'react-icons/tb';
 import { FaRegCircleStop } from 'react-icons/fa6';
@@ -78,7 +78,7 @@ const PiRow = React.memo(({
       className="border-b border-[#eee] dark:border-strokedark"
     >
       <td className="border-white py-0.5 px-2 dark:border-strokedark text-center">
-        <label htmlFor="">{indexs + 1}</label>
+        <label htmlFor="">{element._rowIndex || indexs + 1}</label>
       </td>
       <td className="border-white py-0.5 px-2 dark:border-strokedark text-center">
         <span className="text-sm font-bold">{element.pi_id}</span>
@@ -457,6 +457,8 @@ const PiRow = React.memo(({
   // Custom comparison for memoization - only re-render if these change
   return (
     prevProps.element.pi_id === nextProps.element.pi_id &&
+    prevProps.element._rowIndex === nextProps.element._rowIndex &&
+    prevProps.indexs === nextProps.indexs &&
     JSON.stringify(prevProps.element.recordings) === JSON.stringify(nextProps.element.recordings) &&
     prevProps.element.devices.camera === nextProps.element.devices.camera &&
     prevProps.element.devices.mic === nextProps.element.devices.mic &&
@@ -484,6 +486,7 @@ const Pi_Casting = () => {
   const [isShellModalOpen, setisShellModalOpen] = useState(false);
   const [timestamp, setTimestamp] = useState(Date.now());
   const [selectedId, setSelectedId] = useState(null);
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const timerRefs = useRef({});
   const [pages, setpages] = useState(1);
   // Track which rows have their recordings expanded (per main row index)
@@ -532,13 +535,31 @@ const Pi_Casting = () => {
     const scheduleUpdate = () => {
       if (updateTimeout) return; // Already scheduled
       updateTimeout = setTimeout(() => {
+        // Drop any falsy/partial items before sorting to avoid blank rows
+        const sanitized = Object.values(allPisRef.current).filter(
+          (item: any) => item && item.pi_id,
+        );
+
         // Sort by pi_id in ascending order before setting state
-        const sortedData = Object.values(allPisRef.current).sort((a: any, b: any) => {
-          const idA = parseInt(a.pi_id) || 0;
-          const idB = parseInt(b.pi_id) || 0;
-          return idA - idB;
-        });
+        const sortedData = sanitized
+          .sort((a: any, b: any) => {
+            const idA = parseInt(a.pi_id) || 0;
+            const idB = parseInt(b.pi_id) || 0;
+            return idA - idB;
+          })
+          .map((item, idx) => ({ ...item, _rowIndex: idx + 1 }));
+
         setDatas(sortedData);
+
+        // Prune expanded rows that no longer exist
+        setExpandedRows((prev) => {
+          const next: Record<number, boolean> = {};
+          sortedData.forEach((_, idx) => {
+            if (prev[idx]) next[idx] = true;
+          });
+          return next;
+        });
+
         updateTimeout = null;
       }, 100); // Batch updates every 100ms instead of on every message
     };
@@ -828,93 +849,286 @@ const Pi_Casting = () => {
   return (
     <>
       <div className="h-full flex-1 rounded-lg border border-stroke bg-warmGray-200 px-1 pt-1 pb-2.5 shadow-default dark:border-strokedark shadow-sm ring-1 ring-gray-900/5 dark:bg-slate-900 sm:px-2.5 xl:pb-1 text-sm overflow-auto">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="text-xs text-gray-600 dark:text-gray-300">
+            View all Pis as a dense grid or detailed table.
+          </div>
+          <div className="inline-flex rounded border border-gray-300 dark:border-gray-700 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setViewMode('table')}
+              className={`px-3 py-1 text-xs font-medium ${
+                viewMode === 'table'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-transparent text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+              }`}
+            >
+              Table
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className={`px-3 py-1 text-xs font-medium ${
+                viewMode === 'grid'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-transparent text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+              }`}
+            >
+              Grid
+            </button>
+          </div>
+        </div>
         <div style={{ display: styleLoader }}>{/* <Loader /> */}</div>
         {/* <div className="rounded-lg w-full overflow-x-auto">
           <table className="w-full table-auto overflow-hidden"> */}
-        <div className="rounded-lg min-h-203">
-          <table className="min-w-full table-fixed rounded">
-            <thead>
-              <tr className="bg-gray-200 text-center dark:bg-slate-800 overflow-hidden sticky top-0 z-10 rounded-t-lg">
-                <th className="min-w-[10px] py-1 px-4 font-medium text-black dark:text-warmGray-50">
-                  #
-                </th>
-                <th className="min-w-[80px] py-1 px-2 font-medium text-black dark:text-white">
-                  Pi ID
-                </th>
-                <th className="min-w-[120px] py-1 px-2 font-medium text-black dark:text-white">
-                  Venue
-                </th>
-                <th className="min-w-[60px] py-1 px-4 font-medium text-black dark:text-white">
-                  Storage
-                </th>
-                <th className="min-w-[50px] py-1 px-1 font-medium text-black dark:text-white">
-                  Devices
-                </th>
-                <th className="min-w-[250px] py-1 px-4 font-medium text-black dark:text-white">
-                  Recordings
-                  <br />
-                  {/* <table>
-                    <thead>
-                      <th className="min-w-[130px] py-2 px-4 text-black dark:text-white">
-                        Batch
-                      </th>
-                      <th className="min-w-[130px] py-2 px-4 text-black dark:text-white">
-                        Date
-                      </th>
-                      <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
-                        Video/Audio Size
-                      </th>
-                      <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
-                        Duration
-                      </th>
-                      <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
-                        Status
-                      </th>
-                      <th className="min-w-[120px] py-2 px-4 font-medium text-black dark:text-white">
-                        Percentage
-                      </th>
-                      <th className="min-w-[220px] py-2 px-4 font-medium text-black dark:text-white">
-                        Actions
-                      </th>
-                    </thead>
-                  </table> */}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="">
-              <AnimatePresence mode="popLayout">
-                {datas &&
-                  datas.length > 0 &&
-                  datas.map((element, indexs) => (
-                    <PiRow
-                      key={element.pi_id}
-                      element={element}
-                      indexs={indexs}
-                      venues={venues}
-                      batches={batches}
-                      expandedRows={expandedRows}
-                      setExpandedRows={setExpandedRows}
-                      inputValue={inputValue}
-                      textVariants={textVariants}
-                      isLoading={isLoading}
-                      loaderIcon={loaderIcon}
-                      stopRecord={stopRecord}
-                      openPreviewModal={openPreviewModal}
-                      openShellModal={openShellModal}
-                      startRecord={startRecord}
-                      clearRecord={clearRecord}
-                      reboot={reboot}
-                      shutDown={shutDown}
-                      reFresh={reFresh}
-                      storageClear={storageClear}
-                      startReMerging={startReMerging}
-                      trash={trash}
-                    />
-                  ))}
-              </AnimatePresence>
-            </tbody>
-          </table>
-        </div>
+        {viewMode === 'table' ? (
+          <div className="rounded-lg min-h-203">
+            <table className="min-w-full table-fixed rounded">
+              <thead>
+                <tr className="bg-gray-200 text-center dark:bg-slate-800 overflow-hidden sticky top-0 z-10 rounded-t-lg">
+                  <th className="min-w-[10px] py-1 px-4 font-medium text-black dark:text-warmGray-50">
+                    #
+                  </th>
+                  <th className="min-w-[80px] py-1 px-2 font-medium text-black dark:text-white">
+                    Pi ID
+                  </th>
+                  <th className="min-w-[120px] py-1 px-2 font-medium text-black dark:text-white">
+                    Venue
+                  </th>
+                  <th className="min-w-[60px] py-1 px-4 font-medium text-black dark:text-white">
+                    Storage
+                  </th>
+                  <th className="min-w-[50px] py-1 px-1 font-medium text-black dark:text-white">
+                    Devices
+                  </th>
+                  <th className="min-w-[250px] py-1 px-4 font-medium text-black dark:text-white">
+                    Recordings
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="">
+                <AnimatePresence mode="popLayout">
+                  {datas &&
+                    datas.length > 0 &&
+                    datas.map((element, indexs) => (
+                      <PiRow
+                        key={element.pi_id}
+                        element={element}
+                        indexs={indexs}
+                        venues={venues}
+                        batches={batches}
+                        expandedRows={expandedRows}
+                        setExpandedRows={setExpandedRows}
+                        inputValue={inputValue}
+                        textVariants={textVariants}
+                        isLoading={isLoading}
+                        loaderIcon={loaderIcon}
+                        stopRecord={stopRecord}
+                        openPreviewModal={openPreviewModal}
+                        openShellModal={openShellModal}
+                        startRecord={startRecord}
+                        clearRecord={clearRecord}
+                        reboot={reboot}
+                        shutDown={shutDown}
+                        reFresh={reFresh}
+                        storageClear={storageClear}
+                        startReMerging={startReMerging}
+                        trash={trash}
+                      />
+                    ))}
+                </AnimatePresence>
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
+            {datas &&
+              datas.length > 0 &&
+              datas.map((element) => {
+                const recs = element.recordings || [];
+                const mergingCount = recs.filter((r) => r.status === 1).length;
+                const uploadingCount = recs.filter((r) => r.status === 2).length;
+                const recordingCount = recs.filter((r) => r.status === 0).length;
+                const recordingList = recs.filter((r) => r.status === 0).slice(-5);
+                const mergingList = recs.filter((r) => r.status === 1).slice(-5);
+                const uploadingList = recs.filter((r) => r.status === 2).slice(-5);
+                const storageUsed = element['stats']?.['storage']?.['used_storage'] || 0;
+                const storageTotal = element['stats']?.['storage']?.['total_storage'] || 0;
+                const storagePct = storageTotal ? Math.round((storageUsed / storageTotal) * 100) : 0;
+                return (
+                  <motion.div
+                    key={element.pi_id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="rounded-lg border border-slate-600 bg-slate-900 text-sm p-3 shadow-md flex flex-col gap-1.5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 font-semibold text-gray-100">
+                        <span>Pi</span>
+                        <span className="text-blue-300">{element.pi_id}</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-900/50 text-blue-100">
+                        v{element['sw_version']}
+                      </span>
+                    </div>
+                    <div className="text-[12px] text-gray-200 truncate font-semibold" title={venues[element['venue_id']]}> 
+                      {venues[element['venue_id']] || '—'}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        {element['devices'].camera == 1 ? (
+                          <HiVideoCamera className="w-4 h-4 text-green-400" title="Camera Active" />
+                        ) : (
+                          <HiVideoCameraSlash className="w-4 h-4 text-red-400" title="Camera Inactive" />
+                        )}
+                        {element['devices'].mic == 1 ? (
+                          <IoIosMic className="w-4 h-4 text-green-400" title="Mic Active" />
+                        ) : (
+                          <IoIosMicOff className="w-4 h-4 text-red-400" title="Mic Inactive" />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 text-[11px] text-gray-200">
+                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                        </svg>
+                        <span>{element['network_speed']} MBps</span>
+                      </div>
+                    </div>
+                    <div className="flex items-end justify-between gap-2 mt-1">
+                      <div className="flex items-center gap-1.5">
+                        <div className="relative group rounded-md bg-slate-800 px-2 py-1 text-center">
+                          <div className="flex justify-center text-gray-300">
+                            <BsRecordCircle
+                              className={`w-3 h-3 ${recordingCount > 0 ? 'text-red-400' : 'text-green-400'}`}
+                            />
+                          </div>
+                          <motion.span
+                            key={`rec-count-${recordingCount}`}
+                            variants={textVariants}
+                            initial="initial"
+                            animate="animate"
+                            exit="exit"
+                            className={`text-xs font-semibold ${recordingCount > 0 ? 'text-red-400' : 'text-green-400'}`}
+                          >
+                            {recordingCount}
+                          </motion.span>
+                          <div className="hidden group-hover:block absolute bottom-full left-0 mb-2 w-60 rounded-md border border-slate-700 bg-slate-900 p-2 text-[11px] text-gray-100 shadow-lg z-30 text-left">
+                            <div className="font-semibold mb-1 text-blue-200">Recording</div>
+                            {recordingList.length === 0 ? (
+                              <div className="text-gray-400">No active recordings</div>
+                            ) : (
+                              <ul className="space-y-1">
+                                {recordingList.map((r, idx) => (
+                                  <li key={`rec-${element.pi_id}-${idx}`} className="leading-tight">
+                                    <div className="font-medium text-blue-100">{batches[r.batch_id] || 'Batch'}</div>
+                                    <div className="text-gray-300 flex justify-between gap-2">
+                                      <span>{r.duration || '—'}</span>
+                                      <span>
+                                        {r.date
+                                          ? DateTime.fromFormat(r.date, 'yyyy-MM-dd HH:mm:ss').toFormat('d MMM h:mm a')
+                                          : ''}
+                                      </span>
+                                    </div>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        </div>
+                        <div className="relative group rounded-md bg-slate-800 px-2 py-1 text-center">
+                          <div className="flex justify-center text-gray-300"><TbArrowMerge className="w-3 h-3 text-blue-300" /></div>
+                          <motion.span
+                            key={`mrg-count-${mergingCount}`}
+                            variants={textVariants}
+                            initial="initial"
+                            animate="animate"
+                            exit="exit"
+                            className="text-xs font-semibold text-blue-300"
+                          >
+                            {mergingCount}
+                          </motion.span>
+                          <div className="hidden group-hover:block absolute bottom-full left-0 mb-2 w-60 rounded-md border border-slate-700 bg-slate-900 p-2 text-[11px] text-gray-100 shadow-lg z-30 text-left">
+                            <div className="font-semibold mb-1 text-indigo-200">Merging</div>
+                            {mergingList.length === 0 ? (
+                              <div className="text-gray-400">No merges in progress</div>
+                            ) : (
+                              <ul className="space-y-1">
+                                {mergingList.map((r, idx) => (
+                                  <li key={`mrg-${element.pi_id}-${idx}`} className="leading-tight">
+                                    <div className="font-medium text-indigo-100">{batches[r.batch_id] || 'Batch'}</div>
+                                    <div className="text-gray-300 flex justify-between gap-2">
+                                      <span>{r.merge_percentage ?? 0}%</span>
+                                      <span>
+                                        {r.date
+                                          ? DateTime.fromFormat(r.date, 'yyyy-MM-dd HH:mm:ss').toFormat('d MMM h:mm a')
+                                          : ''}
+                                      </span>
+                                    </div>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        </div>
+                        <div className="relative group rounded-md bg-slate-800 px-2 py-1 text-center">
+                          <div className="flex justify-center text-gray-300"><FaCloudUploadAlt className="w-3 h-3 text-amber-300" /></div>
+                          <motion.span
+                            key={`upl-count-${uploadingCount}`}
+                            variants={textVariants}
+                            initial="initial"
+                            animate="animate"
+                            exit="exit"
+                            className="text-xs font-semibold text-amber-300"
+                          >
+                            {uploadingCount}
+                          </motion.span>
+                          <div className="hidden group-hover:block absolute bottom-full left-0 mb-2 w-60 rounded-md border border-slate-700 bg-slate-900 p-2 text-[11px] text-gray-100 shadow-lg z-30 text-left">
+                            <div className="font-semibold mb-1 text-amber-200">Uploading</div>
+                            {uploadingList.length === 0 ? (
+                              <div className="text-gray-400">No uploads in progress</div>
+                            ) : (
+                              <ul className="space-y-1">
+                                {uploadingList.map((r, idx) => (
+                                  <li key={`upl-${element.pi_id}-${idx}`} className="leading-tight">
+                                    <div className="font-medium text-amber-100">{batches[r.batch_id] || 'Batch'}</div>
+                                    <div className="text-gray-300 flex justify-between gap-2">
+                                      <span>{r.upload_percentage ?? 0}%</span>
+                                      <span>
+                                        {r.date
+                                          ? DateTime.fromFormat(r.date, 'yyyy-MM-dd HH:mm:ss').toFormat('d MMM h:mm a')
+                                          : ''}
+                                      </span>
+                                    </div>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end text-[11px] font-medium text-gray-100">
+                        <span className={`px-2 py-0.5 rounded-full text-[11px] ${
+                          storagePct <= 60
+                            ? 'bg-green-900/40 text-green-200'
+                            : storagePct <= 80
+                            ? 'bg-yellow-900/40 text-yellow-200'
+                            : 'bg-red-900/40 text-red-200'
+                        }`}>
+                          {storagePct}%
+                        </span>
+                        <span className="text-gray-300 mt-1 text-[11px]">
+                          {storageUsed.toFixed(1)} / {storageTotal.toFixed(0)} GB
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+          </div>
+        )}
 
         {/* Camera preview modal */}
         <Transition appear show={isPreviewModalOpen} as={Fragment}>
