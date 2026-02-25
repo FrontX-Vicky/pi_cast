@@ -31,7 +31,7 @@ function App() {
   return loading ? (
     <Loader />
   ) : (
-    <>
+    <div className="aws-theme">
       <Toaster
         position="top-right"
         reverseOrder={false}
@@ -62,7 +62,7 @@ function App() {
           </Route>
         </Routes>
       </SearchProvider >
-    </>
+    </div>
   );
 }
 

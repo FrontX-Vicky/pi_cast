@@ -250,3 +250,112 @@ span.flatpickr-weekday,
     opacity: 1;
   }
 }
+
+/* Global AWS-like visual language across pages */
+@layer base {
+  .aws-theme {
+    background: #f8fafc;
+    color: #0f172a;
+  }
+}
+
+@layer components {
+  .aws-theme .bg-white,
+  .aws-theme .bg-whiten {
+    background-color: #ffffff !important;
+  }
+
+  .aws-theme .border-stroke {
+    border-color: rgba(203, 213, 225, 0.85) !important;
+  }
+
+  .aws-theme .shadow-default,
+  .aws-theme .shadow-card {
+    box-shadow: 0 0 0 1px rgba(203, 213, 225, 0.8), 0 6px 18px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .aws-theme .bg-gray-2 {
+    background-color: #f1f5f9 !important;
+  }
+
+  .aws-theme .text-black {
+    color: #0f172a !important;
+  }
+
+  .aws-theme input,
+  .aws-theme select,
+  .aws-theme textarea {
+    background-color: #ffffff !important;
+    border-color: rgba(203, 213, 225, 0.9) !important;
+    color: #0f172a !important;
+  }
+
+  .aws-theme table thead tr {
+    background-color: #f8fafc !important;
+    border-bottom: 1px solid rgba(203, 213, 225, 0.9);
+  }
+
+  .aws-theme table tbody tr {
+    border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  }
+
+  .aws-theme table tbody tr:hover {
+    background-color: rgba(241, 245, 249, 0.9) !important;
+  }
+
+  body.dark .aws-theme {
+    background: #020617;
+    color: #dbe7f5;
+  }
+
+  body.dark .aws-theme .bg-white,
+  body.dark .aws-theme .bg-whiten,
+  body.dark .aws-theme .dark\:bg-boxdark,
+  body.dark .aws-theme .dark\:bg-boxdark-2 {
+    background-color: #0b1220 !important;
+  }
+
+  body.dark .aws-theme .border-stroke,
+  body.dark .aws-theme .dark\:border-strokedark {
+    border-color: rgba(51, 65, 85, 0.8) !important;
+  }
+
+  body.dark .aws-theme .shadow-default,
+  body.dark .aws-theme .shadow-card {
+    box-shadow: 0 0 0 1px rgba(30, 41, 59, 0.6), 0 10px 24px rgba(2, 6, 23, 0.45) !important;
+  }
+
+  body.dark .aws-theme .bg-gray-2,
+  body.dark .aws-theme .dark\:bg-meta-4 {
+    background-color: #111827 !important;
+  }
+
+  body.dark .aws-theme .text-black,
+  body.dark .aws-theme .dark\:text-white,
+  body.dark .aws-theme .dark\:text-bodydark,
+  body.dark .aws-theme .dark\:text-bodydark1,
+  body.dark .aws-theme .dark\:text-bodydark2 {
+    color: #dbe7f5 !important;
+  }
+
+  body.dark .aws-theme input,
+  body.dark .aws-theme select,
+  body.dark .aws-theme textarea {
+    background-color: #0b1220 !important;
+    border-color: rgba(71, 85, 105, 0.7) !important;
+    color: #dbe7f5 !important;
+  }
+
+  body.dark .aws-theme table thead tr {
+    background-color: #111827 !important;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.8);
+  }
+
+  body.dark .aws-theme table tbody tr {
+    border-bottom: 1px solid rgba(30, 41, 59, 0.8);
+  }
+
+  body.dark .aws-theme table tbody tr:hover {
+    background-color: rgba(15, 23, 42, 0.75) !important;
+  }
+}

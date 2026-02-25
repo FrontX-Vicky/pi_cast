@@ -66,7 +66,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   return (
     <aside
       ref={sidebar}
-      className={`absolute left-0 top-0 z-9999 flex h-screen w-56 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-slate-950 lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      className={`absolute left-0 top-0 z-9999 flex h-screen w-56 flex-col overflow-y-hidden border-r border-stroke bg-white duration-300 ease-linear dark:border-slate-800 dark:bg-slate-950 lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
     >
       {/* <!-- SIDEBAR HEADER --> */}
@@ -104,7 +104,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
         <nav className="mt-5 px-4 lg:mt-4 lg:px-6">
           {/* <!-- Menu Group --> */}
           <div>
-            <h3 className="mb-4 ml-4 text-sm font-semibold text-bodydark2">
+            <h3 className="mb-4 ml-4 text-sm font-semibold text-slate-500 dark:text-slate-400">
               MENU
             </h3>
 
@@ -120,9 +120,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/' ||
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-slate-700 dark:text-slate-200 duration-300 ease-in-out hover:bg-slate-100 dark:hover:bg-slate-800 ${(pathname === '/' ||
                           pathname.includes('dashboard')) &&
-                          'bg-graydark dark:bg-meta-4'
+                          'bg-slate-100 dark:bg-slate-800'
                           }`}
                         onClick={(e) => {
                           e.preventDefault();
@@ -160,8 +160,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-slate-600 dark:text-slate-300 duration-300 ease-in-out hover:text-slate-900 dark:hover:text-white ' +
+                                (isActive && '!text-slate-900 dark:!text-white')
                               }
                             >
                               eCommerce
@@ -185,10 +185,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <React.Fragment>
                       {/* <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-slate-700 dark:text-slate-200 duration-300 ease-in-out hover:bg-slate-100 dark:hover:bg-slate-800 ${
                           (pathname === '/forms' ||
                             pathname.includes('forms')) &&
-                          'bg-graydark dark:bg-meta-4'
+                          'bg-slate-100 dark:bg-slate-800'
                         }`}
                         onClick={(e) => {
                           e.preventDefault();
@@ -293,9 +293,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/pis' ||
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-slate-700 dark:text-slate-200 duration-300 ease-in-out hover:bg-slate-100 dark:hover:bg-slate-800 ${(pathname === '/pis' ||
                           pathname.includes('pis')) &&
-                          'bg-graydark dark:bg-meta-4'
+                          'bg-slate-100 dark:bg-slate-800'
                           }`}
                         onClick={(e) => {
                           e.preventDefault();
@@ -332,8 +332,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/Pis/Pi-Casting"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-slate-600 dark:text-slate-300 duration-300 ease-in-out hover:text-slate-900 dark:hover:text-white ' +
+                                (isActive && '!text-slate-900 dark:!text-white')
                               }
                             ><MdCast />
                               pi Casting
@@ -343,8 +343,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/Pis/Devices"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-slate-600 dark:text-slate-300 duration-300 ease-in-out hover:text-slate-900 dark:hover:text-white ' +
+                                (isActive && '!text-slate-900 dark:!text-white')
                               }
                             >< MdImportantDevices/>
                               Devices
@@ -354,8 +354,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/Pis/All-Pis"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-slate-600 dark:text-slate-300 duration-300 ease-in-out hover:text-slate-900 dark:hover:text-white ' +
+                                (isActive && '!text-slate-900 dark:!text-white')
                               }
                             ><MdOutlinePermMedia />
                               All Recordings
@@ -365,8 +365,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="Pis/Class-Rooms"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-slate-600 dark:text-slate-300 duration-300 ease-in-out hover:text-slate-900 dark:hover:text-white ' +
+                                (isActive && '!text-slate-900 dark:!text-white')
                               }
                             ><TbHomeHeart  />
                               Class Rooms
@@ -390,9 +390,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === 'Employee' ||
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-slate-700 dark:text-slate-200 duration-300 ease-in-out hover:bg-slate-100 dark:hover:bg-slate-800 ${(pathname === 'Employee' ||
                           pathname.includes('/Employee')) &&
-                          'bg-graydark dark:bg-meta-4'
+                          'bg-slate-100 dark:bg-slate-800'
                           }`}
                         onClick={(e) => {
                           e.preventDefault();
@@ -429,8 +429,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/Employee/CreateEmp"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-slate-600 dark:text-slate-300 duration-300 ease-in-out hover:text-slate-900 dark:hover:text-white ' +
+                                (isActive && '!text-slate-900 dark:!text-white')
                               }
                             ><RiContactsLine />
                               Create Employee

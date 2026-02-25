@@ -6,8 +6,10 @@ const DarkModeSwitcher = () => {
   return (
     <li>
       <label
-        className={`relative m-0 block h-7.5 w-14 rounded-full ${
-          colorMode === 'dark' ? 'bg-primary' : 'bg-stroke'
+        className={`relative m-0 inline-flex h-8 w-14 items-center rounded-full border p-0.5 ${
+          colorMode === 'dark'
+            ? 'bg-primary border-primary'
+            : 'bg-stroke border-stroke'
         }`}
       >
         <input
@@ -17,11 +19,11 @@ const DarkModeSwitcher = () => {
               setColorMode(colorMode === 'light' ? 'dark' : 'light');
             }
           }}
-          className="dur absolute top-0 z-50 m-0 h-full w-full cursor-pointer opacity-0"
+          className="dur absolute inset-0 z-50 m-0 h-full w-full cursor-pointer opacity-0"
         />
         <span
-          className={`absolute top-1/2 left-[3px] flex h-6 w-6 -translate-y-1/2 translate-x-0 items-center justify-center rounded-full bg-white shadow-switcher duration-75 ease-linear ${
-            colorMode === 'dark' && '!right-[3px] !translate-x-full'
+          className={`absolute left-0.5 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-switcher transition-transform duration-150 ease-linear ${
+            colorMode === 'dark' ? 'translate-x-6' : 'translate-x-0'
           }`}
         >
           <span className="dark:hidden">
