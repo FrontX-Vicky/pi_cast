@@ -68,6 +68,154 @@ const formatRecordDate = (rawDate?: unknown) => {
   return localDt.toFormat('d MMM h:mm a');
 };
 
+const toNum = (value: any, fallback = 0) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+};
+
+const resolveRecordingStatus = (record: any = {}): number => {
+  const explicitStatus = Number(record?.status);
+  if (Number.isFinite(explicitStatus)) return explicitStatus;
+
+  const state = String(record?.state ?? record?.status_text ?? '').toLowerCase();
+  if (state.includes('fail') || state.includes('error')) return 9;
+  if (state.includes('upload') && state.includes('complete')) return 3;
+  if (state.includes('upload')) return 2;
+  if (state.includes('merge') && state.includes('complete')) return 2;
+  if (state.includes('merge')) return 1;
+  if (state.includes('record')) return 0;
+
+  const error = toNum(record?.error, 0);
+  if (error === 1) return 9;
+
+  const recFlag = toNum(record?.recording, 0);
+  const mergeFlag = toNum(record?.merge, 0);
+  const uploadFlag = toNum(record?.upload, 0);
+  const syncFlag = toNum(record?.sync, 0);
+  if (syncFlag === 1 || (recFlag === 1 && mergeFlag === 1 && uploadFlag === 1)) return 3;
+  if (recFlag === 1 && mergeFlag === 1 && uploadFlag === 0) return 2;
+  if (recFlag === 1 && mergeFlag === 0) return 1;
+  if (recFlag === 0 && mergeFlag === 0 && uploadFlag === 0) return 0;
+
+  const uploadPct = toNum(record?.upload_percentage, 0);
+  const mergePct = toNum(record?.merge_percentage, 0);
+  if (uploadPct > 0) return 2;
+  if (mergePct > 0) return 1;
+  return 3;
+};
+
+const applyStatusFlags = (record: any = {}, statusInput?: number) => {
+  const status = Number.isFinite(Number(statusInput))
+    ? Number(statusInput)
+    : resolveRecordingStatus(record);
+  const failed = status === 9 || toNum(record?.error, 0) === 1;
+  const prevMerge = Math.max(0, toNum(record?.merge_percentage, 0));
+  const prevUpload = Math.max(0, toNum(record?.upload_percentage, 0));
+
+  if (failed) {
+    return {
+      status: 9,
+      recording: 1,
+      merge: toNum(record?.merge, 0),
+      upload: toNum(record?.upload, 0),
+      merge_percentage: prevMerge,
+      upload_percentage: prevUpload,
+      sync: toNum(record?.sync, 0),
+      error: 1,
+    };
+  }
+
+  if (status === 0) {
+    return {
+      status: 0,
+      recording: 0,
+      merge: 0,
+      upload: 0,
+      merge_percentage: 0,
+      upload_percentage: 0,
+      sync: 0,
+      error: 0,
+    };
+  }
+  if (status === 1) {
+    return {
+      status: 1,
+      recording: 1,
+      merge: 0,
+      upload: 0,
+      merge_percentage: prevMerge,
+      upload_percentage: 0,
+      sync: 0,
+      error: 0,
+    };
+  }
+  if (status === 2) {
+    return {
+      status: 2,
+      recording: 1,
+      merge: 1,
+      upload: 0,
+      merge_percentage: 100,
+      upload_percentage: prevUpload,
+      sync: 0,
+      error: 0,
+    };
+  }
+  return {
+    status: 3,
+    recording: 1,
+    merge: 1,
+    upload: 1,
+    merge_percentage: 100,
+    upload_percentage: 100,
+    sync: 1,
+    error: 0,
+  };
+};
+
+const recordingIdentity = (rec: any = {}) =>
+  String(
+    rec?.id ??
+      rec?.recording_key ??
+      rec?.filename ??
+      rec?.s3_key ??
+      rec?.file_id ??
+      `${rec?.batch_id ?? '0'}_${rec?.created_at ?? rec?.date ?? ''}`,
+  );
+
+const mergeRecordingLists = (prevList: any[] = [], incomingList: any[] = []) => {
+  const map = new Map<string, any>();
+  prevList.forEach((rec) => map.set(recordingIdentity(rec), rec));
+
+  incomingList.forEach((incoming) => {
+    const key = recordingIdentity(incoming);
+    const prev = map.get(key) || {};
+    const incomingStatus = resolveRecordingStatus(incoming);
+    const baseFlags = applyStatusFlags(incoming, incomingStatus);
+    const prevMerge = toNum(prev?.merge_percentage, 0);
+    const prevUpload = toNum(prev?.upload_percentage, 0);
+    const merged = {
+      ...prev,
+      ...incoming,
+      ...baseFlags,
+      merge_percentage:
+        incomingStatus === 1 || incomingStatus === 9
+          ? Math.max(prevMerge, toNum(incoming?.merge_percentage, baseFlags.merge_percentage))
+          : baseFlags.merge_percentage,
+      upload_percentage:
+        incomingStatus === 2 || incomingStatus === 9
+          ? Math.max(prevUpload, toNum(incoming?.upload_percentage, baseFlags.upload_percentage))
+          : baseFlags.upload_percentage,
+      s3_key: incoming?.s3_key ?? prev?.s3_key,
+      s3_bucket: incoming?.s3_bucket ?? prev?.s3_bucket,
+      file_id: incoming?.file_id ?? prev?.file_id ?? null,
+    };
+    map.set(key, merged);
+  });
+
+  return Array.from(map.values());
+};
+
 // Memoized Row Component for better performance with large datasets
 const PiRow = React.memo(React.forwardRef(({
   element,
@@ -91,30 +239,38 @@ const PiRow = React.memo(React.forwardRef(({
   storageClear,
   startReMerging,
   trash,
-  pendingActions
+  pendingActions,
+  appChannelOnline,
 }: any, ref: any) => {
   const isV3 = element?.sw_version === '3.0.0';
+  const [statusExpanded, setStatusExpanded] = useState(true);
   const rowExpandKey = String(element?.pi_id ?? indexs);
   const isExpanded = !!expandedRows[rowExpandKey];
+  const cameraOn =
+    element?.devices?.camera_connected !== undefined
+      ? !!element?.devices?.camera_connected
+      : element?.devices?.camera === true ||
+        String(element?.devices?.camera ?? '').toLowerCase() === 'true' ||
+        Number(element?.devices?.camera ?? 0) === 1;
+  const micOn =
+    element?.devices?.mic_connected !== undefined
+      ? !!element?.devices?.mic_connected
+      : element?.devices?.mic === true ||
+        String(element?.devices?.mic ?? '').toLowerCase() === 'true' ||
+        Number(element?.devices?.mic ?? 0) === 1;
+  const isAppOnline = !!appChannelOnline?.[String(element?.pi_id)];
   const statusText = (r: any) =>
     String(r?.status_text ?? r?.state ?? '').toLowerCase();
 
   const isRecording = (r: any) =>
-    isV3
-      ? r?.recording === 1 || statusText(r) === 'recording' || r?.status === 0
-      : r?.status === 0;
+    isV3 ? resolveRecordingStatus(r) === 0 || statusText(r) === 'recording' : r?.status === 0;
   const isUploading = (r: any) =>
     isV3
-      ? r?.upload === 1 ||
-        statusText(r) === 'uploading' ||
-        r?.status === 2 ||
-        r?.status === 3
+      ? resolveRecordingStatus(r) === 2 || statusText(r) === 'uploading'
       : r?.status === 2;
   const isMerging = (r: any) =>
     isV3
-      ? r?.merge === 1 ||
-        statusText(r) === 'merging' ||
-        (r?.status === 1 && statusText(r) !== 'completed')
+      ? resolveRecordingStatus(r) === 1 || statusText(r) === 'merging'
       : r?.status === 1;
 
   const baseRecs = element?.recordings || [];
@@ -124,10 +280,12 @@ const PiRow = React.memo(React.forwardRef(({
       ? element.uploading_recordings
       : [];
 
-  const recsV3 =
-    uploadingPayloadRecs.length || activeRec.length
-      ? [...uploadingPayloadRecs, ...activeRec]
-      : baseRecs;
+  const recsV3 = mergeRecordingLists(
+    baseRecs,
+    [...uploadingPayloadRecs, ...activeRec].map((rec: any) =>
+      normalizeRecordingEntry(rec, String(element?.pi_id ?? ''), element?.devices),
+    ),
+  );
 
   const recordingRecs = recsV3.filter((r: any) => isRecording(r));
   const uploadingRecs = recsV3.filter((r: any) => isUploading(r));
@@ -313,109 +471,151 @@ const PiRow = React.memo(React.forwardRef(({
         colSpan={isV3 ? 2 : 1}
       >
         {isV3 ? (
-          <div className="flex items-center justify-start gap-2 text-[8px] py-1 px-2 flex-nowrap whitespace-nowrap overflow-hidden">
-              <span
-                className="inline-flex items-center gap-0.5 text-[8px] px-1 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 font-medium text-blue-700 dark:text-blue-300"
-                style={{ color: element['sw_version'] === '0.0' ? '#ef4444' : undefined }}
-              >
-                <MdSystemUpdateAlt className="w-2.5 h-2.5" />
-                v{element['sw_version']}
-              </span>
-              <span className="inline-flex items-center gap-0.5" title="Camera">
-                <span className="text-gray-500 dark:text-gray-400">Cam</span>
-                {(element?.devices?.camera ?? 0) == 1 ? (
-                  <HiVideoCamera className="w-3 h-3 text-green-500" title="Camera Active" />
-                ) : (
-                  <HiVideoCameraSlash className="w-3 h-3 text-red-500" title="Camera Inactive" />
-                )}
-              </span>
-              <span className="inline-flex items-center gap-0.5" title="Mic">
-                <span className="text-gray-500 dark:text-gray-400">Mic</span>
-                {(element?.devices?.mic ?? 0) == 1 ? (
-                  <IoIosMic className="w-3 h-3 text-green-500" title="Mic Active" />
-                ) : (
-                  <IoIosMicOff className="w-3 h-3 text-red-500" title="Mic Inactive" />
-                )}
-              </span>
-            
-              <span className="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
-                <span className="text-gray-500 dark:text-gray-400"></span>
-                <MdNetworkWifi className="w-3 h-3" />
-                {element['network_speed']} MBps
-              </span>
-              {(() => {
-                const tempRaw =
-                  element?.devices?.cpu_temperature ??
-                  element?.devices?.cpu_temp ??
-                  element?.cpu_temperature ??
-                  element?.cpu_temp;
-                if (tempRaw === undefined || tempRaw === null || tempRaw === '') return null;
-                const temp = Number(tempRaw);
-                const tempCls =
-                  temp > 70
-                    ? 'text-red-600 dark:text-red-400'
-                    : temp > 60
-                    ? 'text-orange-600 dark:text-orange-400'
-                    : 'text-gray-700 dark:text-gray-300';
-                return (
-                  <span className={`inline-flex items-center gap-1 ${tempCls}`}>
-                    <span className="text-gray-500 dark:text-gray-400"></span>
-                    <TbTemperature className="w-3 h-3" />
-                    {Number.isFinite(temp) ? temp.toFixed(1) : '—'}°C
-                  </span>
-                );
-              })()}
+          <div className="py-1 px-2">
             {(() => {
+              const tempRaw =
+                element?.devices?.cpu_temperature ??
+                element?.devices?.cpu_temp ??
+                element?.cpu_temperature ??
+                element?.cpu_temp;
+              const temp =
+                tempRaw === undefined || tempRaw === null || tempRaw === ''
+                  ? null
+                  : Number(tempRaw);
+              const tempCls =
+                temp !== null && temp > 70
+                  ? 'text-red-600 dark:text-red-400'
+                  : temp !== null && temp > 60
+                  ? 'text-orange-600 dark:text-orange-400'
+                  : 'text-gray-700 dark:text-gray-300';
               const ram = element?.stats?.ram || {};
-              const total = Number(ram?.total_ram) || 0;
-              const used = Number(ram?.used_ram) || 0;
-              const pctRaw = total > 0 ? (used / total) * 100 : 0;
-              const pct = Math.max(0, Math.min(100, pctRaw));
-              return (
-                <div className="inline-flex items-center gap-1.5 text-[8px] text-gray-500 dark:text-gray-300 flex-shrink-0">
-                  <span>RAM</span>
-                  <span className="text-gray-600 dark:text-gray-300">{Math.round(pct)}%</span>
-                  <div className="w-16 h-2 rounded-full bg-gray-300/80 border border-gray-400/80 overflow-hidden">
-                    <div
-                      className="h-full bg-green-500 rounded-full transition-all duration-500"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
+              const ramTotal = Number(ram?.total_ram) || 0;
+              const ramUsed = Number(ram?.used_ram) || 0;
+              const ramPct = Math.max(
+                0,
+                Math.min(100, ramTotal > 0 ? (ramUsed / ramTotal) * 100 : 0),
               );
-            })()}
-            {(() => {
               const recordingCount = recsV3.filter((r: any) => isRecording(r)).length;
               const uploadingCount = recsV3.filter((r: any) => isUploading(r)).length;
               const v3Expandable =
                 previewRecording.length > 0
                   ? orderedWithPending.length > 1
                   : orderedWithPending.length > 0;
+
+              const labelCls = statusExpanded
+                ? 'max-w-[130px] opacity-100 ml-1'
+                : 'max-w-0 opacity-0 ml-0';
               return (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (v3Expandable) {
-                      setExpandedRows((prev) => ({
-                        ...prev,
-                        [rowExpandKey]: !prev[rowExpandKey],
-                      }));
-                    }
-                  }}
-                  className={`text-[10px] px-1 py-0 rounded flex items-center gap-1 leading-none ${
-                    !v3Expandable ? 'cursor-default' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                  title={
-                    v3Expandable
-                      ? isExpanded
-                        ? 'Hide recording details'
-                        : 'Show recording details'
-                      : 'No extra recording items'
-                  }
+                <div
+                  className="w-full inline-flex items-center gap-1.5 text-[8px] rounded px-1 py-0.5 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors select-none overflow-hidden whitespace-nowrap"
                 >
-                  <span className="px-1 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">R:{recordingCount}</span>
-                  <span className="px-1 rounded bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">U:{uploadingCount}</span>
-                </button>
+                  <span
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center h-4 px-1 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 cursor-pointer"
+                    style={{ color: element['sw_version'] === '0.0' ? '#ef4444' : undefined }}
+                  >
+                    <MdSystemUpdateAlt className="w-2.5 h-2.5 flex-shrink-0" />
+                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
+                      v{element['sw_version']}
+                    </span>
+                  </span>
+                  <span onClick={(e) => e.stopPropagation()} className={`inline-flex items-center h-4 px-1 rounded cursor-pointer ${
+                    isAppOnline
+                      ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                  }`}>
+                    <span
+                      className={`h-2 w-2 rounded-full flex-shrink-0 ${
+                        isAppOnline ? 'bg-emerald-500' : 'bg-slate-400 dark:bg-slate-500'
+                      }`}
+                    />
+                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
+                      App
+                    </span>
+                  </span>
+                  <span onClick={(e) => e.stopPropagation()} className="inline-flex items-center h-4 px-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer">
+                    {cameraOn ? (
+                      <HiVideoCamera className="w-2.5 h-2.5 text-green-500 flex-shrink-0" title="Camera Active" />
+                    ) : (
+                      <HiVideoCameraSlash className="w-2.5 h-2.5 text-red-500 flex-shrink-0" title="Camera Inactive" />
+                    )}
+                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
+                      Cam
+                    </span>
+                  </span>
+                  <span onClick={(e) => e.stopPropagation()} className="inline-flex items-center h-4 px-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer">
+                    {micOn ? (
+                      <IoIosMic className="w-2.5 h-2.5 text-green-500 flex-shrink-0" title="Mic Active" />
+                    ) : (
+                      <IoIosMicOff className="w-2.5 h-2.5 text-red-500 flex-shrink-0" title="Mic Inactive" />
+                    )}
+                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
+                      Mic
+                    </span>
+                  </span>
+                  <span onClick={(e) => e.stopPropagation()} className="inline-flex items-center h-4 px-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer">
+                    <MdNetworkWifi className="w-2.5 h-2.5 flex-shrink-0" />
+                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
+                      {element['network_speed']} MBps
+                    </span>
+                  </span>
+                  <span onClick={(e) => e.stopPropagation()} className={`inline-flex items-center h-4 px-1 rounded bg-slate-100 dark:bg-slate-800 ${tempCls} cursor-pointer`}>
+                    <TbTemperature className="w-2.5 h-2.5 flex-shrink-0" />
+                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
+                      {temp !== null && Number.isFinite(temp) ? temp.toFixed(1) : '—'}°C
+                    </span>
+                  </span>
+                  <span onClick={(e) => e.stopPropagation()} className="inline-flex items-center h-4 px-1 rounded bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 cursor-pointer">
+                    <MdOutlineSdStorage className="w-2.5 h-2.5 flex-shrink-0" />
+                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
+                      RAM {Math.round(ramPct)}%
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (v3Expandable) {
+                        setExpandedRows((prev) => ({
+                          ...prev,
+                          [rowExpandKey]: !prev[rowExpandKey],
+                        }));
+                      }
+                    }}
+                    className={`inline-flex items-center h-4 px-1 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 ${
+                      !v3Expandable ? 'cursor-default' : 'hover:bg-emerald-200 dark:hover:bg-emerald-900/50'
+                    }`}
+                    title={
+                      v3Expandable
+                        ? isExpanded
+                          ? 'Hide recording details'
+                          : 'Show recording details'
+                        : 'No extra recording items'
+                    }
+                  >
+                    <BsRecordCircle className="w-2.5 h-2.5 flex-shrink-0" />
+                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
+                      R:{recordingCount}
+                    </span>
+                  </button>
+                  <span onClick={(e) => e.stopPropagation()} className="inline-flex items-center h-4 px-1 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 cursor-pointer">
+                    <FaCloudUploadAlt className="w-2.5 h-2.5 flex-shrink-0" />
+                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
+                      U:{uploadingCount}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setStatusExpanded((prev) => !prev);
+                    }}
+                    className="ml-auto inline-flex items-center justify-center h-4 w-4 rounded bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600"
+                    title={statusExpanded ? 'Collapse strip' : 'Expand strip'}
+                  >
+                    {statusExpanded ? '▸' : '◂'}
+                  </button>
+                </div>
               );
             })()}
           </div>
@@ -551,7 +751,7 @@ const PiRow = React.memo(React.forwardRef(({
                                       ? 'bg-meta-7'
                                       : isUploading(record)
                                       ? 'bg-meta-6'
-                                      : record.status == 1
+                                      : isMerging(record)
                                       ? 'bg-primary'
                                       : 'bg-meta-3'
                                   }`}
@@ -562,7 +762,7 @@ const PiRow = React.memo(React.forwardRef(({
                                       ? 'bg-meta-7'
                                       : isUploading(record)
                                       ? 'bg-meta-6'
-                                      : record.status == 1
+                                      : isMerging(record)
                                       ? 'bg-primary'
                                       : 'bg-meta-3'
                                   }`}
@@ -605,6 +805,8 @@ const PiRow = React.memo(React.forwardRef(({
                                 ? 'Uploading'
                                 : isMerging(record)
                                 ? 'Merging'
+                                : resolveRecordingStatus(record) === 9
+                                ? 'Failed'
                                 : 'Completed'}
                             </p>
                           </td>
@@ -643,8 +845,9 @@ const PiRow = React.memo(React.forwardRef(({
       <td className="py-0">
         {(() => {
           const uploadingCount = recsV3.filter((r: any) => isUploading(r)).length;
-          const mergingCount = baseRecs.filter((r: any) => r?.status === 1).length;
-          const ongoingCount = mergingCount + baseRecs.filter((r: any) => r?.status === 2).length;
+          const mergingCount = baseRecs.filter((r: any) => resolveRecordingStatus(r) === 1).length;
+          const ongoingCount =
+            mergingCount + baseRecs.filter((r: any) => resolveRecordingStatus(r) === 2).length;
           if (ongoingCount === 0) return null;
           return (
             <div className="flex items-center gap-2 mb-1">
@@ -731,7 +934,7 @@ const PiRow = React.memo(React.forwardRef(({
                                   ? 'bg-meta-7'
                                   : isUploading(record)
                                   ? 'bg-meta-6'
-                                  : record.status == 1
+                                  : isMerging(record)
                                   ? 'bg-primary'
                                   : 'bg-meta-3'
                               }`}
@@ -742,7 +945,7 @@ const PiRow = React.memo(React.forwardRef(({
                                   ? 'bg-meta-7'
                                   : isUploading(record)
                                   ? 'bg-meta-6'
-                                  : record.status == 1
+                                  : isMerging(record)
                                   ? 'bg-primary'
                                   : 'bg-meta-3'
                               }`}
@@ -943,15 +1146,19 @@ const PiRow = React.memo(React.forwardRef(({
                               ? 'Recording'
                               : isUploading(record)
                               ? 'Uploading'
-                              : record.status == 1
+                              : isMerging(record)
                               ? 'Merging'
+                              : resolveRecordingStatus(record) === 9
+                              ? 'Failed'
                               : 'Completed'
-                            : record.status == 1
+                            : resolveRecordingStatus(record) === 1
                             ? 'Merging'
-                            : record.status == 2
+                            : resolveRecordingStatus(record) === 2
                             ? 'Uploading'
-                            : record.status == 0
+                            : resolveRecordingStatus(record) === 0
                             ? 'Recording'
+                            : resolveRecordingStatus(record) === 9
+                            ? 'Failed'
                             : 'Completed'}
                         </p>
                       </td>
@@ -1058,6 +1265,8 @@ const PiRow = React.memo(React.forwardRef(({
       (nextProps.element.stats?.storage?.used_storage ?? 0) &&
     prevProps.element.sw_version === nextProps.element.sw_version &&
     prevProps.element.network_speed === nextProps.element.network_speed &&
+    !!prevProps.appChannelOnline?.[String(prevProps.element?.pi_id)] ===
+      !!nextProps.appChannelOnline?.[String(nextProps.element?.pi_id)] &&
     prevProps.expandedRows[String(prevProps.element?.pi_id ?? prevProps.indexs)] ===
       nextProps.expandedRows[String(nextProps.element?.pi_id ?? nextProps.indexs)] &&
     prevProps.inputValue === nextProps.inputValue
@@ -1080,6 +1289,7 @@ const Pi_Casting = () => {
   const [isShellModalOpen, setisShellModalOpen] = useState(false);
   const [timestamp, setTimestamp] = useState(Date.now());
   const [selectedId, setSelectedId] = useState(null);
+  const [previewImageFailed, setPreviewImageFailed] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const timerRefs = useRef({});
   const [pages, setpages] = useState(1);
@@ -1090,9 +1300,11 @@ const Pi_Casting = () => {
   let piBtnDisabled = {};
   const [datas, setDatas] = useState<any[]>([]);
   const [pendingActions, setPendingActions] = useState<Record<string, { type: 'start' | 'stop'; ts: number }>>({});
+  const [appChannelOnline, setAppChannelOnline] = useState<Record<string, boolean>>({});
   const [recordings, setRecordings] = useState<{ [key: string]: any }>({});
   const [styleLoader, hideLoader] = useState('block');
   const [isLoading, setLoading] = useState(false);
+  const appChannelTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
   // const rowVariants = {
   //   hidden: { opacity: 0, y: 10 },
   //   visible: { opacity: 1, y: 0 },
@@ -1117,28 +1329,11 @@ const Pi_Casting = () => {
   };
 
   const summary = useMemo(() => {
-    const statusText = (r: any) =>
-      String(r?.status_text ?? r?.state ?? '').toLowerCase();
     const classify = (r: any): 'recording' | 'uploading' | 'merging' | 'other' => {
-      const text = statusText(r);
-      const isUploading =
-        r?.upload === 1 ||
-        text === 'uploading' ||
-        text === 'upload' ||
-        r?.status === 2 ||
-        r?.status === 3;
-      if (isUploading) return 'uploading';
-
-      const isMerging =
-        r?.merge === 1 ||
-        text === 'merging' ||
-        text === 'merge' ||
-        (r?.status === 1 && text !== 'completed');
-      if (isMerging) return 'merging';
-
-      const isRecording =
-        r?.recording === 1 || text === 'recording' || r?.status === 0;
-      if (isRecording) return 'recording';
+      const status = resolveRecordingStatus(r);
+      if (status === 0) return 'recording';
+      if (status === 1) return 'merging';
+      if (status === 2) return 'uploading';
 
       return 'other';
     };
@@ -1150,9 +1345,24 @@ const Pi_Casting = () => {
 
     datas.forEach((device: any) => {
       const recs = Array.isArray(device?.recordings) ? device.recordings : [];
-      const recRecording = recs.filter((r: any) => classify(r) === 'recording').length;
-      const recUploading = recs.filter((r: any) => classify(r) === 'uploading').length;
-      const recMerging = recs.filter((r: any) => classify(r) === 'merging').length;
+      const recFromPayload = device?.recording;
+      const hasPayloadCounters = recFromPayload && typeof recFromPayload === 'object';
+
+      const fallbackRecording = recs.filter((r: any) => classify(r) === 'recording').length;
+      const fallbackUploading = recs.filter((r: any) => classify(r) === 'uploading').length;
+      const fallbackMerging = recs.filter((r: any) => classify(r) === 'merging').length;
+
+      const recRecording = hasPayloadCounters
+        ? recFromPayload.active === true
+          ? 1
+          : 0
+        : fallbackRecording;
+      const recUploading = hasPayloadCounters
+        ? Number(recFromPayload.uploading_count ?? 0)
+        : fallbackUploading;
+      const recMerging = hasPayloadCounters
+        ? Number(recFromPayload.merging_count ?? 0)
+        : fallbackMerging;
 
       recordingTotal += recRecording;
       uploadingTotal += recUploading;
@@ -1172,6 +1382,49 @@ const Pi_Casting = () => {
       idleConnections,
     };
   }, [datas, pendingActions]);
+
+  const selectedPi = useMemo(
+    () => datas.find((item: any) => String(item?.pi_id) === String(selectedId)),
+    [datas, selectedId],
+  );
+
+  const selectedPreview = useMemo(() => {
+    const previewObj = selectedPi?.preview ?? {};
+    const enabledRaw = previewObj?.enabled ?? selectedPi?.preview_enabled ?? 1;
+    const showNoPreviewIconRaw =
+      previewObj?.show_no_preview_icon ?? selectedPi?.show_no_preview_icon ?? 0;
+    const previewStatus = String(
+      previewObj?.status ?? selectedPi?.preview_status ?? '',
+    ).toLowerCase();
+    const previewMessage =
+      previewObj?.message ?? selectedPi?.preview_message ?? 'Preview unavailable';
+    const previewLastImageUrl =
+      previewObj?.last_image_url ?? selectedPi?.preview_last_image_url ?? '';
+
+    return {
+      enabled: Number(enabledRaw) === 1 || enabledRaw === true,
+      showNoPreviewIcon:
+        Number(showNoPreviewIconRaw) === 1 || showNoPreviewIconRaw === true,
+      status: previewStatus,
+      message: previewMessage,
+      lastImageUrl: previewLastImageUrl,
+    };
+  }, [selectedPi]);
+
+  const previewImageSrc = useMemo(() => {
+    const rawUrl =
+      selectedPreview?.lastImageUrl ||
+      (selectedId
+        ? `https://api.tickleright.in/cam_image/image_${selectedId}.jpg`
+        : '');
+    if (!rawUrl) return '';
+    const sep = rawUrl.includes('?') ? '&' : '?';
+    return `${rawUrl}${sep}t=${timestamp}`;
+  }, [selectedPreview?.lastImageUrl, selectedId, timestamp]);
+
+  useEffect(() => {
+    setPreviewImageFailed(false);
+  }, [selectedId, isPreviewModalOpen, selectedPreview?.lastImageUrl]);
 
   const buildDefaultRecording = (piId: string, devices: any = {}) => ({
     id: 0,
@@ -1210,8 +1463,14 @@ const Pi_Casting = () => {
       recording: 0,
       merging: 1,
       uploading: 2,
+      completed: 3,
+      failed: 9,
+      error: 9,
     };
-    const status = statusMap[state] ?? 3;
+    const status =
+      Number.isFinite(Number(statusObj?.status))
+        ? Number(statusObj?.status)
+        : statusMap[state] ?? resolveRecordingStatus(statusObj);
     const start = statusObj?.start_time || statusObj?.started_at;
     const parsedStart = parseToDateTime(start);
     const formattedDate = parsedStart
@@ -1221,6 +1480,14 @@ const Pi_Casting = () => {
       : '';
 
     const createdAt = statusObj?.created_at ?? formattedDate ?? '';
+    const flags = applyStatusFlags(
+      {
+        ...statusObj,
+        merge_percentage: statusObj?.merge_percentage,
+        upload_percentage: statusObj?.upload_percentage,
+      },
+      status,
+    );
 
     return {
       id: statusObj?.id ?? idx ?? 0,
@@ -1234,25 +1501,27 @@ const Pi_Casting = () => {
       audio_size: statusObj?.audio_size ?? '',
       duration: statusObj?.duration ?? '',
       file_id: statusObj?.file_id ?? null,
-      recording: status === 0 ? 1 : 0,
-      merge: status === 1 ? 1 : 0,
-      merge_percentage: statusObj?.merge_percentage ?? 0,
-      upload: status === 2 ? 1 : 0,
-      upload_percentage: statusObj?.upload_percentage ?? 0,
-      sync: statusObj?.sync ?? 0,
-      status,
+      recording: flags.recording,
+      merge: flags.merge,
+      merge_percentage: flags.merge_percentage,
+      upload: flags.upload,
+      upload_percentage: flags.upload_percentage,
+      sync: flags.sync,
+      status: flags.status,
       created_at: createdAt,
       modified_at: statusObj?.modified_at ?? '',
       status_text: statusObj?.status_text ?? state,
       expected_end_time: statusObj?.expected_end_time,
       state,
+      error: flags.error,
+      s3_key: statusObj?.s3_key,
+      s3_bucket: statusObj?.s3_bucket,
     };
   };
 
   const normalizeRecordingEntry = (record: any = {}, piId: string, devices: any = {}) => {
-    const status =
-      record?.status ??
-      (record?.recording ? 0 : record?.merge ? 1 : record?.upload ? 2 : 3);
+    const status = resolveRecordingStatus(record);
+    const flags = applyStatusFlags(record, status);
 
     const dateSource = record?.created_at || record?.date || record?.modified_at;
 
@@ -1268,18 +1537,24 @@ const Pi_Casting = () => {
       audio_size: record?.audio_size ?? '',
       duration: record?.duration ?? '',
       file_id: record?.file_id ?? null,
-      recording: record?.recording ?? (status === 0 ? 1 : 0),
-      merge: record?.merge ?? (status === 1 ? 1 : 0),
-      merge_percentage: record?.merge_percentage ?? 0,
-      upload: record?.upload ?? (status === 2 ? 1 : 0),
-      upload_percentage: record?.upload_percentage ?? 0,
-      sync: record?.sync ?? 0,
-      status,
+      recording: flags.recording,
+      merge: flags.merge,
+      merge_percentage: Math.max(
+        toNum(record?.merge_percentage, 0),
+        toNum(flags.merge_percentage, 0),
+      ),
+      upload: flags.upload,
+      upload_percentage: Math.max(
+        toNum(record?.upload_percentage, 0),
+        toNum(flags.upload_percentage, 0),
+      ),
+      sync: flags.sync,
+      status: flags.status,
       created_at: record?.created_at ?? dateSource ?? '',
       modified_at: record?.modified_at ?? '',
       status_text: record?.status_text ?? record?.state ?? '',
       recording_key: record?.recording_key,
-      error: record?.error,
+      error: flags.error,
       storage_type: record?.storage_type,
       s3_key: record?.s3_key,
       s3_bucket: record?.s3_bucket,
@@ -1384,10 +1659,15 @@ const Pi_Casting = () => {
       // New schema: state/recording summary
       if (message?.recording && !message?.recordings && !message?.recording_status) {
         if (message.recording.active) {
+          const activeFlags = applyStatusFlags({}, 0);
           base.active_recording = base.active_recording ?? {
             pi_id: piId,
-            status: 0,
-            recording: 1,
+            status: activeFlags.status,
+            recording: activeFlags.recording,
+            merge: activeFlags.merge,
+            upload: activeFlags.upload,
+            sync: activeFlags.sync,
+            error: activeFlags.error,
           };
         } else {
           base.active_recording = null;
@@ -1445,6 +1725,10 @@ const Pi_Casting = () => {
 
     let recordings = incoming.recordings;
     if (Array.isArray(recordings) && recordings.length > 0) {
+      recordings = mergeRecordingLists(
+        Array.isArray(prev.recordings) ? prev.recordings : [],
+        recordings,
+      );
       lastGoodRef.current[piId] = {
         ...lastGoodRef.current[piId],
         recordingsTs: now,
@@ -1453,10 +1737,7 @@ const Pi_Casting = () => {
       recordings = prev.recordings;
     } else if (Array.isArray(recordings) && recordings.length === 0) {
       if (isV3Incoming && hasExplicitState) {
-        if (lastGoodRef.current[piId]) {
-          delete lastGoodRef.current[piId].recordingsTs;
-        }
-        recordings = [];
+        recordings = prev.recordings ?? [];
       } else {
         const lastTs = lastGoodRef.current[piId]?.recordingsTs;
         if (lastTs && now - lastTs < 15000) {
@@ -1501,6 +1782,35 @@ const Pi_Casting = () => {
       enabledTransports: ['ws', 'wss'],
       forceTLS: true,
     });
+    const appChannelsRef: Record<string, any> = {};
+
+    const markAppChannelAlive = (piIdRaw: string | number) => {
+      const piId = String(piIdRaw);
+      setAppChannelOnline((prev) =>
+        prev[piId] ? prev : { ...prev, [piId]: true },
+      );
+      if (appChannelTimersRef.current[piId]) {
+        clearTimeout(appChannelTimersRef.current[piId]);
+      }
+      appChannelTimersRef.current[piId] = setTimeout(() => {
+        setAppChannelOnline((prev) => ({ ...prev, [piId]: false }));
+      }, 15000);
+    };
+
+    const subscribeToAppChannel = (piIdRaw: string | number) => {
+      const piId = String(piIdRaw);
+      if (!piId || appChannelsRef[piId]) return;
+      const appChannelName = `private-app_connect.${piId}`;
+      const appChannel = pusher.subscribe(appChannelName);
+      appChannelsRef[piId] = appChannel;
+
+      appChannel.bind_global(() => {
+        markAppChannelAlive(piId);
+      });
+      appChannel.bind('pusher:subscription_error', () => {
+        setAppChannelOnline((prev) => ({ ...prev, [piId]: false }));
+      });
+    };
     
     // Throttle state updates to batch multiple pusher events
     let updateTimeout: NodeJS.Timeout | null = null;
@@ -1545,6 +1855,7 @@ const Pi_Casting = () => {
       if (!message || !message.pi_id) return;
 
       const piId = message.pi_id;
+      subscribeToAppChannel(piId);
       message = mergeMessage(message);
       clearPendingAction(String(piId));
 
@@ -1592,6 +1903,17 @@ const Pi_Casting = () => {
       if (updateTimeout) clearTimeout(updateTimeout);
       channel.unbind_all();
       channel.unsubscribe();
+      Object.keys(appChannelsRef).forEach((piId) => {
+        const ch = appChannelsRef[piId];
+        if (ch) {
+          ch.unbind_all();
+          pusher.unsubscribe(`private-app_connect.${piId}`);
+        }
+      });
+      Object.values(appChannelTimersRef.current).forEach((timer) =>
+        clearTimeout(timer),
+      );
+      appChannelTimersRef.current = {};
       pusher.disconnect();
     };
   }, []);
@@ -1913,6 +2235,7 @@ const Pi_Casting = () => {
                         startReMerging={startReMerging}
                         trash={trash}
                         pendingActions={pendingActions}
+                        appChannelOnline={appChannelOnline}
                       />
                     ))}
                 </AnimatePresence>
@@ -1925,12 +2248,12 @@ const Pi_Casting = () => {
               datas.length > 0 &&
               datas.map((element) => {
                 const recs = element.recordings || [];
-                const mergingCount = recs.filter((r) => r.status === 1).length;
-                const uploadingCount = recs.filter((r) => r.status === 2).length;
-                const recordingCount = recs.filter((r) => r.status === 0).length;
-                const recordingList = recs.filter((r) => r.status === 0).slice(-5);
-                const mergingList = recs.filter((r) => r.status === 1).slice(-5);
-                const uploadingList = recs.filter((r) => r.status === 2).slice(-5);
+                const mergingCount = recs.filter((r) => resolveRecordingStatus(r) === 1).length;
+                const uploadingCount = recs.filter((r) => resolveRecordingStatus(r) === 2).length;
+                const recordingCount = recs.filter((r) => resolveRecordingStatus(r) === 0).length;
+                const recordingList = recs.filter((r) => resolveRecordingStatus(r) === 0).slice(-5);
+                const mergingList = recs.filter((r) => resolveRecordingStatus(r) === 1).slice(-5);
+                const uploadingList = recs.filter((r) => resolveRecordingStatus(r) === 2).slice(-5);
                 const storageUsed = element['stats']?.['storage']?.['used_storage'] || 0;
                 const storageTotal = element['stats']?.['storage']?.['total_storage'] || 0;
                 const storagePct = storageTotal ? Math.round((storageUsed / storageTotal) * 100) : 0;
@@ -2133,11 +2456,28 @@ const Pi_Casting = () => {
                   <Dialog.Title className="text-xl font-bold">
                     Preview
                   </Dialog.Title>
-                  <div className="mt-4">
-                    <img
-                      src={`https://api.tickleright.in/cam_image/image_${selectedId}.jpg?t=${timestamp}`}
-                      alt="Dynamic"
-                    />
+                  <div className="mt-4 w-[640px] h-[360px] max-w-[90vw] bg-black rounded-md overflow-hidden flex items-center justify-center">
+                    {selectedPreview?.enabled &&
+                    !selectedPreview?.showNoPreviewIcon &&
+                    previewImageSrc &&
+                    !previewImageFailed ? (
+                      <img
+                        src={previewImageSrc}
+                        alt={`Preview for PI ${selectedId ?? ''}`}
+                        className="w-full h-full object-cover"
+                        onError={() => setPreviewImageFailed(true)}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center text-center px-4">
+                        <HiVideoCameraSlash className="text-white text-5xl mb-3 opacity-90" />
+                        <span className="text-sm text-slate-200">
+                          {selectedPreview?.message ||
+                            (selectedPreview?.status
+                              ? `Preview ${selectedPreview.status}`
+                              : 'Preview unavailable')}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-6 flex justify-end">
