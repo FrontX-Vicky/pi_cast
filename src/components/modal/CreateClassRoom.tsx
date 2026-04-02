@@ -19,7 +19,7 @@ function CreateClassRoom({ open, details, onClose }: any) {
                 setUnasssignedPi([]);
             }
         } catch (err) {
-            console.log(err)
+            // console.log(err)
             setUnasssignedPi([]);
         }
     }

@@ -7,7 +7,7 @@ const DefaultLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="bg-gray-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200">
+    <div className="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-200">
       {/* <!-- ===== Page Wrapper Start ===== --> */}
       <div className="flex h-screen overflow-hidden">
         {/* <!-- ===== Sidebar Start ===== --> */}
@@ -22,8 +22,10 @@ const DefaultLayout = () => {
 
           {/* <!-- ===== Main Content Start ===== --> */}
           <main className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-auto p-2 md:p-2 2xl:p-2 bg-gray-50 dark:bg-slate-950">
-              <Outlet />
+            <div className="relative flex-1 overflow-auto p-2 md:p-2 2xl:p-2 bg-slate-100 dark:bg-slate-950">
+              <div className="relative z-10">
+                <Outlet />
+              </div>
             </div>
           </main>
           {/* <!-- ===== Main Content End ===== --> */}

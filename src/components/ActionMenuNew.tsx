@@ -104,7 +104,7 @@ export default function ActionsMenuNew({
       // lightweight info to help debugging in the browser console
       // show when the menu component mounts and what record it received
       // eslint-disable-next-line no-console
-      console.log('ActionsMenuNew mounted', { pi: record?.pi_id, status: record?.status });
+      // console.log('ActionsMenuNew mounted', { pi: record?.pi_id, status: record?.status });
     } catch (e) {
       // ignore
     }
@@ -126,12 +126,12 @@ export default function ActionsMenuNew({
         onClick={() => {
           try {
             // eslint-disable-next-line no-console
-            console.log('ActionsMenuNew trigger clicked', { pi: record?.pi_id, status: record?.status });
+            // console.log('ActionsMenuNew trigger clicked', { pi: record?.pi_id, status: record?.status });
           } catch (e) {}
           setOpen((o) => !o);
         }}
         className="
-          inline-flex items-center px-1.5 py-0.5 mb-1
+          inline-flex items-center px-1.5 py-0.5
           bg-blue-600 text-white text-[10px] rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30
           hover:bg-blue-700 
           dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-offset-gray-800
@@ -163,7 +163,7 @@ export default function ActionsMenuNew({
               <>
                 <button
                   onClick={() => {
-                    console.log('Stop button clicked');
+                    // console.log('Stop button clicked');
                     stopRecord(record.pi_id, record.batch_id);
                     setOpen(false);
                   }}
@@ -173,15 +173,17 @@ export default function ActionsMenuNew({
                   <FaRegCircleStop className={iconCls} />
                   {isLoading ? loaderIcon : 'Stop'}
                 </button>
-                <a
-                  href={`https://connect.raspberrypi.com/devices/${shell}/remote-shell-session`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => {
+                    openShellModal(record.pi_id, shell);
+                    setOpen(false);
+                  }}
+                  disabled={isLoading}
                   className={itemCls}
                 >
                   <TbBrandPowershell className={iconCls} />
                   {isLoading ? loaderIcon : ' Shell'}
-                </a>
+                </button>
                 <a
                   href={`https://connect.raspberrypi.com/devices/${shell}/screen-sharing-session`}
                   target="_blank"
@@ -196,7 +198,7 @@ export default function ActionsMenuNew({
               <>
                 <button
                   onClick={() => {
-                    console.log('Preview button clicked');
+                    // console.log('Preview button clicked');
                     openPreviewModal(record.pi_id);
                     setOpen(false);
                   }}
@@ -207,16 +209,17 @@ export default function ActionsMenuNew({
                   <FcCamera className={iconCls} />
                   {isLoading ? loaderIcon : ' Preview'}
                 </button>
-                <a
-                  href={`https://connect.raspberrypi.com/devices/${shell}/remote-shell-session`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => {
+                    openShellModal(record.pi_id, shell);
+                    setOpen(false);
+                  }}
+                  disabled={isLoading}
                   className={itemCls}
-                  onClick={() => setOpen(false)}
                 >
                   <TbBrandPowershell className={iconCls} />
                   {isLoading ? loaderIcon : ' Shell'}
-                </a>
+                </button>
                 <a
                   href={`https://connect.raspberrypi.com/devices/${shell}/screen-sharing-session`}
                   target="_blank"
@@ -230,7 +233,7 @@ export default function ActionsMenuNew({
                 <div className="my-1" />
                 <button
                   onClick={() => {
-                    console.log('Start Record button clicked');
+                    // console.log('Start Record button clicked');
                     startRecord(record.pi_id);
                     setOpen(false);
                   }}
@@ -242,7 +245,7 @@ export default function ActionsMenuNew({
                 </button>
                 <button
                   onClick={() => {
-                    console.log('Clear Record button clicked');
+                    // console.log('Clear Record button clicked');
                     clearRecord(record.pi_id);
                     setOpen(false);
                   }}
@@ -255,7 +258,7 @@ export default function ActionsMenuNew({
                 <div className="my-1" />
                 <button
                   onClick={() => {
-                    console.log('Reboot button clicked');
+                    // console.log('Reboot button clicked');
                     reboot(record.pi_id);
                     setOpen(false);
                   }}
@@ -267,7 +270,7 @@ export default function ActionsMenuNew({
                 </button>
                 <button
                   onClick={() => {
-                    console.log('Shutdown button clicked');
+                    // console.log('Shutdown button clicked');
                     shutDown(record.pi_id);
                     setOpen(false);
                   }}
@@ -279,7 +282,7 @@ export default function ActionsMenuNew({
                 </button>
                 <button
                   onClick={() => {
-                    console.log('Refresh button clicked');
+                    // console.log('Refresh button clicked');
                     reFresh(record.pi_id);
                     setOpen(false);
                   }}
@@ -292,7 +295,7 @@ export default function ActionsMenuNew({
                 <div className="my-1" />
                 <button
                   onClick={() => {
-                    console.log('Storage Clear button clicked');
+                    // console.log('Storage Clear button clicked');
                     storageClear(record.pi_id);
                     setOpen(false);
                   }}
@@ -307,7 +310,7 @@ export default function ActionsMenuNew({
               <>
                 <button
                   onClick={() => {
-                    console.log('ReMerge button clicked');
+                    // console.log('ReMerge button clicked');
                     startReMerging(record.pi_id, record.filename);
                     setOpen(false);
                   }}
@@ -319,7 +322,7 @@ export default function ActionsMenuNew({
                 </button>
                 <button
                   onClick={() => {
-                    console.log('Trash button clicked');
+                    // console.log('Trash button clicked');
                     trash(record.pi_id, record.filename);
                     setOpen(false);
                   }}

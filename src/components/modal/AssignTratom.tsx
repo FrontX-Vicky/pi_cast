@@ -25,7 +25,7 @@ function AssignTratom({ open, details, onClose }: any) {
                 setUnasssignedCls([]);
             }
         } catch (err) {
-            console.log(err)
+            // console.log(err)
             setUnasssignedCls([]);
         }
     }
@@ -55,7 +55,7 @@ function AssignTratom({ open, details, onClose }: any) {
                 }, 4000)
             }
         } catch (err) {
-            console.log(err)
+            // console.log(err)
             setUnasssignedCls([]);
         }
     }

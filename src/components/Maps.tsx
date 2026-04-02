@@ -37,7 +37,7 @@ class Maps extends React.Component {
 
 
   async fetchVenues() {
-    console.log('function call')
+    // console.log('function call')
     try {
       const response = await get("rpi/respData", {}); // Wa
 
@@ -60,7 +60,7 @@ class Maps extends React.Component {
 
       }
     } catch (e) {
-      console.log(e)
+      // console.log(e)
     }
   }
 
@@ -75,7 +75,7 @@ class Maps extends React.Component {
   }
 
   async availablePis() {
-    // console.log('function call websocket')
+    // // console.log('function call websocket')
     var pusher = new Pusher('i0fxppvqjbvvfcrxzwhz', {
       cluster: 'mt1',
       wsHost: 'api.tickleright.in',
@@ -98,7 +98,7 @@ class Maps extends React.Component {
   }
 
   async markerChange() {
-    console.log(this.state.positions)
+    // console.log(this.state.positions)
     if (this.state.positions.length > 0) {
       const updatedPositions = this.state.positions.map((item: any) => {
         if (this.state.activePis.includes(item[3])) {
@@ -111,7 +111,7 @@ class Maps extends React.Component {
               ]
             });
             // this.setState({ venue: item[0] });
-            // console.log(this.state.notificationMessage)
+            // // console.log(this.state.notificationMessage)
           }
           // this.setState({showNotificatins:  'false'});
 
@@ -123,7 +123,7 @@ class Maps extends React.Component {
       this.setState({ positions: updatedPositions });
 
     } else {
-      console.log('positions is set to zero')
+      // console.log('positions is set to zero')
     }
   }
 

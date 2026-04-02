@@ -216,6 +216,41 @@ const mergeRecordingLists = (prevList: any[] = [], incomingList: any[] = []) => 
   return Array.from(map.values());
 };
 
+const listRowVariants = {
+  hidden: (i: number) => ({
+    opacity: 0,
+    y: 10,
+    scale: 0.985,
+    filter: 'blur(2px)',
+    transition: {
+      delay: i * 0.02,
+      duration: 0.2,
+      ease: 'easeOut',
+    },
+  }),
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: {
+      delay: i * 0.02,
+      duration: 0.25,
+      ease: 'easeOut',
+    },
+  }),
+  exit: {
+    opacity: 0,
+    y: -8,
+    scale: 0.985,
+    filter: 'blur(1.5px)',
+    transition: {
+      duration: 0.18,
+      ease: 'easeIn',
+    },
+  },
+};
+
 // Memoized Row Component for better performance with large datasets
 const PiRow = React.memo(React.forwardRef(({
   element,
@@ -243,7 +278,7 @@ const PiRow = React.memo(React.forwardRef(({
   appChannelOnline,
 }: any, ref: any) => {
   const isV3 = element?.sw_version === '3.0.0';
-  const [statusExpanded, setStatusExpanded] = useState(true);
+  const [statusExpanded, setStatusExpanded] = useState(false);
   const rowExpandKey = String(element?.pi_id ?? indexs);
   const isExpanded = !!expandedRows[rowExpandKey];
   const cameraOn =
@@ -466,12 +501,12 @@ const PiRow = React.memo(React.forwardRef(({
       </td>
       <td
         className={`border-white px-2 dark:border-strokedark ${
-          isV3 ? 'py-0 w-[520px] align-top' : 'py-0.5 w-[110px]'
+          isV3 ? 'py-0.5 w-[520px] align-top' : 'py-0.5 w-[110px]'
         }`}
         colSpan={isV3 ? 2 : 1}
       >
         {isV3 ? (
-          <div className="py-1 px-2">
+          <div className="flex flex-col justify-start px-2 py-0.5 gap-0.5">
             {(() => {
               const tempRaw =
                 element?.devices?.cpu_temperature ??
@@ -502,119 +537,130 @@ const PiRow = React.memo(React.forwardRef(({
                   ? orderedWithPending.length > 1
                   : orderedWithPending.length > 0;
 
-              const labelCls = statusExpanded
-                ? 'max-w-[130px] opacity-100 ml-1'
-                : 'max-w-0 opacity-0 ml-0';
               return (
-                <div
-                  className="w-full inline-flex items-center gap-1.5 text-[8px] rounded px-1 py-0.5 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors select-none overflow-hidden whitespace-nowrap"
-                >
-                  <span
-                    onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center h-4 px-1 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 cursor-pointer"
-                    style={{ color: element['sw_version'] === '0.0' ? '#ef4444' : undefined }}
-                  >
-                    <MdSystemUpdateAlt className="w-2.5 h-2.5 flex-shrink-0" />
-                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
-                      v{element['sw_version']}
-                    </span>
-                  </span>
-                  <span onClick={(e) => e.stopPropagation()} className={`inline-flex items-center h-4 px-1 rounded cursor-pointer ${
-                    isAppOnline
-                      ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
-                  }`}>
+                <div className="w-full rounded pl-0 pr-1 py-0.5 transition-colors select-none border border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/70">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium leading-none">
                     <span
-                      className={`h-2 w-2 rounded-full flex-shrink-0 ${
-                        isAppOnline ? 'bg-emerald-500' : 'bg-slate-400 dark:bg-slate-500'
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 cursor-pointer text-blue-700 dark:text-blue-300"
+                      style={{ color: element['sw_version'] === '0.0' ? '#ef4444' : undefined }}
+                    >
+                      <MdSystemUpdateAlt className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span>v{element['sw_version']}</span>
+                    </span>
+                    <span
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 cursor-pointer text-slate-700 dark:text-slate-200"
+                    >
+                      {cameraOn ? (
+                        <HiVideoCamera className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" title="Camera Active" />
+                      ) : (
+                        <HiVideoCameraSlash className="w-3.5 h-3.5 text-rose-500 flex-shrink-0" title="Camera Inactive" />
+                      )}
+                      <span>Cam</span>
+                    </span>
+                    <span
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 cursor-pointer text-slate-700 dark:text-slate-200"
+                    >
+                      {micOn ? (
+                        <IoIosMic className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" title="Mic Active" />
+                      ) : (
+                        <IoIosMicOff className="w-3.5 h-3.5 text-rose-500 flex-shrink-0" title="Mic Inactive" />
+                      )}
+                      <span>Mic</span>
+                    </span>
+                    <span
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 cursor-pointer text-slate-700 dark:text-slate-200"
+                    >
+                      <MdNetworkWifi className="w-4 h-4 flex-shrink-0 text-sky-500" />
+                      <span>{element['network_speed']} MBps</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (v3Expandable) {
+                          setExpandedRows((prev) => ({
+                            ...prev,
+                            [rowExpandKey]: !prev[rowExpandKey],
+                          }));
+                        }
+                      }}
+                      className={`inline-flex items-center gap-1 text-xs font-medium ${
+                        v3Expandable
+                          ? 'text-emerald-700 hover:text-emerald-800 dark:text-emerald-300 dark:hover:text-emerald-200 cursor-pointer'
+                          : 'text-emerald-700 dark:text-emerald-300 cursor-default'
                       }`}
-                    />
-                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
-                      App
-                    </span>
-                  </span>
-                  <span onClick={(e) => e.stopPropagation()} className="inline-flex items-center h-4 px-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer">
-                    {cameraOn ? (
-                      <HiVideoCamera className="w-2.5 h-2.5 text-green-500 flex-shrink-0" title="Camera Active" />
-                    ) : (
-                      <HiVideoCameraSlash className="w-2.5 h-2.5 text-red-500 flex-shrink-0" title="Camera Inactive" />
-                    )}
-                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
-                      Cam
-                    </span>
-                  </span>
-                  <span onClick={(e) => e.stopPropagation()} className="inline-flex items-center h-4 px-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer">
-                    {micOn ? (
-                      <IoIosMic className="w-2.5 h-2.5 text-green-500 flex-shrink-0" title="Mic Active" />
-                    ) : (
-                      <IoIosMicOff className="w-2.5 h-2.5 text-red-500 flex-shrink-0" title="Mic Inactive" />
-                    )}
-                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
-                      Mic
-                    </span>
-                  </span>
-                  <span onClick={(e) => e.stopPropagation()} className="inline-flex items-center h-4 px-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer">
-                    <MdNetworkWifi className="w-2.5 h-2.5 flex-shrink-0" />
-                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
-                      {element['network_speed']} MBps
-                    </span>
-                  </span>
-                  <span onClick={(e) => e.stopPropagation()} className={`inline-flex items-center h-4 px-1 rounded bg-slate-100 dark:bg-slate-800 ${tempCls} cursor-pointer`}>
-                    <TbTemperature className="w-2.5 h-2.5 flex-shrink-0" />
-                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
-                      {temp !== null && Number.isFinite(temp) ? temp.toFixed(1) : '—'}°C
-                    </span>
-                  </span>
-                  <span onClick={(e) => e.stopPropagation()} className="inline-flex items-center h-4 px-1 rounded bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 cursor-pointer">
-                    <MdOutlineSdStorage className="w-2.5 h-2.5 flex-shrink-0" />
-                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
-                      RAM {Math.round(ramPct)}%
-                    </span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (v3Expandable) {
-                        setExpandedRows((prev) => ({
-                          ...prev,
-                          [rowExpandKey]: !prev[rowExpandKey],
-                        }));
+                      title={
+                        v3Expandable
+                          ? isExpanded
+                            ? 'Hide recording details'
+                            : 'Show recording details'
+                          : 'No extra recording items'
                       }
-                    }}
-                    className={`inline-flex items-center h-4 px-1 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 ${
-                      !v3Expandable ? 'cursor-default' : 'hover:bg-emerald-200 dark:hover:bg-emerald-900/50'
+                    >
+                      <BsRecordCircle className="w-4 h-4 flex-shrink-0" />
+                      <span>R:{recordingCount}</span>
+                    </button>
+                    <span
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-300 cursor-pointer"
+                    >
+                      <FaCloudUploadAlt className="w-4 h-4 flex-shrink-0" />
+                      <span>U:{uploadingCount}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setStatusExpanded((prev) => !prev);
+                      }}
+                      className="inline-flex h-4 w-4 items-center justify-center text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                      title={statusExpanded ? 'Hide more status' : 'Show more status'}
+                      aria-label={statusExpanded ? 'Collapse extra status' : 'Expand extra status'}
+                    >
+                      {statusExpanded ? '▴' : '▾'}
+                    </button>
+                  </div>
+                  <div
+                    className={`mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 overflow-hidden transition-all duration-200 ${
+                      statusExpanded ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
                     }`}
-                    title={
-                      v3Expandable
-                        ? isExpanded
-                          ? 'Hide recording details'
-                          : 'Show recording details'
-                        : 'No extra recording items'
-                    }
                   >
-                    <BsRecordCircle className="w-2.5 h-2.5 flex-shrink-0" />
-                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
-                      R:{recordingCount}
+                    <span
+                      onClick={(e) => e.stopPropagation()}
+                      className={`inline-flex items-center gap-1 text-xs font-medium cursor-pointer ${
+                        isAppOnline
+                          ? 'text-emerald-700 dark:text-emerald-300'
+                          : 'text-slate-500 dark:text-slate-400'
+                      }`}
+                    >
+                      <span
+                        className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${
+                          isAppOnline ? 'bg-emerald-500' : 'bg-slate-400 dark:bg-slate-500'
+                        }`}
+                      />
+                      <span>App</span>
                     </span>
-                  </button>
-                  <span onClick={(e) => e.stopPropagation()} className="inline-flex items-center h-4 px-1 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 cursor-pointer">
-                    <FaCloudUploadAlt className="w-2.5 h-2.5 flex-shrink-0" />
-                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${labelCls}`}>
-                      U:{uploadingCount}
+                    <span
+                      onClick={(e) => e.stopPropagation()}
+                      className={`inline-flex items-center gap-1 text-xs font-medium ${tempCls} cursor-pointer`}
+                    >
+                      <TbTemperature className="w-4 h-4 flex-shrink-0" />
+                      <span>
+                        {temp !== null && Number.isFinite(temp) ? temp.toFixed(1) : '—'}&deg;C
+                      </span>
                     </span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setStatusExpanded((prev) => !prev);
-                    }}
-                    className="ml-auto inline-flex items-center justify-center h-4 w-4 rounded bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600"
-                    title={statusExpanded ? 'Collapse strip' : 'Expand strip'}
-                  >
-                    {statusExpanded ? '▸' : '◂'}
-                  </button>
+                    <span
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 cursor-pointer"
+                    >
+                      <MdOutlineSdStorage className="w-4 h-4 flex-shrink-0" />
+                      <span>RAM {Math.round(ramPct)}%</span>
+                    </span>
+                  </div>
                 </div>
               );
             })()}
@@ -688,8 +734,16 @@ const PiRow = React.memo(React.forwardRef(({
           <div className="mt-0">
             <div className={isExpanded ? 'max-h-40 overflow-y-auto pr-1' : ''}>
               <table className="w-full table-fixed">
+                <colgroup>
+                  <col className="w-[160px]" />
+                  <col className="w-[120px]" />
+                  <col className="w-[70px]" />
+                  <col className="w-[70px]" />
+                  <col className="w-[90px]" />
+                </colgroup>
                 <tbody>
-                  {rows
+                  <AnimatePresence initial={false} mode="popLayout">
+                    {rows
                     .filter((item) =>
                       item?._pending ||
                       item?._idle ||
@@ -702,48 +756,69 @@ const PiRow = React.memo(React.forwardRef(({
                     .map((record, index) => {
                       if (record._idle) {
                         return (
-                          <tr
+                          <motion.tr
+                            layout
+                            custom={index}
+                            variants={listRowVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
                             key={`${element.pi_id}-idle-${index}`}
-                            className="border-b border-gray-100 dark:border-strokedark/50 last:border-0"
+                            className="h-7"
                           >
-                            <td colSpan={7} className="py-0 px-2">
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center justify-start gap-2 flex-1 text-left">
-                                  <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                                  <span className="text-[11px] text-gray-300">Idle</span>
-                                </div>
-                                <div className="flex justify-start">
-                                  <ActionsMenuNew
-                                    isLast={index >= rows.length - 3}
-                                    record={record}
-                                    isLoading={isLoading}
-                                    loaderIcon={loaderIcon}
-                                    stopRecord={stopRecord}
-                                    openPreviewModal={openPreviewModal}
-                                    openShellModal={openShellModal}
-                                    startRecord={startRecord}
-                                    clearRecord={clearRecord}
-                                    reboot={reboot}
-                                    shutDown={shutDown}
-                                    reFresh={reFresh}
-                                    storageClear={storageClear}
-                                    startReMerging={startReMerging}
-                                    trash={trash}
-                                    shell={element.shell}
-                                  />
-                                </div>
+                            <td className="py-1 px-2 text-left align-middle">
+                              <div className="flex min-h-[18px] items-center justify-start gap-1 pl-0.5">
+                                <span className="inline-flex h-3 w-3 rounded-full bg-emerald-500" />
+                                <span className="text-[11px] text-slate-300">Idle</span>
                               </div>
                             </td>
-                          </tr>
+                            <td className="py-1 px-2 text-left align-middle">
+                              <span className="inline-flex min-h-[18px] items-center text-[10px] text-gray-500 dark:text-gray-400">—</span>
+                            </td>
+                            <td className="py-1 px-2 text-left align-middle">
+                              <span className="inline-flex min-h-[18px] items-center text-[10px] text-gray-500 dark:text-gray-400">—</span>
+                            </td>
+                            <td className="py-1 px-2 text-left align-middle">
+                              <span className="inline-flex min-h-[18px] items-center text-[10px]">Idle</span>
+                            </td>
+                            <td className="py-1 px-2 text-left align-middle">
+                              <div className="flex min-h-[18px] items-center justify-start">
+                                <ActionsMenuNew
+                                  isLast={index >= rows.length - 3}
+                                  record={record}
+                                  isLoading={isLoading}
+                                  loaderIcon={loaderIcon}
+                                  stopRecord={stopRecord}
+                                  openPreviewModal={openPreviewModal}
+                                  openShellModal={openShellModal}
+                                  startRecord={startRecord}
+                                  clearRecord={clearRecord}
+                                  reboot={reboot}
+                                  shutDown={shutDown}
+                                  reFresh={reFresh}
+                                  storageClear={storageClear}
+                                  startReMerging={startReMerging}
+                                  trash={trash}
+                                  shell={element.shell}
+                                />
+                              </div>
+                            </td>
+                          </motion.tr>
                         );
                       }
                       return (
-                        <tr
+                        <motion.tr
+                          layout
+                          custom={index}
+                          variants={listRowVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
                           key={`${element.pi_id}-${record.id || record.batch_id || record.filename || record.date || 'rec'}-${index}`}
-                          className="border-b border-gray-100 dark:border-strokedark/50 last:border-0"
+                          className="h-7"
                         >
-                          <td className="w-[160px] py-0 px-2 text-left">
-                            <div className="flex items-center justify-start gap-1 w-full">
+                          <td className="py-1 px-2 text-left align-middle">
+                            <div className="flex min-h-[18px] w-full items-center justify-start gap-1">
                               <div className="relative inline-flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center">
                                 <span
                                   className={`animate-ping absolute inset-0 rounded-full border-2 border-white ${
@@ -775,12 +850,12 @@ const PiRow = React.memo(React.forwardRef(({
                               </div>
                             </div>
                           </td>
-                          <td className="w-[120px] py-0 px-2 text-left">
-                            <p className="text-[10px]">
+                          <td className="py-1 px-2 text-left align-middle">
+                            <p className="inline-flex min-h-[18px] items-center text-[10px]">
                               <span>{record._idle ? '—' : formatRecordDate(record.created_at || record.date)}</span>
                             </p>
                           </td>
-                          <td className="w-[70px] py-0 px-2 text-left">
+                          <td className="py-1 px-2 text-left align-middle">
                             <motion.span
                               key={`duration-compact-${record.id ?? record.batch_id ?? record.filename ?? index}`}
                               variants={textVariants}
@@ -788,13 +863,13 @@ const PiRow = React.memo(React.forwardRef(({
                               animate="animate"
                               exit="exit"
                               transition={{ duration: 0.5 }}
-                              className="text-[10px]"
+                              className="inline-flex min-h-[18px] items-center text-[10px]"
                             >
                               {record.duration}
                             </motion.span>
                           </td>
-                          <td className="w-[70px] py-0 px-2 text-left">
-                            <p className="text-[10px]">
+                          <td className="py-1 px-2 text-left align-middle">
+                            <p className="inline-flex min-h-[18px] items-center text-[10px]">
                               {record._pending
                                 ? record.status === 0
                                   ? 'Starting'
@@ -810,8 +885,8 @@ const PiRow = React.memo(React.forwardRef(({
                                 : 'Completed'}
                             </p>
                           </td>
-                          <td className="w-[90px] py-0 px-2 text-left">
-                            <div className="flex justify-start">
+                          <td className="py-1 px-2 text-left align-middle">
+                            <div className="flex min-h-[18px] items-center justify-start">
                               <ActionsMenuNew
                                 isLast={index >= rows.length - 3}
                                 record={record}
@@ -832,9 +907,10 @@ const PiRow = React.memo(React.forwardRef(({
                               />
                             </div>
                           </td>
-                        </tr>
+                        </motion.tr>
                       );
                     })}
+                  </AnimatePresence>
                 </tbody>
               </table>
             </div>
@@ -1287,6 +1363,10 @@ const Pi_Casting = () => {
   const [classrooms, setClassrooms] = useState<string[]>([]);
   const [isPreviewModalOpen, setisPreviewModalOpen] = useState(false);
   const [isShellModalOpen, setisShellModalOpen] = useState(false);
+  const [isShellMinimized, setIsShellMinimized] = useState(false);
+  const [shellUrl, setShellUrl] = useState('');
+  const [shellWindowBlocked, setShellWindowBlocked] = useState(false);
+  const shellWindowRef = useRef<Window | null>(null);
   const [timestamp, setTimestamp] = useState(Date.now());
   const [selectedId, setSelectedId] = useState(null);
   const [previewImageFailed, setPreviewImageFailed] = useState(false);
@@ -1725,10 +1805,12 @@ const Pi_Casting = () => {
 
     let recordings = incoming.recordings;
     if (Array.isArray(recordings) && recordings.length > 0) {
-      recordings = mergeRecordingLists(
-        Array.isArray(prev.recordings) ? prev.recordings : [],
-        recordings,
-      );
+      recordings = isV3Incoming
+        ? mergeRecordingLists(
+            Array.isArray(prev.recordings) ? prev.recordings : [],
+            recordings,
+          )
+        : recordings;
       lastGoodRef.current[piId] = {
         ...lastGoodRef.current[piId],
         recordingsTs: now,
@@ -1774,6 +1856,8 @@ const Pi_Casting = () => {
   };
   
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    const authUrl = 'https://api.tickleright.in/api/broadcasting/auth';
     var pusher = new Pusher('i0fxppvqjbvvfcrxzwhz', {
       cluster: 'mt1',
       wsHost: 'api.tickleright.in',
@@ -1781,6 +1865,35 @@ const Pi_Casting = () => {
       wssPort: 443,
       enabledTransports: ['ws', 'wss'],
       forceTLS: true,
+      authorizer: (channel: any) => ({
+        authorize: async (socketId: string, callback: any) => {
+          try {
+            if (!token) {
+              callback(new Error('Missing auth token'), { auth: '' });
+              return;
+            }
+            const response = await fetch(authUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                channel_name: channel.name,
+                socket_id: socketId,
+              }),
+            });
+            const body = await response.json().catch(() => ({}));
+            if (!response.ok || !body?.auth) {
+              callback(new Error(`Auth failed: ${response.status}`), body);
+              return;
+            }
+            callback(null, body);
+          } catch (error) {
+            callback(error, { auth: '' });
+          }
+        },
+      }),
     });
     const appChannelsRef: Record<string, any> = {};
 
@@ -1804,10 +1917,14 @@ const Pi_Casting = () => {
       const appChannel = pusher.subscribe(appChannelName);
       appChannelsRef[piId] = appChannel;
 
-      appChannel.bind_global(() => {
+      appChannel.bind_global((eventName: string, data: any) => {
+        const name = String(eventName || '');
+        // Ignore transport/internal events; only real app payload events should refresh heartbeat.
+        if (name.startsWith('pusher:') || name.startsWith('pusher_internal:')) return;
+        console.log('[app_connect] message', { channel: appChannelName, event: name, data });
         markAppChannelAlive(piId);
       });
-      appChannel.bind('pusher:subscription_error', () => {
+      appChannel.bind('pusher:subscription_error', (err: any) => {
         setAppChannelOnline((prev) => ({ ...prev, [piId]: false }));
       });
     };
@@ -1883,12 +2000,32 @@ const Pi_Casting = () => {
       if (!Array.isArray(message.recordings) || message.recordings.length === 0) {
         message.recordings = [buildDefaultRecording(piId, message.devices)];
       } else {
+        // Legacy payloads: keep at most one synthetic idle placeholder.
+        const hasDefaultIdle = message.recordings.some(
+          (r: any) =>
+            r?.id === 0 &&
+            !r?.batch_id &&
+            !r?.filename &&
+            !r?.date &&
+            !r?.duration,
+        );
         const noStatusZero = message.recordings.every(
           (recording) => recording.status !== 0,
         );
-        if (noStatusZero) {
-          // Add default recording
+        if (noStatusZero && !hasDefaultIdle) {
           message.recordings.push(buildDefaultRecording(piId, message.devices));
+        }
+        if (!noStatusZero) {
+          message.recordings = message.recordings.filter(
+            (r: any) =>
+              !(
+                r?.id === 0 &&
+                !r?.batch_id &&
+                !r?.filename &&
+                !r?.date &&
+                !r?.duration
+              ),
+          );
         }
       }
 
@@ -1936,15 +2073,78 @@ const Pi_Casting = () => {
 
   const openPreviewModal = (id) => {
     // ensure modal state change logs for debugging
-    console.log('openPreviewModal triggered for', id);
+    // console.log('openPreviewModal triggered for', id);
     setSelectedId(id);
     setisPreviewModalOpen(true);
   };
 
-  const openShellModal = (id) => {
+  const openShellModal = (id, shellId) => {
     setSelectedId(id);
+    if (shellId) {
+      setShellUrl(`https://connect.raspberrypi.com/devices/${shellId}/remote-shell-session`);
+    }
+    setShellWindowBlocked(false);
+    setIsShellMinimized(false);
     setisShellModalOpen(true);
   };
+
+  const closeShellModal = () => {
+    setisShellModalOpen(false);
+    setIsShellMinimized(false);
+    setShellUrl('');
+  };
+
+  const restoreShellModal = () => {
+    setisShellModalOpen(true);
+    requestAnimationFrame(() => {
+      setIsShellMinimized(false);
+    });
+  };
+
+  const launchOrFocusShellWindow = () => {
+    if (!shellUrl) return;
+    try {
+      if (shellWindowRef.current && !shellWindowRef.current.closed) {
+        shellWindowRef.current.focus();
+        return;
+      }
+      const w = window.open(
+        shellUrl,
+        '_blank',
+        'popup=yes,width=1280,height=820,menubar=no,toolbar=no,location=yes,status=no,scrollbars=yes,resizable=yes',
+      );
+      if (!w) {
+        setShellWindowBlocked(true);
+        return;
+      }
+      shellWindowRef.current = w;
+      setShellWindowBlocked(false);
+      w.focus();
+    } catch (error) {
+      setShellWindowBlocked(true);
+    }
+  };
+
+  const closeShellWindow = () => {
+    if (shellWindowRef.current && !shellWindowRef.current.closed) {
+      shellWindowRef.current.close();
+    }
+    shellWindowRef.current = null;
+  };
+
+  useEffect(() => {
+    if (isShellModalOpen && shellUrl) {
+      launchOrFocusShellWindow();
+    }
+  }, [isShellModalOpen, shellUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (shellWindowRef.current && !shellWindowRef.current.closed) {
+        shellWindowRef.current.close();
+      }
+    };
+  }, []);
 
   const loaderIcon = (
     <svg
@@ -2007,7 +2207,7 @@ const Pi_Casting = () => {
   }, []);
 
   const stopRecord = (pi_id, batch_id) => {
-    console.log('Stop Record clicked:', pi_id, batch_id);
+    // console.log('Stop Record clicked:', pi_id, batch_id);
     setLoading(true);
     setPendingAction(String(pi_id), 'stop');
     var payload = {
@@ -2019,7 +2219,7 @@ const Pi_Casting = () => {
   };
 
   const startRecord = (pi_id) => {
-    console.log('Start Record clicked:', pi_id);
+    // console.log('Start Record clicked:', pi_id);
     setLoading(true);
     setPendingAction(String(pi_id), 'start');
     var payload = {
@@ -2031,7 +2231,7 @@ const Pi_Casting = () => {
   };
 
   const clearRecord = (pi_id) => {
-    console.log('Clear Record clicked:', pi_id);
+    // console.log('Clear Record clicked:', pi_id);
     setLoading(true);
     var payload = {
       type: 'clear_recordings',
@@ -2128,13 +2328,13 @@ const Pi_Casting = () => {
         try {
           if (response) {
             setLoading(false);
-            console.log('Successfully Going To ' + payload.type);
+            // console.log('Successfully Going To ' + payload.type);
           } else {
-            console.log('Something went wrong is Api response');
+            // console.log('Something went wrong is Api response');
             setLoading(false);
           }
         } catch (err) {
-          console.log('Error Occured while making an API request');
+          // console.log('Error Occured while making an API request');
           setLoading(false);
         }
       })
@@ -2146,8 +2346,8 @@ const Pi_Casting = () => {
 
   return (
     <>
-      <div className="flex h-full gap-2">
-      <div className="h-full min-h-0 flex-1 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-950 px-1 pt-1 pb-2.5 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800/60 sm:px-2.5 xl:pb-1 text-sm text-slate-800 dark:text-slate-200 overflow-hidden flex flex-col">
+      <div className="relative flex h-full gap-2 overflow-hidden rounded-lg">
+      <div className="relative z-10 h-full min-h-0 flex-1 rounded-lg border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/95 dark:bg-slate-950/85 px-1 pt-1 pb-2.5 shadow-sm ring-1 ring-slate-200/70 dark:ring-slate-800/60 sm:px-2.5 xl:pb-1 text-sm text-slate-800 dark:text-slate-200 overflow-hidden flex flex-col">
         <div className="flex items-center justify-between gap-2 mb-2">
           {/* <div className="text-xs text-slate-400">
             View all Pis as a dense grid or detailed table.
@@ -2177,73 +2377,79 @@ const Pi_Casting = () => {
             </button>
           </div>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar pr-1">
+        <div
+          className={`min-h-0 flex-1 overflow-x-hidden pr-1 ${
+            viewMode === 'table' ? 'overflow-hidden' : 'overflow-y-auto no-scrollbar'
+          }`}
+        >
           <div style={{ display: styleLoader }}>{/* <Loader /> */}</div>
           {/* <div className="rounded-lg w-full overflow-x-auto">
             <table className="w-full table-auto overflow-hidden"> */}
           {viewMode === 'table' ? (
-          <div className="rounded-lg min-h-full border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-950/80 overflow-x-auto no-scrollbar">
-            <table className="min-w-full table-fixed rounded">
-              <thead>
-                <tr className="bg-slate-100 dark:bg-slate-900/95 text-center overflow-hidden sticky top-0 z-10 rounded-t-lg border-b border-slate-200 dark:border-slate-800">
-                  <th className="min-w-[10px] py-1 px-4 font-medium text-slate-700 dark:text-slate-300">
-                    #
-                  </th>
-                  <th className="w-[56px] py-1 px-1 font-medium text-slate-700 dark:text-slate-300">
-                    Pi ID
-                  </th>
-                  <th className="w-[180px] py-1 px-2 font-medium text-slate-700 dark:text-slate-300">
-                    Venue
-                  </th>
-                  <th className="min-w-[60px] py-1 px-4 font-medium text-slate-700 dark:text-slate-300">
-                    Storage
-                  </th>
-                  <th className="min-w-[50px] py-1 px-1 font-medium text-slate-700 dark:text-slate-300">
-                    Devices
-                  </th>
-                  <th className="min-w-[250px] py-1 px-4 font-medium text-slate-700 dark:text-slate-300">
-                    Recordings
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="">
-                <AnimatePresence mode="popLayout">
-                  {datas &&
-                    datas.length > 0 &&
-                    datas.map((element, indexs) => (
-                      <PiRow
-                        key={element.pi_id}
-                        element={element}
-                        indexs={indexs}
-                        venues={venues}
-                        batches={batches}
-                        expandedRows={expandedRows}
-                        setExpandedRows={setExpandedRows}
-                        inputValue={inputValue}
-                        textVariants={textVariants}
-                        isLoading={isLoading}
-                        loaderIcon={loaderIcon}
-                        stopRecord={stopRecord}
-                        openPreviewModal={openPreviewModal}
-                        openShellModal={openShellModal}
-                        startRecord={startRecord}
-                        clearRecord={clearRecord}
-                        reboot={reboot}
-                        shutDown={shutDown}
-                        reFresh={reFresh}
-                        storageClear={storageClear}
-                        startReMerging={startReMerging}
-                        trash={trash}
-                        pendingActions={pendingActions}
-                        appChannelOnline={appChannelOnline}
-                      />
-                    ))}
-                </AnimatePresence>
-              </tbody>
-            </table>
+          <div className="flex h-full min-h-0 flex-col rounded-lg border border-slate-200/80 bg-white/90 dark:border-slate-800/80 dark:bg-slate-950/80">
+            <div className="min-h-0 flex-1 overflow-auto no-scrollbar">
+              <table className="min-w-full table-fixed rounded">
+                <thead>
+                  <tr className="bg-slate-100 dark:bg-slate-900/95 text-center overflow-hidden sticky top-0 z-10 rounded-t-lg border-b border-slate-200 dark:border-slate-800">
+                    <th className="min-w-[10px] py-1 px-4 font-medium text-slate-700 dark:text-slate-300">
+                      #
+                    </th>
+                    <th className="w-[56px] py-1 px-1 font-medium text-slate-700 dark:text-slate-300">
+                      Pi ID
+                    </th>
+                    <th className="w-[180px] py-1 px-2 font-medium text-slate-700 dark:text-slate-300">
+                      Venue
+                    </th>
+                    <th className="min-w-[60px] py-1 px-4 font-medium text-slate-700 dark:text-slate-300">
+                      Storage
+                    </th>
+                    <th className="min-w-[50px] py-1 px-1 font-medium text-slate-700 dark:text-slate-300">
+                      Devices
+                    </th>
+                    <th className="min-w-[250px] py-1 px-4 font-medium text-slate-700 dark:text-slate-300">
+                      Recordings
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="">
+                  <AnimatePresence mode="popLayout">
+                    {datas &&
+                      datas.length > 0 &&
+                      datas.map((element, indexs) => (
+                        <PiRow
+                          key={element.pi_id}
+                          element={element}
+                          indexs={indexs}
+                          venues={venues}
+                          batches={batches}
+                          expandedRows={expandedRows}
+                          setExpandedRows={setExpandedRows}
+                          inputValue={inputValue}
+                          textVariants={textVariants}
+                          isLoading={isLoading}
+                          loaderIcon={loaderIcon}
+                          stopRecord={stopRecord}
+                          openPreviewModal={openPreviewModal}
+                          openShellModal={openShellModal}
+                          startRecord={startRecord}
+                          clearRecord={clearRecord}
+                          reboot={reboot}
+                          shutDown={shutDown}
+                          reFresh={reFresh}
+                          storageClear={storageClear}
+                          startReMerging={startReMerging}
+                          trash={trash}
+                          pendingActions={pendingActions}
+                          appChannelOnline={appChannelOnline}
+                        />
+                      ))}
+                  </AnimatePresence>
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
+          <div className="grid auto-rows-fr grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 min-h-full items-stretch">
             {datas &&
               datas.length > 0 &&
               datas.map((element) => {
@@ -2265,18 +2471,18 @@ const Pi_Casting = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 text-sm p-3 shadow-md flex flex-col gap-1.5"
+                    className="h-full rounded-lg border border-slate-200/80 dark:border-slate-700/80 bg-transparent text-slate-800 dark:text-slate-200 text-sm p-2.5 flex flex-col gap-1.5"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 font-semibold text-gray-100">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-100">
                         <span>Pi</span>
                         <span className="text-blue-600 dark:text-blue-300">{element.pi_id}</span>
                       </div>
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-100">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold border border-blue-200/80 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-900/20 dark:text-blue-100">
                         v{element['sw_version']}
                       </span>
                     </div>
-                    <div className="text-[12px] text-slate-700 dark:text-gray-200 truncate font-semibold" title={venues[element['venue_id']]}> 
+                    <div className="text-[12px] text-slate-700 dark:text-slate-200 truncate font-semibold" title={venues[element['venue_id']]}> 
                       {venues[element['venue_id']] || '—'}
                     </div>
                     <div className="flex items-center justify-between">
@@ -2292,17 +2498,17 @@ const Pi_Casting = () => {
                           <IoIosMicOff className="w-4 h-4 text-red-400" title="Mic Inactive" />
                         )}
                       </div>
-                      <div className="flex items-center gap-1 text-[11px] text-gray-200">
+                      <div className="flex items-center gap-1 text-[11px] text-slate-600 dark:text-slate-300">
                         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
                         </svg>
                         <span>{element['network_speed']} MBps</span>
                       </div>
                     </div>
-                    <div className="flex items-end justify-between gap-2 mt-1">
+                    <div className="flex flex-1 items-end justify-between gap-2 mt-1">
                       <div className="flex items-center gap-1.5">
-                        <div className="relative group rounded-md bg-slate-800 px-2 py-1 text-center">
-                          <div className="flex justify-center text-gray-300">
+                        <div className="relative group rounded-md border border-slate-200/80 bg-white/60 px-2 py-1 text-center dark:border-slate-700/80 dark:bg-slate-900/40">
+                          <div className="flex justify-center text-slate-500 dark:text-gray-300">
                             <BsRecordCircle
                               className={`w-3 h-3 ${recordingCount > 0 ? 'text-red-400' : 'text-green-400'}`}
                             />
@@ -2336,8 +2542,8 @@ const Pi_Casting = () => {
                             )}
                           </div>
                         </div>
-                        <div className="relative group rounded-md bg-slate-800 px-2 py-1 text-center">
-                          <div className="flex justify-center text-gray-300"><TbArrowMerge className="w-3 h-3 text-blue-300" /></div>
+                        <div className="relative group rounded-md border border-slate-200/80 bg-white/60 px-2 py-1 text-center dark:border-slate-700/80 dark:bg-slate-900/40">
+                          <div className="flex justify-center text-slate-500 dark:text-gray-300"><TbArrowMerge className="w-3 h-3 text-blue-500 dark:text-blue-300" /></div>
                           <motion.span
                             key={`mrg-count-${mergingCount}`}
                             variants={textVariants}
@@ -2367,8 +2573,8 @@ const Pi_Casting = () => {
                             )}
                           </div>
                         </div>
-                        <div className="relative group rounded-md bg-slate-800 px-2 py-1 text-center">
-                          <div className="flex justify-center text-gray-300"><FaCloudUploadAlt className="w-3 h-3 text-amber-300" /></div>
+                        <div className="relative group rounded-md border border-slate-200/80 bg-white/60 px-2 py-1 text-center dark:border-slate-700/80 dark:bg-slate-900/40">
+                          <div className="flex justify-center text-slate-500 dark:text-gray-300"><FaCloudUploadAlt className="w-3 h-3 text-amber-500 dark:text-amber-300" /></div>
                           <motion.span
                             key={`upl-count-${uploadingCount}`}
                             variants={textVariants}
@@ -2399,17 +2605,17 @@ const Pi_Casting = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end text-[11px] font-medium text-gray-100">
+                      <div className="flex flex-col items-end text-[11px] font-medium text-slate-700 dark:text-slate-200">
                         <span className={`px-2 py-0.5 rounded-full text-[11px] ${
                           storagePct <= 60
-                            ? 'bg-green-900/40 text-green-200'
+                            ? 'bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-200'
                             : storagePct <= 80
-                            ? 'bg-yellow-900/40 text-yellow-200'
+                            ? 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-200'
                             : 'bg-red-900/40 text-red-200'
                         }`}>
                           {storagePct}%
                         </span>
-                        <span className="text-gray-300 mt-1 text-[11px]">
+                        <span className="text-slate-500 dark:text-slate-300 mt-1 text-[11px]">
                           {storageUsed.toFixed(1)} / {storageTotal.toFixed(0)} GB
                         </span>
                       </div>
@@ -2494,11 +2700,11 @@ const Pi_Casting = () => {
           </Dialog>
         </Transition>
 
-        <Transition appear show={isShellModalOpen} as={Fragment}>
+        <Transition appear show={isShellModalOpen && !isShellMinimized} as={Fragment}>
           <Dialog
             as="div"
-            className="relative z-10"
-            onClose={setisShellModalOpen}
+            className="relative z-40"
+            onClose={() => setIsShellMinimized(true)}
           >
             {/* Overlay */}
             <Transition.Child
@@ -2524,15 +2730,66 @@ const Pi_Casting = () => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="bg-white rounded-lg p-6">
-                  <Dialog.Title className="text-xl font-bold">
-                    Shell
-                  </Dialog.Title>
-                  <div className="mt-4"></div>
-
-                  <div className="mt-6 flex justify-end">
+                <Dialog.Panel className="w-[92vw] max-w-6xl h-[78vh] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 shadow-2xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                    <Dialog.Title className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                      Shell - Pi {selectedId ?? '—'}
+                    </Dialog.Title>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setIsShellMinimized(true)}
+                        className="px-2 py-1 text-xs rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 hover:bg-amber-500/30"
+                      >
+                        Minimize
+                      </button>
+                      <button
+                        onClick={closeShellModal}
+                        className="px-2 py-1 text-xs rounded bg-rose-500/20 text-rose-700 dark:text-rose-300 hover:bg-rose-500/30"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                  <div className="h-[calc(78vh-46px)] bg-slate-950 text-slate-200 flex items-center justify-center">
+                    <div className="w-full max-w-xl rounded-lg border border-slate-800 bg-slate-900/80 p-4 text-sm">
+                      <div className="font-semibold mb-2">Shell Running In External Window</div>
+                      <p className="text-slate-300 text-xs mb-3">
+                        Raspberry Pi Connect blocks iframe embedding (`X-Frame-Options`), so shell opens in a popup window.
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          onClick={launchOrFocusShellWindow}
+                          className="px-3 py-1.5 text-xs rounded bg-emerald-600 hover:bg-emerald-500 text-white"
+                        >
+                          Focus / Reopen Shell
+                        </button>
+                        <button
+                          onClick={closeShellWindow}
+                          className="px-3 py-1.5 text-xs rounded bg-slate-700 hover:bg-slate-600 text-white"
+                        >
+                          Close Shell Window
+                        </button>
+                        {shellUrl && (
+                          <a
+                            href={shellUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 text-xs rounded bg-blue-600 hover:bg-blue-500 text-white"
+                          >
+                            Open In New Tab
+                          </a>
+                        )}
+                      </div>
+                      {shellWindowBlocked && (
+                        <div className="mt-3 text-[11px] text-amber-300">
+                          Popup was blocked by browser. Allow popups for this site and click “Focus / Reopen Shell”.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="hidden">
                     <button
-                      onClick={() => setisShellModalOpen(false)}
+                      onClick={closeShellModal}
                       className="px-4 py-2 bg-blue-500 text-white rounded"
                     >
                       Close
@@ -2543,32 +2800,62 @@ const Pi_Casting = () => {
             </div>
           </Dialog>
         </Transition>
+        {isShellModalOpen && isShellMinimized && (
+          <button
+            type="button"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={restoreShellModal}
+            className="fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/95 px-4 py-2 text-xs text-slate-100 shadow-lg hover:bg-slate-800"
+            title="Restore Shell"
+          >
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            Shell Pi {selectedId ?? '—'}
+          </button>
+        )}
       </div>
-      <aside className="hidden xl:block w-72 shrink-0">
-        <div className="sticky rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-950 px-4 py-3 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800/60">
-          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">
-            Device Summary
-          </h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center justify-between rounded-md border border-slate-200 dark:border-slate-800 px-3 py-2">
-              <span className="text-slate-500 dark:text-slate-400">Online Devices</span>
-              <span className="font-semibold text-emerald-600 dark:text-emerald-400">{summary.onlineDevices}</span>
-            </div>
-            <div className="flex items-center justify-between rounded-md border border-slate-200 dark:border-slate-800 px-3 py-2">
-              <span className="text-slate-500 dark:text-slate-400">Total Recordings</span>
-              <span className="font-semibold text-red-600 dark:text-red-400">{summary.recordingTotal}</span>
-            </div>
-            <div className="flex items-center justify-between rounded-md border border-slate-200 dark:border-slate-800 px-3 py-2">
-              <span className="text-slate-500 dark:text-slate-400">Total Mergings</span>
-              <span className="font-semibold text-blue-600 dark:text-blue-400">{summary.mergingTotal}</span>
-            </div>
-            <div className="flex items-center justify-between rounded-md border border-slate-200 dark:border-slate-800 px-3 py-2">
-              <span className="text-slate-500 dark:text-slate-400">Total Uploads</span>
-              <span className="font-semibold text-amber-600 dark:text-amber-400">{summary.uploadingTotal}</span>
-            </div>
-            <div className="flex items-center justify-between rounded-md border border-slate-200 dark:border-slate-800 px-3 py-2">
-              <span className="text-slate-500 dark:text-slate-400">Idle Connections</span>
-              <span className="font-semibold text-slate-700 dark:text-slate-300">{summary.idleConnections}</span>
+      <aside className="relative z-10 hidden xl:block w-72 shrink-0">
+        <div className="sticky relative overflow-hidden rounded-lg border border-slate-700/70 bg-slate-950 px-4 py-3 shadow-sm ring-1 ring-slate-800/80">
+          <div className="pointer-events-none absolute inset-0">
+            <motion.div
+              className="absolute -inset-24 opacity-45 blur-2xl"
+              style={{
+                backgroundImage:
+                  'radial-gradient(circle at 15% 15%, rgba(56,189,248,0.25), transparent 45%), radial-gradient(circle at 85% 10%, rgba(99,102,241,0.2), transparent 40%), radial-gradient(circle at 50% 85%, rgba(16,185,129,0.18), transparent 45%)',
+              }}
+              animate={{ x: [0, 12, -8, 0], y: [0, -10, 8, 0], scale: [1, 1.05, 0.98, 1] }}
+              transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <div
+              className="absolute inset-0 opacity-35"
+              style={{
+                backgroundImage:
+                  'linear-gradient(120deg, rgba(15,23,42,0.72) 0%, rgba(2,6,23,0.9) 100%)',
+              }}
+            />
+          </div>
+          <div className="relative z-10">
+            <h3 className="text-sm font-semibold text-slate-100 mb-3">Device Summary</h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <motion.div whileHover={{ y: -2 }} className="col-span-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
+                <div className="text-[11px] text-emerald-200/90">Online Devices</div>
+                <div className="text-xl font-semibold text-emerald-300">{summary.onlineDevices}</div>
+              </motion.div>
+              <motion.div whileHover={{ y: -2 }} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2">
+                <div className="text-[11px] text-red-200/90">Recordings</div>
+                <div className="text-lg font-semibold text-red-300">{summary.recordingTotal}</div>
+              </motion.div>
+              <motion.div whileHover={{ y: -2 }} className="rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-2">
+                <div className="text-[11px] text-blue-200/90">Mergings</div>
+                <div className="text-lg font-semibold text-blue-300">{summary.mergingTotal}</div>
+              </motion.div>
+              <motion.div whileHover={{ y: -2 }} className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2">
+                <div className="text-[11px] text-amber-200/90">Uploads</div>
+                <div className="text-lg font-semibold text-amber-300">{summary.uploadingTotal}</div>
+              </motion.div>
+              <motion.div whileHover={{ y: -2 }} className="rounded-md border border-slate-500/40 bg-slate-500/10 px-3 py-2">
+                <div className="text-[11px] text-slate-300/90">Idle</div>
+                <div className="text-lg font-semibold text-slate-100">{summary.idleConnections}</div>
+              </motion.div>
             </div>
           </div>
         </div>

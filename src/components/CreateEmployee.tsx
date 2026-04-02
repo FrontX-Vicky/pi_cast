@@ -220,13 +220,13 @@ function CreateEmployee() {
           if (res.data.error == 0) {
             setResStatus(1);
             setErrorMessage('Successfully Created');
-            console.log("Employee Created SuccessFully!😀");
+            // console.log("Employee Created SuccessFully!😀");
           } else {
-            console.log("Employee Not Created!😓");
+            // console.log("Employee Not Created!😓");
           }
         })
       } catch (err) {
-        console.log("Error" + err);
+        // console.log("Error" + err);
       }
     } else {
       try {
@@ -239,14 +239,14 @@ function CreateEmployee() {
             setResStatus(1);
             setErrorData(true);
             setErrorMessage('Successfully Updated');
-            console.log("Employee Updated SuccessFully!😀");
+            // console.log("Employee Updated SuccessFully!😀");
           } else {
             setErrorData(false);
-            console.log("Employee Not Updated!😓");
+            // console.log("Employee Not Updated!😓");
           }
         })
       } catch (err) {
-        console.log("Error" + err);
+        // console.log("Error" + err);
       }
     }
   }
@@ -258,11 +258,11 @@ function CreateEmployee() {
           if (res.data.error == 0) {
             setDepartmentDropDown(res.data.data)
           } else {
-            console.log("no position found");
+            // console.log("no position found");
           }
         })
       } catch (err) {
-        console.log("Error" + err);
+        // console.log("Error" + err);
       }
     }
     employeeDepartment();
@@ -275,11 +275,11 @@ function CreateEmployee() {
           if (res.data.error == 0) {
             setPositionDropDown(res.data.data)
           } else {
-            console.log("no position found");
+            // console.log("no position found");
           }
         })
       } catch (err) {
-        console.log("Error" + err);
+        // console.log("Error" + err);
       }
     }
 
@@ -289,11 +289,11 @@ function CreateEmployee() {
           if (res.data.error == 0) {
             setParentDropDown(res.data.data)
           } else {
-            console.log("no position found");
+            // console.log("no position found");
           }
         })
       } catch (err) {
-        console.log("Error" + err);
+        // console.log("Error" + err);
       }
     }
 
@@ -303,11 +303,11 @@ function CreateEmployee() {
           if (res.data.error == 0) {
             setEmpWorkShiftArray(res.data.data)
           } else {
-            console.log("no position found");
+            // console.log("no position found");
           }
         })
       } catch (err) {
-        console.log("Error" + err);
+        // console.log("Error" + err);
       }
     }
     employeePosition();
