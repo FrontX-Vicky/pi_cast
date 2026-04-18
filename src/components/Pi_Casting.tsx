@@ -1182,6 +1182,11 @@ const PiRow = React.memo(React.forwardRef(({
                                 if (mergePct === null && uploadPct === null) {
                                   return <span className="text-gray-500 dark:text-gray-400">—</span>;
                                 }
+                                const activeMerge = isMerging(record) && (mergePct ?? 0) < 100;
+                                const activeUpload = isUploading(record) && (uploadPct ?? 0) < 100;
+                                if (!activeMerge && !activeUpload) {
+                                  return <span className="text-gray-500 dark:text-gray-400">—</span>;
+                                }
                                 const ProgressLine = ({
                                   label,
                                   pct,
@@ -1209,20 +1214,24 @@ const PiRow = React.memo(React.forwardRef(({
                                 );
                                 return (
                                   <>
-                                    <ProgressLine
-                                      label="M"
-                                      pct={mergePct ?? 0}
-                                      labelClass="text-slate-700 dark:text-slate-200"
-                                      fillClass="bg-blue-500"
-                                      textClass="text-slate-700 dark:text-slate-200"
-                                    />
-                                    <ProgressLine
-                                      label="U"
-                                      pct={uploadPct ?? 0}
-                                      labelClass="text-slate-700 dark:text-slate-200"
-                                      fillClass="bg-emerald-500"
-                                      textClass="text-slate-700 dark:text-slate-200"
-                                    />
+                                    {activeMerge && (
+                                      <ProgressLine
+                                        label="M"
+                                        pct={mergePct ?? 0}
+                                        labelClass="text-blue-700 dark:text-blue-300"
+                                        fillClass="bg-blue-500"
+                                        textClass="text-blue-700 dark:text-blue-300"
+                                      />
+                                    )}
+                                    {activeUpload && (
+                                      <ProgressLine
+                                        label="U"
+                                        pct={uploadPct ?? 0}
+                                        labelClass="text-amber-700 dark:text-amber-300"
+                                        fillClass="bg-amber-500"
+                                        textClass="text-amber-700 dark:text-amber-300"
+                                      />
+                                    )}
                                   </>
                                 );
                               })()}
@@ -1593,6 +1602,11 @@ const PiRow = React.memo(React.forwardRef(({
                           if (mergePct === null && uploadPct === null) {
                             return <span className="text-[10px] text-gray-500 dark:text-gray-400">—</span>;
                           }
+                          const activeMerge = isMerging(record) && (mergePct ?? 0) < 100;
+                          const activeUpload = isUploading(record) && (uploadPct ?? 0) < 100;
+                          if (!activeMerge && !activeUpload) {
+                            return <span className="text-[10px] text-gray-500 dark:text-gray-400">—</span>;
+                          }
 
                           const ProgressLine = ({
                             label,
@@ -1622,20 +1636,24 @@ const PiRow = React.memo(React.forwardRef(({
 
                           return (
                             <div className={isV3 ? "flex flex-col items-center gap-0.5" : "flex flex-col gap-0.5"}>
-                              <ProgressLine
-                                label="M"
-                                pct={mergePct ?? 0}
-                                labelClass="text-slate-700 dark:text-slate-200"
-                                fillClass="bg-blue-500"
-                                textClass="text-slate-700 dark:text-slate-200"
-                              />
-                              <ProgressLine
-                                label="U"
-                                pct={uploadPct ?? 0}
-                                labelClass="text-slate-700 dark:text-slate-200"
-                                fillClass="bg-emerald-500"
-                                textClass="text-slate-700 dark:text-slate-200"
-                              />
+                              {activeMerge && (
+                                <ProgressLine
+                                  label="M"
+                                  pct={mergePct ?? 0}
+                                  labelClass="text-blue-700 dark:text-blue-300"
+                                  fillClass="bg-blue-500"
+                                  textClass="text-blue-700 dark:text-blue-300"
+                                />
+                              )}
+                              {activeUpload && (
+                                <ProgressLine
+                                  label="U"
+                                  pct={uploadPct ?? 0}
+                                  labelClass="text-amber-700 dark:text-amber-300"
+                                  fillClass="bg-amber-500"
+                                  textClass="text-amber-700 dark:text-amber-300"
+                                />
+                              )}
                             </div>
                           );
                         })()}
