@@ -15,7 +15,21 @@ import rpi from '../images/logo/raspberry-pi-icon-transparent.png';
 import { HiVideoCamera } from 'react-icons/hi2';
 import { HiVideoCameraSlash } from 'react-icons/hi2';
 import { IoIosMic } from 'react-icons/io';
-import { IoIosMicOff } from 'react-icons/io';
+import { IoIosMicOff, IoIosWarning } from 'react-icons/io';
+import toast from 'react-hot-toast';
+import {
+  getMicStatus,
+  isProblemRecording,
+  LiveMediaBanners,
+  MediaBadges,
+} from './mediaStatus';
+import {
+  buildMockPiCastEvents,
+  mockClassroomsBatches,
+  mockPiCastAction,
+  MOCK_BATCHES,
+  MOCK_VENUES,
+} from '../mocks/piCastMocks';
 import { FaRegPlayCircle, FaCloudUploadAlt } from 'react-icons/fa';
 import { RiDeleteBin6Fill } from 'react-icons/ri';
 import { TbArrowMerge } from 'react-icons/tb';
@@ -301,6 +315,8 @@ function normalizeV3Recording(
     error: flags.error,
     s3_key: statusObj?.s3_key,
     s3_bucket: statusObj?.s3_bucket,
+    media_audio: statusObj?.media_audio ?? null,
+    media_video: statusObj?.media_video ?? null,
   };
 }
 
@@ -342,6 +358,8 @@ function normalizeRecordingEntry(record: any = {}, piId: string, devices: any = 
     storage_type: record?.storage_type,
     s3_key: record?.s3_key,
     s3_bucket: record?.s3_bucket,
+    media_audio: record?.media_audio ?? null,
+    media_video: record?.media_video ?? null,
   };
 }
 
@@ -425,6 +443,12 @@ const PiRow = React.memo(React.forwardRef(({
       : element?.devices?.mic === true ||
         String(element?.devices?.mic ?? '').toLowerCase() === 'true' ||
         Number(element?.devices?.mic ?? 0) === 1;
+  const micStatus = getMicStatus(element?.devices, micOn);
+  const legacyMicStatus = getMicStatus(element?.devices, (element?.devices?.mic ?? 0) == 1);
+  const startWarning =
+    String(element?.devices?.mic_signal ?? '').toLowerCase() === 'no_signal'
+      ? micStatus.label
+      : undefined;
   const isAppOnline = !!appChannelOnline?.[String(element?.pi_id)];
   const statusText = (r: any) =>
     String(r?.status_text ?? r?.state ?? '').toLowerCase();
@@ -527,7 +551,22 @@ const PiRow = React.memo(React.forwardRef(({
   );
   const uploadingOnlyRows = orderedWithPending.filter((r: any) => isUploading(r));
   const mergingOnlyRows = orderedWithPending.filter((r: any) => isMerging(r));
+  const problemOnlyRows = orderedWithPending.filter((r: any) => isProblemRecording(r));
   const filteredByType =
+    rowFilter === 'problem'
+      ? problemOnlyRows.length
+        ? problemOnlyRows
+        : [
+            {
+              _empty: true,
+              _emptyKind: 'problem',
+              id: 0,
+              pi_id: element?.pi_id,
+              batch_id: 0,
+              status: undefined,
+            },
+          ]
+      :
     rowFilter === 'recording'
       ? recordingOnlyRows.length
         ? recordingOnlyRows
@@ -579,6 +618,7 @@ const PiRow = React.memo(React.forwardRef(({
   const recordingCount = recsV3.filter((r: any) => isRecording(r)).length;
   const uploadingCount = recsV3.filter((r: any) => isUploading(r)).length;
   const mergingCount = recsV3.filter((r: any) => isMerging(r)).length;
+  const problemCount = recsV3.filter((r: any) => isProblemRecording(r)).length;
   const tempRaw =
     element?.devices?.cpu_temperature ??
     element?.devices?.cpu_temp ??
@@ -616,10 +656,26 @@ const PiRow = React.memo(React.forwardRef(({
       ? 'border-transparent bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-200'
       : 'border-transparent bg-blue-50/70 text-blue-600 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/15'
   }`;
+  const problemBtnClass = `inline-flex min-w-0 items-center gap-1 rounded-md border pl-0.5 pr-1.5 py-0.5 text-[11px] font-medium transition-colors ${
+    rowFilter === 'problem'
+      ? 'border-transparent bg-orange-50 text-orange-700 dark:bg-orange-500/15 dark:text-orange-200'
+      : 'border-transparent bg-orange-50/70 text-orange-600 hover:bg-orange-100 dark:bg-orange-500/10 dark:text-orange-300 dark:hover:bg-orange-500/15'
+  }`;
   const secondaryMetaItemClass =
     'inline-flex min-w-0 min-h-[22px] items-center gap-1.5 rounded-md px-1 py-0.5 text-[11px] font-medium';
   const toggleBtnClass =
     'inline-flex h-6 w-6 items-center justify-center rounded-md border border-transparent bg-slate-50/70 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:bg-slate-800/50 dark:text-slate-300 dark:hover:bg-slate-700/60 dark:hover:text-white';
+
+  const toggleProblemFilter = () => {
+    setRowFilters((prev: Record<string, string | null>) => ({
+      ...prev,
+      [rowExpandKey]: prev[rowExpandKey] === 'problem' ? null : 'problem',
+    }));
+    setExpandedRows((prev: Record<string, boolean>) => ({
+      ...prev,
+      [rowExpandKey]: true,
+    }));
+  };
 
   const activateFilter = (type: 'recording' | 'uploading' | 'merging') => {
     setRowFilters((prev: Record<string, string | null>) => ({
@@ -750,9 +806,9 @@ const PiRow = React.memo(React.forwardRef(({
               <div
                 onClick={(e) => e.stopPropagation()}
                 className="flex items-center justify-center"
-                title={micOn ? 'Mic Active' : 'Mic Inactive'}
+                title={micStatus.label}
               >
-                {micOn ? (
+                {micStatus.on ? (
                   <IoIosMic className="w-3.5 h-3.5 text-emerald-500" />
                 ) : (
                   <IoIosMicOff className="w-3.5 h-3.5 text-rose-500" />
@@ -829,11 +885,11 @@ const PiRow = React.memo(React.forwardRef(({
                   <HiVideoCameraSlash className="w-3.5 h-3.5 text-red-500" title="Camera Inactive" />
                 )}
               </div>
-              <div className="flex items-center gap-0.5">
-                {(element?.devices?.mic ?? 0) == 1 ? (
-                  <IoIosMic className="w-3.5 h-3.5 text-green-500" title="Mic Active" />
+              <div className="flex items-center gap-0.5" title={legacyMicStatus.label}>
+                {legacyMicStatus.on ? (
+                  <IoIosMic className="w-3.5 h-3.5 text-green-500" />
                 ) : (
-                  <IoIosMicOff className="w-3.5 h-3.5 text-red-500" title="Mic Inactive" />
+                  <IoIosMicOff className="w-3.5 h-3.5 text-red-500" />
                 )}
               </div>
             </div>
@@ -886,7 +942,7 @@ const PiRow = React.memo(React.forwardRef(({
         )}
       </td>
       {isV3 && (
-      <td className="border-white pl-0 pr-4 dark:border-strokedark py-0 w-[700px] align-middle">
+      <td className="border-white pl-0 pr-4 dark:border-strokedark py-0 w-[780px] align-middle">
           <div className="flex flex-col justify-center py-0 gap-0.5">
             <div className="w-full rounded-md pl-0 pr-1 py-0.5 transition-colors select-none border border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/70">
               <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 leading-none">
@@ -930,6 +986,18 @@ const PiRow = React.memo(React.forwardRef(({
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
+                    toggleProblemFilter();
+                  }}
+                  className={problemBtnClass}
+                  title="Problem recordings only (audio or video not ok)"
+                >
+                  <IoIosWarning className="h-3 w-3 flex-shrink-0" />
+                  <span>P:{problemCount}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setStatusExpanded((prev) => !prev);
                   }}
                   className={toggleBtnClass}
@@ -938,17 +1006,25 @@ const PiRow = React.memo(React.forwardRef(({
                 >
                   {statusExpanded ? '▴' : '▾'}
                 </button>
+                {micStatus.alert && !(element?.recording?.active && element?.devices?.mic_signal === 'audio_lost') && (
+                  <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300">
+                    <IoIosMicOff className="h-3 w-3 flex-shrink-0" />
+                    {micStatus.alert}
+                  </span>
+                )}
+                <LiveMediaBanners recording={element?.recording} devices={element?.devices} />
               </div>
             </div>
             <div className="mt-0">
             <div className={isExpanded ? 'max-h-40 overflow-y-auto pr-1' : ''}>
-              <table className="w-full table-fixed border-collapse">
+              <table className="w-full min-w-[756px] table-fixed border-collapse">
                 <colgroup>
                   <col className="w-[160px]" />
+                  <col className="w-[110px]" />
+                  <col className="w-[70px]" />
+                  <col className="w-[70px]" />
                   <col className="w-[120px]" />
-                  <col className="w-[70px]" />
-                  <col className="w-[70px]" />
-                  <col className="w-[180px]" />
+                  <col className="w-[136px]" />
                   <col className="w-[90px]" />
                 </colgroup>
                 <tbody>
@@ -966,11 +1042,22 @@ const PiRow = React.memo(React.forwardRef(({
                     )
                     .map((record, index) => {
                       if (record._empty) {
-                        const emptyKind = record?._emptyKind === 'uploading' ? 'uploading' : 'merging';
+                        const emptyKind =
+                          record?._emptyKind === 'uploading' || record?._emptyKind === 'problem'
+                            ? record._emptyKind
+                            : 'merging';
                         const emptyLabel =
-                          emptyKind === 'uploading' ? 'No item to upload' : 'No item to merge';
+                          emptyKind === 'uploading'
+                            ? 'No item to upload'
+                            : emptyKind === 'problem'
+                            ? 'No problem recordings'
+                            : 'No item to merge';
                         const emptyStatus =
-                          emptyKind === 'uploading' ? 'Nothing uploading' : 'Nothing merging';
+                          emptyKind === 'uploading'
+                            ? 'Nothing uploading'
+                            : emptyKind === 'problem'
+                            ? 'All ok'
+                            : 'Nothing merging';
                         return (
                           <motion.tr
                             layout
@@ -988,11 +1075,15 @@ const PiRow = React.memo(React.forwardRef(({
                                   className={`inline-flex h-4 w-4 items-center justify-center rounded-full ${
                                     emptyKind === 'uploading'
                                       ? 'text-yellow-500 dark:text-yellow-300'
+                                      : emptyKind === 'problem'
+                                      ? 'text-orange-500 dark:text-orange-300'
                                       : 'text-blue-500 dark:text-blue-300'
                                   }`}
                                 >
                                   {emptyKind === 'uploading' ? (
                                     <FaCloudUploadAlt className="h-3.5 w-3.5" />
+                                  ) : emptyKind === 'problem' ? (
+                                    <IoIosWarning className="h-3.5 w-3.5" />
                                   ) : (
                                     <TbArrowMerge className="h-3.5 w-3.5" />
                                   )}
@@ -1008,6 +1099,9 @@ const PiRow = React.memo(React.forwardRef(({
                             </td>
                             <td className="py-1 px-2 text-left align-middle">
                               <span className="inline-flex min-h-[18px] items-center text-xs text-gray-500 dark:text-gray-400">{emptyStatus}</span>
+                            </td>
+                            <td className="py-1 px-2 text-left align-middle">
+                              <span className="inline-flex min-h-[18px] items-center text-xs text-gray-500 dark:text-gray-400">—</span>
                             </td>
                             <td className="py-1 px-2 text-left align-middle">
                               <span className="inline-flex min-h-[18px] items-center text-xs text-gray-500 dark:text-gray-400">—</span>
@@ -1031,6 +1125,7 @@ const PiRow = React.memo(React.forwardRef(({
                                   startReMerging={startReMerging}
                                   trash={trash}
                                   shell={element.shell}
+                                  startWarning={startWarning}
                                 />
                               </div>
                             </td>
@@ -1068,6 +1163,9 @@ const PiRow = React.memo(React.forwardRef(({
                               <span className="inline-flex min-h-[18px] items-center text-xs text-gray-500 dark:text-gray-400">—</span>
                             </td>
                             <td className="py-1 px-2 text-left align-middle">
+                              <span className="inline-flex min-h-[18px] items-center text-xs text-gray-500 dark:text-gray-400">—</span>
+                            </td>
+                            <td className="py-1 px-2 text-left align-middle">
                               <div className="flex min-h-[18px] items-center justify-start">
                                 <ActionsMenuNew
                                   isLast={index >= rows.length - 3}
@@ -1086,6 +1184,7 @@ const PiRow = React.memo(React.forwardRef(({
                                   startReMerging={startReMerging}
                                   trash={trash}
                                   shell={element.shell}
+                                  startWarning={startWarning}
                                 />
                               </div>
                             </td>
@@ -1238,6 +1337,13 @@ const PiRow = React.memo(React.forwardRef(({
                             </div>
                           </td>
                           <td className="py-1 px-2 text-left align-middle">
+                            {record._pending ? (
+                              <span className="inline-flex min-h-[18px] items-center text-xs text-gray-500 dark:text-gray-400">—</span>
+                            ) : (
+                              <MediaBadges rec={record} className="min-h-[18px]" />
+                            )}
+                          </td>
+                          <td className="py-1 px-2 text-left align-middle">
                             <div className="flex min-h-[18px] items-center justify-start">
                               <ActionsMenuNew
                                 isLast={index >= rows.length - 3}
@@ -1256,6 +1362,7 @@ const PiRow = React.memo(React.forwardRef(({
                                 startReMerging={startReMerging}
                                 trash={trash}
                                 shell={element.shell}
+                                startWarning={startWarning}
                               />
                             </div>
                           </td>
@@ -1341,6 +1448,7 @@ const PiRow = React.memo(React.forwardRef(({
                               startReMerging={startReMerging}
                               trash={trash}
                               shell={element.shell}
+                              startWarning={startWarning}
                             />
                           </div>
                         </div>
@@ -1450,6 +1558,8 @@ const PiRow = React.memo(React.forwardRef(({
                           const seg = record.segment_growing;
                           const ok = record.recording_ok;
                           if (!isV3) {
+                            const legacyBadges =
+                              record.id == 0 ? null : <MediaBadges rec={record} className="mt-0.5" />;
                             return (record.video_size || record.audio_size) ? (
                               <div className="flex flex-col gap-0.5">
                                 <motion.div
@@ -1520,9 +1630,13 @@ const PiRow = React.memo(React.forwardRef(({
                                     </span>
                                   )}
                                 </motion.div>
+                                {legacyBadges}
                               </div>
                             ) : (
-                              <div className="text-xs text-gray-500 dark:text-gray-400">—</div>
+                              <div className="flex flex-col items-start text-xs text-gray-500 dark:text-gray-400">
+                                <span>—</span>
+                                {legacyBadges}
+                              </div>
                             );
                           }
                           if (seg === undefined && ok === undefined) {
@@ -1677,6 +1791,7 @@ const PiRow = React.memo(React.forwardRef(({
                             startReMerging={startReMerging}
                             trash={trash}
                             shell={element.shell}
+                            startWarning={startWarning}
                           />
                         </div>
                       </td>
@@ -1700,6 +1815,11 @@ const PiRow = React.memo(React.forwardRef(({
     JSON.stringify(prevProps.element.recordings) === JSON.stringify(nextProps.element.recordings) &&
     (prevProps.element.devices?.camera ?? 0) === (nextProps.element.devices?.camera ?? 0) &&
     (prevProps.element.devices?.mic ?? 0) === (nextProps.element.devices?.mic ?? 0) &&
+    prevProps.element.devices?.mic_connected === nextProps.element.devices?.mic_connected &&
+    prevProps.element.devices?.mic_signal === nextProps.element.devices?.mic_signal &&
+    !!prevProps.element.recording?.active === !!nextProps.element.recording?.active &&
+    JSON.stringify(prevProps.element.recording?.media ?? null) ===
+      JSON.stringify(nextProps.element.recording?.media ?? null) &&
     (prevProps.element.stats?.storage?.used_storage ?? 0) ===
       (nextProps.element.stats?.storage?.used_storage ?? 0) &&
     prevProps.element.sw_version === nextProps.element.sw_version &&
@@ -1752,6 +1872,32 @@ const Pi_Casting = () => {
   const [styleLoader, hideLoader] = useState('block');
   const [isLoading, setLoading] = useState(false);
   const appChannelTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
+  // Start dialog (batch id + "transmitter off" choice); piId is kept while closing so the
+  // leave animation keeps its text.
+  const [startChoice, setStartChoice] = useState<{
+    piId: string;
+    open: boolean;
+    batchId: string;
+    transmitterOff: boolean;
+    venueId: string;
+    customBatch: boolean;
+    showAllBatches: boolean;
+  } | null>(null);
+  // Active batches per venue (rpi/get_classrooms_batches), loaded when the Start dialog opens.
+  const [venueBatches, setVenueBatches] = useState<
+    Record<string, { status: 'loading' | 'ok' | 'error'; list: { id: string; name: string; piId: string }[] }>
+  >({});
+  const venueBatchesRequestedRef = useRef<Record<string, boolean>>({});
+  // Start presses awaiting a status, keyed by pi_id, with the start_error.at seen before pressing.
+  const startAttemptsRef = useRef<
+    Record<string, { prevErrorAt: unknown; ts: number; batchId: string }>
+  >({});
+  // Last batch id sent per Pi, used to pre-fill the Start dialog.
+  const lastBatchIdRef = useRef<Record<string, string>>({});
+  // Dev only: open the page with ?mockPiCast=1 to feed mocked PiCast payloads (src/mocks/piCastMocks.ts).
+  const mockMode =
+    !!(import.meta as any).env?.DEV &&
+    new URLSearchParams(window.location.search).has('mockPiCast');
   // const rowVariants = {
   //   hidden: { opacity: 0, y: 10 },
   //   visible: { opacity: 1, y: 0 },
@@ -1963,6 +2109,8 @@ const Pi_Casting = () => {
       error: flags.error,
       s3_key: statusObj?.s3_key,
       s3_bucket: statusObj?.s3_bucket,
+      media_audio: statusObj?.media_audio ?? null,
+      media_video: statusObj?.media_video ?? null,
     };
   };
 
@@ -2005,6 +2153,8 @@ const Pi_Casting = () => {
       storage_type: record?.storage_type,
       s3_key: record?.s3_key,
       s3_bucket: record?.s3_bucket,
+      media_audio: record?.media_audio ?? null,
+      media_video: record?.media_video ?? null,
     };
   };
 
@@ -2109,6 +2259,9 @@ const Pi_Casting = () => {
         ? {
             camera: message.devices.camera ?? (message.devices.camera_connected ? 1 : 0),
             mic: message.devices.mic ?? (message.devices.mic_connected ? 1 : 0),
+            mic_connected: message.devices.mic_connected,
+            mic_receiver: message.devices.mic_receiver,
+            mic_signal: message.devices.mic_signal,
             cpu_temperature:
               message.devices.cpu_temperature ??
               message.devices.cpu_temp ??
@@ -2507,7 +2660,7 @@ const Pi_Casting = () => {
     // Subscribe to a channel and log incoming events
     var channel = pusher.subscribe('pi_cast');
     // Log all events to the console
-    channel.bind_global(function (eventName, data) {
+    const handlePiCastEvent = (_eventName: string, data: any) => {
       let message = normalizePayload(data);
       if (!message || !message.pi_id) return;
 
@@ -2517,6 +2670,7 @@ const Pi_Casting = () => {
       const storeKey = mergedResult?.storeKey || String(piId);
       message = mergedResult;
       clearPendingAction(String(piId));
+      checkStartError(String(piId), message);
 
       if (timerRefs.current[storeKey]) {
         clearTimeout(timerRefs.current[storeKey]);
@@ -2575,11 +2729,21 @@ const Pi_Casting = () => {
       // Throttle updates - batch multiple messages together
       scheduleUpdate();
       setLoading(false);
-    });
+    };
+    channel.bind_global(handlePiCastEvent);
+
+    let mockInterval: ReturnType<typeof setInterval> | null = null;
+    if (mockMode) {
+      const feedMocks = () =>
+        buildMockPiCastEvents().forEach((event) => handlePiCastEvent('PiCast', event));
+      feedMocks();
+      mockInterval = setInterval(feedMocks, 3000);
+    }
 
     // Cleanup on unmount
     return () => {
       if (updateTimeout) clearTimeout(updateTimeout);
+      if (mockInterval) clearInterval(mockInterval);
       channel.unbind_all();
       channel.unsubscribe();
       Object.keys(appChannelsRef).forEach((piId) => {
@@ -2760,16 +2924,136 @@ const Pi_Casting = () => {
     globalFunc(payload);
   };
 
-  const startRecord = (pi_id) => {
+  const findPiById = (piId: string): any =>
+    Object.values(allPisRef.current).find((pi: any) => String(pi?.pi_id) === piId);
+
+  const startRecord = (pi_id, force = false, batchId = '1234') => {
     // console.log('Start Record clicked:', pi_id);
     setLoading(true);
     setPendingAction(String(pi_id), 'start');
-    var payload = {
+    lastBatchIdRef.current[String(pi_id)] = batchId;
+    startAttemptsRef.current[String(pi_id)] = {
+      prevErrorAt: findPiById(String(pi_id))?.recording?.start_error?.at ?? null,
+      ts: Date.now(),
+      batchId,
+    };
+    var payload: Record<string, any> = {
       type: 'rec_start',
       id: pi_id,
-      batch_id: '1234',
+      batch_id: batchId,
     };
+    if (force) payload.force = 1;
     globalFunc(payload);
+  };
+
+  // Start from the actions menu: ask for the batch id first, and warn in the same dialog
+  // when the transmitter is already known to be off.
+  const loadVenueBatches = async (venueId: string) => {
+    // Ref, not state: this runs from memoized rows holding an old closure.
+    if (!venueId || venueBatchesRequestedRef.current[venueId]) return;
+    venueBatchesRequestedRef.current[venueId] = true;
+    setVenueBatches((prev) => ({ ...prev, [venueId]: { status: 'loading', list: [] } }));
+    try {
+      const response: any = mockMode
+        ? mockClassroomsBatches(venueId)
+        : await post(`rpi/get_classrooms_batches/${venueId}`, {});
+      const rows: any[] = Array.isArray(response?.data) ? response.data : [];
+      const byId = new Map<string, { id: string; name: string; piId: string }>();
+      rows.forEach((row) => {
+        const id = String(row?.batch_id ?? '');
+        if (!id) return;
+        const piId = row?.rpi_pi_id != null ? String(row.rpi_pi_id) : '';
+        // The Pi join can repeat a batch; keep the row that names a Pi.
+        if (!byId.has(id) || piId) byId.set(id, { id, name: String(row?.batch ?? id), piId });
+      });
+      setVenueBatches((prev) => ({
+        ...prev,
+        [venueId]: { status: 'ok', list: Array.from(byId.values()) },
+      }));
+    } catch (error) {
+      console.error('Error fetching venue batches:', error);
+      delete venueBatchesRequestedRef.current[venueId];
+      setVenueBatches((prev) => ({ ...prev, [venueId]: { status: 'error', list: [] } }));
+    }
+  };
+
+  const openStartDialog = (piId: string, batchId: string, transmitterOff: boolean) => {
+    const venueId = String(findPiById(piId)?.venue_id ?? '');
+    loadVenueBatches(venueId);
+    setStartChoice({
+      piId,
+      open: true,
+      batchId,
+      transmitterOff,
+      venueId,
+      customBatch: false,
+      showAllBatches: false,
+    });
+  };
+
+  const requestStart = (pi_id: string | number) => {
+    const piId = String(pi_id);
+    const micSignal = String(findPiById(piId)?.devices?.mic_signal ?? '').toLowerCase();
+    // Empty batch id = pick the batch of this Pi's classroom once the venue list loads.
+    openStartDialog(piId, lastBatchIdRef.current[piId] ?? '', micSignal === 'no_signal');
+  };
+
+  const startBatchId = (startChoice?.batchId ?? '').trim();
+  const startVenueBatches = startChoice?.venueId ? venueBatches[startChoice.venueId] : undefined;
+  // This Pi's classroom batches first, then the rest of the venue.
+  const venueBatchOptions = [...(startVenueBatches?.list ?? [])].sort(
+    (a, b) =>
+      Number(b.piId === startChoice?.piId) - Number(a.piId === startChoice?.piId) ||
+      a.name.localeCompare(b.name),
+  );
+  const venueBatchIds = new Set(venueBatchOptions.map((b) => b.id));
+  const otherBatchOptions = Object.entries(batches || {})
+    .filter(([id, name]) => name && !venueBatchIds.has(String(id)))
+    .map(([id, name]) => ({ id: String(id), name: String(name) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  // All venues are listed when asked, or when the venue list is missing / empty.
+  const showOtherBatches =
+    !!startChoice?.showAllBatches ||
+    (startVenueBatches?.status !== 'loading' && venueBatchOptions.length === 0);
+  const listedBatchIds = new Set([
+    ...venueBatchIds,
+    ...(showOtherBatches ? otherBatchOptions.map((b) => b.id) : []),
+  ]);
+  const startBatchIsCustom =
+    !!startChoice?.customBatch || (!!startBatchId && !listedBatchIds.has(startBatchId));
+
+  // Pre-select once the venue list arrives: the batch of this Pi's classroom, else the first one.
+  useEffect(() => {
+    if (!startChoice?.open || startChoice.batchId || startChoice.customBatch) return;
+    if (startVenueBatches?.status === 'loading') return;
+    const pick = venueBatchOptions[0]?.id ?? '1234';
+    setStartChoice((prev) => prev && !prev.batchId ? { ...prev, batchId: pick } : prev);
+  }, [startChoice?.open, startChoice?.batchId, startVenueBatches?.status]);
+
+  const chooseStart = (force: boolean) => {
+    if (!startChoice || !startBatchId) return;
+    setStartChoice({ ...startChoice, open: false });
+    startRecord(startChoice.piId, force, startBatchId);
+  };
+
+  // After Start, react once to the Pi's start_error (Pi 3.1.11+); a start_error.at
+  // already present before the press belongs to an earlier attempt and is ignored.
+  const checkStartError = (piId: string, pi: any) => {
+    const attempt = startAttemptsRef.current[piId];
+    if (!attempt) return;
+    const rec = pi?.recording;
+    if (rec?.active === true || Date.now() - attempt.ts > 60000) {
+      delete startAttemptsRef.current[piId];
+      return;
+    }
+    const err = rec?.start_error;
+    if (!err || err.at === attempt.prevErrorAt) return;
+    delete startAttemptsRef.current[piId];
+    if (err.code === 'transmitter_off') {
+      openStartDialog(piId, attempt.batchId, true);
+    } else {
+      toast.error(err.message || `Pi ${piId} could not start recording`);
+    }
   };
 
   const clearRecord = (pi_id) => {
@@ -2846,6 +3130,10 @@ const Pi_Casting = () => {
   };
 
   const getVenues = async () => {
+    if (mockMode) {
+      setVenues(MOCK_VENUES as any);
+      return;
+    }
     try {
       const response = await get('rpi/get_venues', {});
       setVenues(JSON.parse(response.data));
@@ -2855,6 +3143,10 @@ const Pi_Casting = () => {
   };
 
   const getBatches = async () => {
+    if (mockMode) {
+      setBatches(MOCK_BATCHES as any);
+      return;
+    }
     try {
       const response = await get('rpi/get_batches', {}); // Wait for the response
       setBatches(JSON.parse(response.data));
@@ -2864,6 +3156,10 @@ const Pi_Casting = () => {
   };
 
   const globalFunc = (payload) => {
+    if (mockMode && mockPiCastAction(payload)) {
+      setLoading(false);
+      return;
+    }
     axios
       .post('https://api.tickleright.in/api/rpi/actions', payload)
       .then((response) => {
@@ -2930,7 +3226,7 @@ const Pi_Casting = () => {
           {viewMode === 'table' ? (
           <div className="flex h-full min-h-0 flex-col rounded-lg border border-slate-200/80 bg-white/90 dark:border-slate-800/80 dark:bg-slate-950/80">
             <div className="min-h-0 flex-1 overflow-auto no-scrollbar">
-              <table className="min-w-full table-fixed rounded">
+              <table className="min-w-full w-max table-fixed rounded">
                 <thead>
                   <tr className="bg-slate-100 dark:bg-slate-900/95 text-center overflow-hidden sticky top-0 z-10 rounded-t-lg border-b border-slate-200 dark:border-slate-800">
                     <th className="w-[32px] py-1 px-1 font-medium text-slate-700 dark:text-slate-300">
@@ -2948,7 +3244,7 @@ const Pi_Casting = () => {
                     <th className="w-[80px] py-1 px-1 font-medium text-slate-700 dark:text-slate-300">
                       Devices
                     </th>
-                    <th className="w-[700px] py-1 pl-0 pr-4 text-left font-medium text-slate-700 dark:text-slate-300">
+                    <th className="w-[780px] min-w-[780px] py-1 pl-0 pr-4 text-left font-medium text-slate-700 dark:text-slate-300">
                       Recordings
                     </th>
                   </tr>
@@ -2975,7 +3271,7 @@ const Pi_Casting = () => {
                           stopRecord={stopRecord}
                           openPreviewModal={openPreviewModal}
                           openShellModal={openShellModal}
-                          startRecord={startRecord}
+                          startRecord={requestStart}
                           clearRecord={clearRecord}
                           reboot={reboot}
                           shutDown={shutDown}
@@ -3007,6 +3303,7 @@ const Pi_Casting = () => {
                 const storageUsed = element['stats']?.['storage']?.['used_storage'] || 0;
                 const storageTotal = element['stats']?.['storage']?.['total_storage'] || 0;
                 const storagePct = storageTotal ? Math.round((storageUsed / storageTotal) * 100) : 0;
+                const gridMicStatus = getMicStatus(element?.devices, (element?.devices?.mic ?? 0) == 1);
                 return (
                   <motion.div
                     key={element.pi_id}
@@ -3036,11 +3333,13 @@ const Pi_Casting = () => {
                         ) : (
                           <HiVideoCameraSlash className="w-4 h-4 text-red-400" title="Camera Inactive" />
                         )}
-                        {(element?.devices?.mic ?? 0) == 1 ? (
-                          <IoIosMic className="w-4 h-4 text-green-400" title="Mic Active" />
-                        ) : (
-                          <IoIosMicOff className="w-4 h-4 text-red-400" title="Mic Inactive" />
-                        )}
+                        <span title={gridMicStatus.label}>
+                          {gridMicStatus.on ? (
+                            <IoIosMic className="w-4 h-4 text-green-400" />
+                          ) : (
+                            <IoIosMicOff className="w-4 h-4 text-red-400" />
+                          )}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1 text-[11px] text-slate-600 dark:text-slate-300">
                         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -3049,6 +3348,12 @@ const Pi_Casting = () => {
                         <span>{element['network_speed']} MBps</span>
                       </div>
                     </div>
+                    {gridMicStatus.alert && (
+                      <div className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">
+                        {gridMicStatus.alert}
+                      </div>
+                    )}
+                    <LiveMediaBanners recording={element?.recording} devices={element?.devices} />
                     <div className="flex flex-1 items-end justify-between gap-2 mt-1">
                       <div className="flex items-center gap-1.5">
                         <div className="relative group rounded-md border border-slate-200/80 bg-white/60 px-2 py-1 text-center dark:border-slate-700/80 dark:bg-slate-900/40">
@@ -3080,6 +3385,7 @@ const Pi_Casting = () => {
                                       <span>{r.duration || '—'}</span>
                                       <span>{formatRecordDate(r.created_at || r.date)}</span>
                                     </div>
+                                    <MediaBadges rec={r} className="mt-0.5" />
                                   </li>
                                 ))}
                               </ul>
@@ -3111,6 +3417,7 @@ const Pi_Casting = () => {
                                       <span>{r.merge_percentage ?? 0}%</span>
                                       <span>{formatRecordDate(r.created_at || r.date)}</span>
                                     </div>
+                                    <MediaBadges rec={r} className="mt-0.5" />
                                   </li>
                                 ))}
                               </ul>
@@ -3142,6 +3449,7 @@ const Pi_Casting = () => {
                                       <span>{r.upload_percentage ?? 0}%</span>
                                       <span>{formatRecordDate(r.created_at || r.date)}</span>
                                     </div>
+                                    <MediaBadges rec={r} className="mt-0.5" />
                                   </li>
                                 ))}
                               </ul>
@@ -3238,6 +3546,189 @@ const Pi_Casting = () => {
                       Close
                     </button>
                   </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </Dialog>
+        </Transition>
+
+        {/* Start dialog: batch id, plus the choice when the mic transmitter is off */}
+        <Transition appear show={!!startChoice?.open} as={Fragment}>
+          <Dialog
+            as="div"
+            className="relative z-50"
+            onClose={() => setStartChoice((prev) => prev && { ...prev, open: false })}
+          >
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-black bg-opacity-50" />
+            </Transition.Child>
+
+            <div className="fixed inset-0 flex items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-md rounded-lg bg-white p-6 dark:bg-slate-900">
+                  <Dialog.Title className="flex items-center gap-2 text-lg font-bold text-slate-800 dark:text-slate-100">
+                    {startChoice?.transmitterOff && (
+                      <IoIosWarning className="h-5 w-5 flex-shrink-0 text-rose-500" />
+                    )}
+                    {startChoice?.transmitterOff
+                      ? `Pi ${startChoice?.piId}: mic transmitter is off`
+                      : `Start recording on Pi ${startChoice?.piId}`}
+                  </Dialog.Title>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!startChoice?.transmitterOff) chooseStart(false);
+                    }}
+                  >
+                    <label className="mt-4 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                      Batch
+                      <select
+                        value={startBatchIsCustom ? '__custom__' : startBatchId}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setStartChoice(
+                            (prev) =>
+                              prev &&
+                              (value === '__custom__'
+                                ? { ...prev, customBatch: true }
+                                : { ...prev, customBatch: false, batchId: value }),
+                          );
+                        }}
+                        autoFocus
+                        className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                      >
+                        {!startBatchId && !startBatchIsCustom && (
+                          <option value="">
+                            {startVenueBatches?.status === 'loading' ? 'Loading batches…' : 'Select a batch'}
+                          </option>
+                        )}
+                        {venueBatchOptions.length > 0 && (
+                          <optgroup
+                            label={`${venues[startChoice?.venueId as any] || `Venue ${startChoice?.venueId}`} (active)`}
+                          >
+                            {venueBatchOptions.map((b) => (
+                              <option key={b.id} value={b.id}>
+                                {b.name} — #{b.id}
+                                {b.piId === startChoice?.piId ? ' • this Pi' : ''}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {showOtherBatches && otherBatchOptions.length > 0 && (
+                          <optgroup label={venueBatchOptions.length > 0 ? 'Other venues' : 'All batches'}>
+                            {otherBatchOptions.map((b) => (
+                              <option key={b.id} value={b.id}>
+                                {b.name} — #{b.id}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        <option value="__custom__">Custom ID…</option>
+                      </select>
+                    </label>
+                    {startBatchIsCustom && (
+                      <input
+                        type="text"
+                        value={startChoice?.batchId ?? ''}
+                        onChange={(e) =>
+                          setStartChoice((prev) => prev && { ...prev, batchId: e.target.value })
+                        }
+                        placeholder="Batch ID"
+                        aria-label="Custom batch ID"
+                        className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                      />
+                    )}
+                    <div className="mt-2 flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+                      <span>
+                        {startVenueBatches?.status === 'error'
+                          ? 'Could not load this venue’s batches – showing all.'
+                          : !startChoice?.venueId
+                          ? 'This Pi has no venue – showing all batches.'
+                          : startVenueBatches?.status === 'ok' && venueBatchOptions.length === 0
+                          ? 'No active batches at this venue – showing all.'
+                          : ''}
+                      </span>
+                      {venueBatchOptions.length > 0 && (
+                        <label className="inline-flex cursor-pointer select-none items-center gap-1.5">
+                          <input
+                            type="checkbox"
+                            checked={!!startChoice?.showAllBatches}
+                            onChange={(e) =>
+                              setStartChoice(
+                                (prev) => prev && { ...prev, showAllBatches: e.target.checked },
+                              )
+                            }
+                            className="h-3.5 w-3.5 rounded border-slate-300 dark:border-slate-600"
+                          />
+                          Show batches from all venues
+                        </label>
+                      )}
+                    </div>
+                    {startBatchIsCustom && !startBatchId && (
+                      <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">
+                        Enter a batch ID
+                      </p>
+                    )}
+                    {startChoice?.transmitterOff && (
+                      <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                        The mic transmitter is off. Switch it on and press Start again, or record
+                        now using the camera microphone.
+                      </p>
+                    )}
+                    <div className="mt-6 flex flex-wrap justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setStartChoice((prev) => prev && { ...prev, open: false })}
+                        className="px-4 py-2 rounded bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-100"
+                      >
+                        Cancel
+                      </button>
+                      {startChoice?.transmitterOff ? (
+                        <>
+                          <button
+                            type="button"
+                            disabled={!startBatchId}
+                            onClick={() => chooseStart(false)}
+                            className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                          >
+                            Try again
+                          </button>
+                          <button
+                            type="button"
+                            disabled={!startBatchId}
+                            onClick={() => chooseStart(true)}
+                            className="px-4 py-2 rounded bg-amber-500 text-white disabled:opacity-50"
+                          >
+                            Record with camera mic
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="submit"
+                          disabled={!startBatchId}
+                          className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+                        >
+                          Start
+                        </button>
+                      )}
+                    </div>
+                  </form>
                 </Dialog.Panel>
               </Transition.Child>
             </div>

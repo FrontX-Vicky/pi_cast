@@ -2,6 +2,7 @@ import { useContext, useEffect, useMemo, useState } from 'react'
 import GdriveModal from './GdriveModal';
 import { SearchContext } from './SearchContext';
 import { get } from "../helpers/api_helper";
+import { isProblemRecording, MediaBadges, ProblemFilterToggle } from './mediaStatus';
 
 type RecItem = { [key: string]: any };
 
@@ -18,6 +19,7 @@ function All_Pi() {
     const [searchResult, setSearchResult] = useState<string>('');
     const [driveUrl, setDriveUrl] = useState('');
     const [showModal, setShowModal] = useState(false);
+    const [problemOnly, setProblemOnly] = useState(false);
         const [columnFilters, setColumnFilters] = useState<{ batch_id: string; batch: string; date: string }>({
             batch_id: '',
             batch: '',
@@ -73,6 +75,9 @@ function All_Pi() {
             };
 
             let filteredList = rows.filter(applyCol);
+            if (problemOnly) {
+                filteredList = filteredList.filter(isProblemRecording);
+            }
             if (q) {
                 filteredList = filteredList.filter((item) =>
                     Object.values(item).some((v) => String(v).toLowerCase().includes(q)),
@@ -83,7 +88,7 @@ function All_Pi() {
         const slice = filteredList.slice(start, end);
         const count = Math.max(1, Math.ceil(filteredList.length / pagesLength));
         return { filtered: filteredList, paginated: slice, pageCount: count, startIndex: start };
-    }, [rows, inputValue, searchResult, pages, pagesLength]);
+    }, [rows, inputValue, searchResult, pages, pagesLength, problemOnly]);
 
     return (
         <>
@@ -109,6 +114,7 @@ function All_Pi() {
                                 <option key={num} value={num}>{num}</option>
                             ))}
                         </select>
+                        <ProblemFilterToggle checked={problemOnly} onChange={(v) => { setProblemOnly(v); setPages(1); }} />
                     </div>
                     <div className="text-sm text-gray-600 dark:text-slate-300">Total: {filtered.length}</div>
                 </div>
@@ -122,6 +128,7 @@ function All_Pi() {
                                 <th scope="col" className="tr-th text-left">Batch ID</th>
                                 <th scope="col" className="tr-th text-left">Batch Name</th>
                                 <th scope="col" className="tr-th text-left">Date</th>
+                                <th scope="col" className="tr-th text-left">Media</th>
                                 <th scope="col" className="tr-th text-center">Actions</th>
                             </tr>
                                         <tr className="bg-white dark:bg-slate-900">
@@ -151,12 +158,13 @@ function All_Pi() {
                                                 />
                                             </th>
                                             <th className="tr-td"></th>
+                                            <th className="tr-td"></th>
                                         </tr>
                         </thead>
                         <tbody>
                             {filtered.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="py-6 text-sm text-gray-500 bg-white dark:bg-slate-900">No data found.</td>
+                                    <td colSpan={6} className="py-6 text-sm text-gray-500 bg-white dark:bg-slate-900">No data found.</td>
                                 </tr>
                             )}
                             {paginated.map((item, i) => (
@@ -165,6 +173,7 @@ function All_Pi() {
                                     <td className="tr-td text-slate-700 dark:text-slate-300">{item.batch_id}</td>
                                     <td className="tr-td text-slate-700 dark:text-slate-300">{item.batch}</td>
                                     <td className="tr-td text-slate-700 dark:text-slate-300">{item.date}</td>
+                                    <td className="tr-td"><MediaBadges rec={item} /></td>
                                     <td className="tr-td">
                                         <div className="flex justify-center">
                                             <button

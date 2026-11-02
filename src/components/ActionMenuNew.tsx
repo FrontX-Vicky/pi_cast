@@ -20,6 +20,7 @@ import { FcStart } from 'react-icons/fc';
 import { FaPlay } from 'react-icons/fa';
 import { BsRecordCircle } from 'react-icons/bs';
 import { TbBrandPowershell } from 'react-icons/tb';
+import { IoIosWarning } from 'react-icons/io';
 
 import {
   useFloating,
@@ -47,6 +48,7 @@ export default function ActionsMenuNew({
   startReMerging,
   trash,
   shell,
+  startWarning = undefined as string | undefined,
   onEdit = () => {},
   onDeactivate = () => {},
 }) {
@@ -239,9 +241,13 @@ export default function ActionsMenuNew({
                   }}
                   disabled={isLoading}
                   className={itemCls}
+                  title={startWarning}
                 >
                   <BsRecordCircle className={iconCls} />
                   {isLoading ? loaderIcon : 'Start'}
+                  {startWarning && !isLoading && (
+                    <IoIosWarning className="ml-auto h-4 w-4 text-amber-500" />
+                  )}
                 </button>
                 <button
                   onClick={() => {

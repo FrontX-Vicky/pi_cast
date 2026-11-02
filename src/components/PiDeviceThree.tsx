@@ -17,6 +17,13 @@ import { LuRefreshCcwDot } from 'react-icons/lu';
 import GdriveModal from './GdriveModal';
 import PreviewIcon from '@mui/icons-material/Preview';
 import { DateTime } from 'luxon';
+import {
+  getMicStatus,
+  isProblemRecording,
+  LiveMediaBanners,
+  MediaBadges,
+  ProblemFilterToggle,
+} from './mediaStatus';
 
 type RecItem = {
   id?: number;
@@ -32,6 +39,8 @@ type RecItem = {
   status?: number;
   merge_percentage?: number;
   upload_percentage?: number;
+  media_audio?: string | null;
+  media_video?: string | null;
 };
 
 const TableThree = () => {
@@ -42,6 +51,10 @@ const TableThree = () => {
   const [ram, setRam] = useState<any>(null);
   const [camera, setcamera] = useState('0');
   const [mic, setmic] = useState('0');
+  const [micSignal, setMicSignal] = useState<string | undefined>(undefined);
+  const [liveRecording, setLiveRecording] = useState<any>(null);
+  const [camRecProblemOnly, setCamRecProblemOnly] = useState(false);
+  const [journeyProblemOnly, setJourneyProblemOnly] = useState(false);
   const [pusherLogs, setPusherLogs] = useState<any[]>([]);
   const [cameraRecording, setCameraRecording] = useState<any[]>([]);
   const [driveUrl, setDriveUrl] = useState('');
@@ -94,6 +107,8 @@ const TableThree = () => {
       const devices = normalized.devices || {};
       setcamera(String(devices.camera ?? devices.camera_connected ?? 0));
       setmic(String(devices.mic ?? devices.mic_connected ?? 0));
+      setMicSignal(devices.mic_signal);
+      setLiveRecording(normalized.recording ?? null);
 
       const stats = normalized.stats || {};
       if (stats.storage) {
@@ -217,6 +232,12 @@ const TableThree = () => {
     return datas.flatMap((pi) => (pi?.recordings || []).map((rec: RecItem) => ({ ...rec, pi_id: rec?.pi_id ?? pi?.pi_id })));
   }, [datas]);
 
+  const micStatus = getMicStatus({ mic_signal: micSignal }, mic === '1' || mic === 'true');
+  const journeyRows = journeyProblemOnly ? allRows.filter(isProblemRecording) : allRows;
+  const camRecRows = camRecProblemOnly
+    ? cameraRecording.filter(isProblemRecording)
+    : cameraRecording;
+
   const getRowStatus = (rec: RecItem) => {
     const s = Number(rec?.status);
     if (s === 0) return 'Recording';
@@ -257,10 +278,16 @@ const TableThree = () => {
                   {(camera === '1' || camera === 'true') ? <HiVideoCamera className="h-4 w-4 text-emerald-500" /> : <HiVideoCameraSlash className="h-4 w-4 text-rose-500" />}
                   <span className="text-slate-700 dark:text-slate-200">Cam</span>
                 </div>
-                <div className="flex items-center gap-2 rounded-md border border-slate-200 px-2 py-2 text-xs dark:border-slate-700">
-                  {(mic === '1' || mic === 'true') ? <IoIosMic className="h-4 w-4 text-emerald-500" /> : <IoIosMicOff className="h-4 w-4 text-rose-500" />}
+                <div className="flex items-center gap-2 rounded-md border border-slate-200 px-2 py-2 text-xs dark:border-slate-700" title={micStatus.label}>
+                  {micStatus.on ? <IoIosMic className="h-4 w-4 text-emerald-500" /> : <IoIosMicOff className="h-4 w-4 text-rose-500" />}
                   <span className="text-slate-700 dark:text-slate-200">Mic</span>
                 </div>
+              </div>
+              {micStatus.alert && (
+                <div className="mt-2 text-xs font-semibold text-rose-600 dark:text-rose-400">{micStatus.alert}</div>
+              )}
+              <div className="mt-2">
+                <LiveMediaBanners recording={liveRecording} devices={{ mic_signal: micSignal }} />
               </div>
             </div>
           </div>
@@ -268,7 +295,10 @@ const TableThree = () => {
 
         <div className="xl:col-span-4">
           <div className="h-full rounded-xl border border-slate-200/70 bg-white/70 p-3 dark:border-slate-800 dark:bg-slate-900/40">
-            <div className="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-100">Camera Recordings</div>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-100">Camera Recordings</span>
+              <ProblemFilterToggle checked={camRecProblemOnly} onChange={setCamRecProblemOnly} />
+            </div>
             <div className="max-h-[260px] overflow-auto rounded-lg border border-slate-200 dark:border-slate-800">
               <table className="w-full table-fixed text-xs">
                 <thead className="sticky top-0 bg-slate-100/95 dark:bg-slate-900/95">
@@ -279,10 +309,13 @@ const TableThree = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {cameraRecording.length > 0 ? (
-                    cameraRecording.map((item: any, idx: number) => (
+                  {camRecRows.length > 0 ? (
+                    camRecRows.map((item: any, idx: number) => (
                       <tr key={`cam-rec-${idx}`} className="border-t border-slate-200/70 dark:border-slate-800/70">
-                        <td className="truncate px-3 py-2 text-slate-700 dark:text-slate-200">{item?.batch ?? '—'}</td>
+                        <td className="px-3 py-2 text-slate-700 dark:text-slate-200">
+                          <div className="truncate">{item?.batch ?? '—'}</div>
+                          <MediaBadges rec={item} className="mt-0.5" />
+                        </td>
                         <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{formatDate(item?.date)}</td>
                         <td className="px-3 py-2 text-center">
                           <button
@@ -320,7 +353,10 @@ const TableThree = () => {
       <div className="mt-5 rounded-xl border border-slate-200/80 bg-white/70 p-3 dark:border-slate-800 dark:bg-slate-900/40">
         <div className="mb-2 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-100">Recording Journey</h3>
-          <span className="text-xs text-slate-500 dark:text-slate-400">{allRows.length} rows</span>
+          <div className="flex items-center gap-3">
+            <ProblemFilterToggle checked={journeyProblemOnly} onChange={setJourneyProblemOnly} />
+            <span className="text-xs text-slate-500 dark:text-slate-400">{journeyRows.length} rows</span>
+          </div>
         </div>
         <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
           <table className="w-full table-fixed text-xs md:text-sm">
@@ -332,14 +368,15 @@ const TableThree = () => {
                 <th className="w-[90px] px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-200">Audio</th>
                 <th className="w-[90px] px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-200">Video</th>
                 <th className="w-[90px] px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-200">Duration</th>
+                <th className="w-[150px] px-3 py-2 text-left font-semibold text-slate-700 dark:text-slate-200">Media</th>
                 <th className="w-[100px] px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-200">Merge %</th>
                 <th className="w-[100px] px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-200">Upload %</th>
                 <th className="w-[210px] px-3 py-2 text-center font-semibold text-slate-700 dark:text-slate-200">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {allRows.length > 0 ? (
-                allRows.map((element: RecItem, idx: number) => (
+              {journeyRows.length > 0 ? (
+                journeyRows.map((element: RecItem, idx: number) => (
                   <tr key={`${element?.id ?? 'r'}-${idx}`} className="border-t border-slate-200/70 dark:border-slate-800/70">
                     <td className="px-3 py-2">
                       <div className="flex items-center gap-2">
@@ -352,6 +389,7 @@ const TableThree = () => {
                     <td className="px-3 py-2 text-right text-slate-600 dark:text-slate-300">{element?.audio_size || '—'}</td>
                     <td className="px-3 py-2 text-right text-slate-600 dark:text-slate-300">{element?.video_size || '—'}</td>
                     <td className="px-3 py-2 text-right text-slate-600 dark:text-slate-300">{element?.duration || '—'}</td>
+                    <td className="px-3 py-2">{element?.id === 0 ? '—' : <MediaBadges rec={element} />}</td>
                     <td className="px-3 py-2 text-right">
                       <span className="rounded bg-blue-500/15 px-2 py-1 text-blue-700 dark:text-blue-300">{Number(element?.merge_percentage ?? 0)}%</span>
                     </td>
@@ -438,7 +476,7 @@ const TableThree = () => {
                 ))
               ) : (
                 <tr>
-                  <td className="px-3 py-5 text-center text-slate-500 dark:text-slate-400" colSpan={9}>No recording rows</td>
+                  <td className="px-3 py-5 text-center text-slate-500 dark:text-slate-400" colSpan={10}>No recording rows</td>
                 </tr>
               )}
             </tbody>
