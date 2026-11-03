@@ -24,6 +24,7 @@ import {
   MediaBadges,
   ProblemFilterToggle,
 } from './mediaStatus';
+import { HelpTip } from './mediaHelp';
 
 type RecItem = {
   id?: number;
@@ -284,7 +285,11 @@ const TableThree = () => {
                 </div>
               </div>
               {micStatus.alert && (
-                <div className="mt-2 text-xs font-semibold text-rose-600 dark:text-rose-400">{micStatus.alert}</div>
+                <div className="mt-2">
+                  <HelpTip helpKey={micStatus.helpKey} className="inline-flex items-center gap-1 text-left text-xs font-semibold text-rose-600 dark:text-rose-400">
+                    {micStatus.alert}
+                  </HelpTip>
+                </div>
               )}
               <div className="mt-2">
                 <LiveMediaBanners recording={liveRecording} devices={{ mic_signal: micSignal }} />

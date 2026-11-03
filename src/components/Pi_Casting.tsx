@@ -23,6 +23,7 @@ import {
   LiveMediaBanners,
   MediaBadges,
 } from './mediaStatus';
+import { HelpTip } from './mediaHelp';
 import {
   buildMockPiCastEvents,
   mockClassroomsBatches,
@@ -1007,10 +1008,13 @@ const PiRow = React.memo(React.forwardRef(({
                   {statusExpanded ? '▴' : '▾'}
                 </button>
                 {micStatus.alert && !(element?.recording?.active && element?.devices?.mic_signal === 'audio_lost') && (
-                  <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300">
+                  <HelpTip
+                    helpKey={micStatus.helpKey}
+                    className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300"
+                  >
                     <IoIosMicOff className="h-3 w-3 flex-shrink-0" />
                     {micStatus.alert}
-                  </span>
+                  </HelpTip>
                 )}
                 <LiveMediaBanners recording={element?.recording} devices={element?.devices} />
               </div>
@@ -3349,9 +3353,12 @@ const Pi_Casting = () => {
                       </div>
                     </div>
                     {gridMicStatus.alert && (
-                      <div className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">
+                      <HelpTip
+                        helpKey={gridMicStatus.helpKey}
+                        className="inline-flex items-center gap-1 text-left text-[11px] font-semibold text-rose-600 dark:text-rose-400"
+                      >
                         {gridMicStatus.alert}
-                      </div>
+                      </HelpTip>
                     )}
                     <LiveMediaBanners recording={element?.recording} devices={element?.devices} />
                     <div className="flex flex-1 items-end justify-between gap-2 mt-1">

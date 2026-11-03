@@ -1,5 +1,6 @@
 import { HiVideoCamera } from 'react-icons/hi2';
 import { IoIosMic } from 'react-icons/io';
+import { HelpTip } from './mediaHelp';
 
 // Media-check verdicts reported by Pi 3.1.11+. Every field may be missing on
 // older Pis, so anything unrecognised is treated as "pending", never as a problem.
@@ -86,23 +87,24 @@ export const ProblemFilterToggle = ({
 // mic_connected/mic check when the signal is "unknown" or missing.
 export const getMicStatus = (devices: any, fallbackOn: boolean) => {
   const signal = normMedia(devices?.mic_signal);
-  if (signal === 'linked') return { on: true, label: 'Mic on', alert: null };
+  if (signal === 'linked') return { on: true, label: 'Mic on', alert: null, helpKey: null };
   if (signal === 'no_signal') {
     const label = 'Transmitter off – switch on / charge it';
-    return { on: false, label, alert: label };
+    return { on: false, label, alert: label, helpKey: 'transmitter_off' };
   }
   if (signal === 'no_receiver') {
     const label = 'Mic receiver not plugged in';
-    return { on: false, label, alert: label };
+    return { on: false, label, alert: label, helpKey: 'no_receiver' };
   }
   if (signal === 'audio_lost') {
     const label = 'Recording lost the mic audio – stop and start the recording';
-    return { on: false, label, alert: label };
+    return { on: false, label, alert: label, helpKey: 'audio_lost' };
   }
   return {
     on: fallbackOn,
     label: fallbackOn ? 'Mic connected' : 'Mic disconnected',
     alert: null as string | null,
+    helpKey: null as string | null,
   };
 };
 
@@ -122,16 +124,16 @@ export const getLiveMediaWarning = (recording: any, devices?: any) => {
       mediaTone(latestVideo) !== 'pending');
   if (!hasResult && !audioLost) return null;
 
-  const banners: { tone: 'bad' | 'warn'; text: string }[] = [];
+  const banners: { tone: 'bad' | 'warn'; text: string; helpKey: string }[] = [];
   if (audioLost) {
-    banners.push({ tone: 'bad', text: 'Recording lost the mic audio – stop and start the recording' });
+    banners.push({ tone: 'bad', text: 'Recording lost the mic audio – stop and start the recording', helpKey: 'audio_lost' });
   } else if (hasResult && ['silent', 'missing', 'partial'].includes(latestAudio)) {
-    banners.push({ tone: 'bad', text: 'No audio – check the mic transmitter' });
+    banners.push({ tone: 'bad', text: 'No audio – check the mic transmitter', helpKey: 'no_audio' });
   }
   if (latestVideo === 'black') {
-    banners.push({ tone: 'bad', text: 'Video is black – open the camera shutter' });
+    banners.push({ tone: 'bad', text: 'Video is black – open the camera shutter', helpKey: 'video_black' });
   } else if (latestVideo === 'dark') {
-    banners.push({ tone: 'warn', text: 'Video is dark – turn on the room lights' });
+    banners.push({ tone: 'warn', text: 'Video is dark – turn on the room lights', helpKey: 'video_dark' });
   }
   return {
     banners,
@@ -145,16 +147,17 @@ export const LiveMediaBanners = ({ recording, devices }: { recording: any; devic
   return (
     <div className="flex flex-wrap items-center gap-1">
       {warning.banners.map((b) => (
-        <span
+        <HelpTip
           key={b.text}
-          className={`inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-semibold ${
+          helpKey={b.helpKey}
+          className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-semibold ${
             b.tone === 'bad'
               ? 'bg-rose-600 text-white dark:bg-rose-500/80'
               : 'bg-amber-400 text-amber-950 dark:bg-amber-500/80'
           }`}
         >
           ⚠ {b.text}
-        </span>
+        </HelpTip>
       ))}
       {warning.checkedText && (
         <span className="text-[10px] text-slate-500 dark:text-slate-400">{warning.checkedText}</span>
